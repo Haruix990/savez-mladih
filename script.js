@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function(){
   initContactForm();
   initLocalSave();
   initContactCopyButtons();
+  initAdminSecretAccess();
   initNewsManager();
   initHeroEffects();
   initGallery();
@@ -963,6 +964,23 @@ document.addEventListener('keydown', function(event){
     showToast('Admin panel se otvara u novom tabu.');
   }
 });
+
+function initAdminSecretAccess(){
+  const adminLink = q('.admin-secret-link');
+  if(!adminLink) return;
+  adminLink.addEventListener('click', function(event){
+    event.preventDefault();
+    const password = prompt('Unesi lozinku za admin panel:');
+    if(password === 'Savez2026'){
+      window.open('admin.html', '_blank');
+      showToast('Lozinka je tačna. Otvaram admin panel...');
+    } else if(password === null){
+      showToast('Pristup otkazan.');
+    } else {
+      showToast('Pogrešna lozinka.');
+    }
+  });
+}
 
 /* Canvas particles - unobtrusive, decorative */
 function setupCanvasParticles(){
