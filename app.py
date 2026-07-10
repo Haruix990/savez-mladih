@@ -272,6 +272,24 @@ def index():
     return app.send_static_file('index.html')
 
 
+def get_client_ip():
+    # Render and many proxies set X-Forwarded-For with a comma-separated list
+    forwarded = request.headers.get('X-Forwarded-For', '')
+    if forwarded:
+        # take the first IP in the chain
+        return forwarded.split(',')[0].strip()
+    return request.remote_addr or ''
+
+
+@app.route('/admin')
+def admin():
+    allowed_ip = '77.238.220.113'
+    client_ip = get_client_ip()
+    if client_ip == allowed_ip:
+        return app.send_static_file('admin.html')
+    return redirect(url_for('index'))
+
+
 def save_news_to_supabase(entry):
     if not supabase:
         return False, 'Supabase client not configured'
@@ -537,12 +555,17 @@ def send_confirmation_email(email, token):
     # try SendGrid
     if os.environ.get('SENDGRID_API_KEY'):
         try:
-            from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
+            import importlib
+            sendgrid = importlib.import_module('sendgrid')
+            helpers = importlib.import_module('sendgrid.helpers.mail')
+            SendGridAPIClient = sendgrid.SendGridAPIClient
+            Mail = helpers.Mail
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             msg = Mail(from_email=MAIL_FROM, to_emails=email, subject=subject, html_content=html)
             sg.send(msg)
             return True
+        except ImportError as e:
+            print('SendGrid library unavailable:', e)
         except Exception as e:
             print('SendGrid confirm send error:', e)
     # try SMTP
@@ -589,8 +612,11 @@ def api_send_newsletter():
     # send via SendGrid if available
     if os.environ.get('SENDGRID_API_KEY'):
         try:
-            from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
+            import importlib
+            sendgrid = importlib.import_module('sendgrid')
+            helpers = importlib.import_module('sendgrid.helpers.mail')
+            SendGridAPIClient = sendgrid.SendGridAPIClient
+            Mail = helpers.Mail
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             for s in confirmed:
                 try:
@@ -600,6 +626,8 @@ def api_send_newsletter():
                     sg.send(msg)
                 except Exception as e:
                     send_errors.append({'email': s.get('email'), 'error': str(e)})
+        except ImportError as e:
+            send_errors.append({'error': 'SendGrid library unavailable: ' + str(e)})
         except Exception as e:
             send_errors.append({'error': 'SendGrid error: ' + str(e)})
     else:
