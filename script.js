@@ -160,7 +160,8 @@ function initNewsManager(){
   const editIdInput = q('#news-id');
   const cancelButton = q('#news-cancel');
   const submitButton = form ? form.querySelector('button[type="submit"]') : null;
-  if(!form || !list || !highlight) return;
+  const hasNewsForm = !!form;
+  if(!list || !highlight) return;
 
   // UI state for enhanced news UX
   let allNews = [];
@@ -662,114 +663,116 @@ function initNewsManager(){
   }
 
   // admin auth: show/hide admin panel based on session
-  async function checkAdmin(){
-    try{
-      const res = await apiFetch('/api/me', { credentials: 'same-origin' });
-      const js = await res.json().catch(()=>({is_admin:false}));
-      const adminCard = q('.news-admin-card');
-      if(js && js.is_admin){
-        if(adminCard) adminCard.style.display = '';
-        const loginBox = q('#admin-login-form'); if(loginBox) loginBox.remove();
-        // ensure logout button is visible
-        let logoutBtn = q('#admin-logout-btn');
-        if(!logoutBtn){
-          const header = q('.news-admin-header');
-          if(header){
-            const btn = document.createElement('button');
-            btn.id = 'admin-logout-btn'; btn.className = 'btn btn-outline'; btn.textContent = 'Odjavi se';
-            header.appendChild(btn);
-            btn.addEventListener('click', async ()=>{
-              try{
-                const r = await apiFetch('/api/logout', {method:'POST', credentials: 'same-origin'});
-                const p = await r.json().catch(()=>({ok:false}));
-                showToast('Odjava uspješna.');
-                checkAdmin();
-              }catch(e){ console.error(e); showToast('Greška pri odjavi.'); }
-            });
-          }
-        }
-        // refresh news after login
-        try{ if(typeof loadNews === 'function') loadNews(); }catch(e){}
-        // show admin newsletter form
-        const adminBox = q('#admin-newsletter'); if(adminBox) adminBox.style.display = '';
-        // hide password field for news form when fully authenticated
-        const pwInput = q('#news-password'); if(pwInput){ pwInput.value = ''; pwInput.style.display = 'none'; }
-      } else {
-        // backend not reporting admin. but if dev password stored locally, treat as admin for UI
-        const devpw = getDevPassword();
-        const adminCardEl = q('.news-admin-card');
-        if(devpw){
-          if(adminCardEl) adminCardEl.style.display = '';
+  if(hasNewsForm){
+    async function checkAdmin(){
+      try{
+        const res = await apiFetch('/api/me', { credentials: 'same-origin' });
+        const js = await res.json().catch(()=>({is_admin:false}));
+        const adminCard = q('.news-admin-card');
+        if(js && js.is_admin){
+          if(adminCard) adminCard.style.display = '';
           const loginBox = q('#admin-login-form'); if(loginBox) loginBox.remove();
-          // hide or prefill news password input when dev password is present
-          const pwInput = q('#news-password'); if(pwInput){ pwInput.value = devpw; pwInput.style.display = 'none'; }
-          // add a small logout dev button
+          // ensure logout button is visible
           let logoutBtn = q('#admin-logout-btn');
           if(!logoutBtn){
             const header = q('.news-admin-header');
             if(header){
               const btn = document.createElement('button');
-              btn.id = 'admin-logout-btn'; btn.className = 'btn btn-outline'; btn.textContent = 'Odjavi se (lokalno)';
+              btn.id = 'admin-logout-btn'; btn.className = 'btn btn-outline'; btn.textContent = 'Odjavi se';
               header.appendChild(btn);
-              btn.addEventListener('click', ()=>{ clearDevPassword(); checkAdmin(); showToast('Lokalna odjava.'); });
+              btn.addEventListener('click', async ()=>{
+                try{
+                  const r = await apiFetch('/api/logout', {method:'POST', credentials: 'same-origin'});
+                  const p = await r.json().catch(()=>({ok:false}));
+                  showToast('Odjava uspješna.');
+                  checkAdmin();
+                }catch(e){ console.error(e); showToast('Greška pri odjavi.'); }
+              });
             }
           }
+          // refresh news after login
+          try{ if(typeof loadNews === 'function') loadNews(); }catch(e){}
+          // show admin newsletter form
+          const adminBox = q('#admin-newsletter'); if(adminBox) adminBox.style.display = '';
+          // hide password field for news form when fully authenticated
+          const pwInput = q('#news-password'); if(pwInput){ pwInput.value = ''; pwInput.style.display = 'none'; }
         } else {
-          if(adminCardEl) adminCardEl.style.display = 'none';
-          // ensure news password is visible for manual entry when no devpw
-          const pwInput = q('#news-password'); if(pwInput){ pwInput.value = ''; pwInput.style.display = ''; }
-          // insert small login form if not present
-          if(!q('#admin-login-form')){
-            const container = q('.news-shell');
-            if(container){
-              const box = document.createElement('div');
-              box.id = 'admin-login-form';
-              box.className = 'admin-login-box';
-              box.innerHTML = `
-                <div class="admin-login-inner">
-                  <p><strong>Admin pristup</strong> — prijavi se da bi uređivao vijesti.</p>
-                  <div class="admin-login-row">
-                    <input id="admin-login-password" type="password" placeholder="Lozinka" />
-                    <label class="admin-login-remember"><input id="admin-login-remember" type="checkbox" checked/> Zapamti</label>
-                  </div>
-                  <div class="admin-login-actions">
-                    <button id="admin-login-btn" class="btn btn-primary">Prijavi se</button>
-                    <button id="admin-login-send-pass" class="btn btn-outline">Prijavi se bez sesije</button>
-                  </div>
-                  <p class="admin-login-hint">Ako stranica dolazi sa Live Servera, koristi "Prijavi se bez sesije" da bi se prijavio lokalno (lozinka se čuva u pregledniku).</p>
-                </div>`;
-              const feed = q('.news-admin-card');
-              if(feed && feed.parentNode) feed.parentNode.insertBefore(box, feed);
-              const btn = q('#admin-login-btn');
-              if(btn) btn.addEventListener('click', async ()=>{
-                const pw = q('#admin-login-password').value || '';
-                try{
-                  const r = await apiFetch('/api/login', {method:'POST', body: new URLSearchParams({password: pw}), credentials: 'same-origin'});
-                  const p = await r.json().catch(()=>({ok:false}));
-                  if(r.ok && p.ok){
-                    showToast('Uspješna prijava.');
-                    checkAdmin();
-                  } else {
-                    showToast(p.error || 'Neuspješna prijava.');
-                  }
-                }catch(e){ console.error(e); showToast('Greška pri prijavi.'); }
-              });
-              const btn2 = q('#admin-login-send-pass');
-              if(btn2) btn2.addEventListener('click', ()=>{
-                const pw = q('#admin-login-password').value || '';
-                const remember = !!q('#admin-login-remember').checked;
-                if(!pw){ showToast('Unesi lozinku u polje.'); return; }
-                setDevPassword(pw, remember);
-                showToast('Lokalna prijava uspješna.');
-                checkAdmin();
-              });
+          // backend not reporting admin. but if dev password stored locally, treat as admin for UI
+          const devpw = getDevPassword();
+          const adminCardEl = q('.news-admin-card');
+          if(devpw){
+            if(adminCardEl) adminCardEl.style.display = '';
+            const loginBox = q('#admin-login-form'); if(loginBox) loginBox.remove();
+            // hide or prefill news password input when dev password is present
+            const pwInput = q('#news-password'); if(pwInput){ pwInput.value = devpw; pwInput.style.display = 'none'; }
+            // add a small logout dev button
+            let logoutBtn = q('#admin-logout-btn');
+            if(!logoutBtn){
+              const header = q('.news-admin-header');
+              if(header){
+                const btn = document.createElement('button');
+                btn.id = 'admin-logout-btn'; btn.className = 'btn btn-outline'; btn.textContent = 'Odjavi se (lokalno)';
+                header.appendChild(btn);
+                btn.addEventListener('click', ()=>{ clearDevPassword(); checkAdmin(); showToast('Lokalna odjava.'); });
+              }
+            }
+          } else {
+            if(adminCardEl) adminCardEl.style.display = 'none';
+            // ensure news password is visible for manual entry when no devpw
+            const pwInput = q('#news-password'); if(pwInput){ pwInput.value = ''; pwInput.style.display = ''; }
+            // insert small login form if not present
+            if(!q('#admin-login-form')){
+              const container = q('.news-shell');
+              if(container){
+                const box = document.createElement('div');
+                box.id = 'admin-login-form';
+                box.className = 'admin-login-box';
+                box.innerHTML = `
+                  <div class="admin-login-inner">
+                    <p><strong>Admin pristup</strong> — prijavi se da bi uređivao vijesti.</p>
+                    <div class="admin-login-row">
+                      <input id="admin-login-password" type="password" placeholder="Lozinka" />
+                      <label class="admin-login-remember"><input id="admin-login-remember" type="checkbox" checked/> Zapamti</label>
+                    </div>
+                    <div class="admin-login-actions">
+                      <button id="admin-login-btn" class="btn btn-primary">Prijavi se</button>
+                      <button id="admin-login-send-pass" class="btn btn-outline">Prijavi se bez sesije</button>
+                    </div>
+                    <p class="admin-login-hint">Ako stranica dolazi sa Live Servera, koristi "Prijavi se bez sesije" da bi se prijavio lokalno (lozinka se čuva u pregledniku).</p>
+                  </div>`;
+                const feed = q('.news-admin-card');
+                if(feed && feed.parentNode) feed.parentNode.insertBefore(box, feed);
+                const btn = q('#admin-login-btn');
+                if(btn) btn.addEventListener('click', async ()=>{
+                  const pw = q('#admin-login-password').value || '';
+                  try{
+                    const r = await apiFetch('/api/login', {method:'POST', body: new URLSearchParams({password: pw}), credentials: 'same-origin'});
+                    const p = await r.json().catch(()=>({ok:false}));
+                    if(r.ok && p.ok){
+                      showToast('Uspješna prijava.');
+                      checkAdmin();
+                    } else {
+                      showToast(p.error || 'Neuspješna prijava.');
+                    }
+                  }catch(e){ console.error(e); showToast('Greška pri prijavi.'); }
+                });
+                const btn2 = q('#admin-login-send-pass');
+                if(btn2) btn2.addEventListener('click', ()=>{
+                  const pw = q('#admin-login-password').value || '';
+                  const remember = !!q('#admin-login-remember').checked;
+                  if(!pw){ showToast('Unesi lozinku u polje.'); return; }
+                  setDevPassword(pw, remember);
+                  showToast('Lokalna prijava uspješna.');
+                  checkAdmin();
+                });
+              }
             }
           }
         }
-      }
-    }catch(e){ console.error(e); }
+      }catch(e){ console.error(e); }
+    }
+    checkAdmin();
   }
-  checkAdmin();
 
   // Admin newsletter actions
   const adminForm = q('#admin-newsletter-form');

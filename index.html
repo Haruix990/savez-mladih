@@ -302,63 +302,6 @@
         <p class="lead">Pratite najnovije akcije, izvještaje sa terena i objave povezane sa radom Saveza.</p>
 
         <div class="news-shell">
-          <div class="news-admin-card">
-            <div class="news-admin-header">
-              <div>
-                <p class="news-kicker">Admin panel</p>
-                <h3>Dodaj novu vijest</h3>
-              </div>
-              <span class="news-badge">Brzo i sigurno</span>
-            </div>
-            <p>Ovdje unosiš objave za članove i podržaoce. Nakon objave, vijest se pojavljuje u posebnom prostoru za najnovije sadržaje. Svaku objavu kasnije možeš obrisati pritiskom na dugme.</p>
-            <form id="news-form" class="news-form">
-              <input id="news-id" type="hidden" name="id" value="">
-              <div class="field-group">
-                <label for="news-title">Naslov</label>
-                <input id="news-title" type="text" name="title" placeholder="Naslov vijesti" required>
-              </div>
-              <div class="field-group">
-                <label for="news-body">Tekst</label>
-                <textarea id="news-body" name="body" rows="4" placeholder="Napiši kratku vijest ili izvještaj..." required></textarea>
-              </div>
-              <div class="field-group">
-                <label for="news-image-file">Slika (opciono)</label>
-                <input id="news-image-file" type="file" name="image_file" accept="image/*">
-                <input id="news-image-url" type="hidden" name="image_url" value="">
-                <div id="news-image-preview" style="margin-top:8px;display:none;align-items:flex-start;gap:8px;">
-                  <img id="news-image-preview-img" src="" alt="Preview" style="max-width:100%;border-radius:8px;"/>
-                  <div>
-                    <button id="news-image-remove" type="button" class="btn btn-outline" style="margin-top:8px;">Ukloni sliku</button>
-                  </div>
-                </div>
-              </div>
-              <div class="field-group">
-                <label for="news-category">Kategorija</label>
-                <input type="hidden" id="news-category" name="category" value="obavjestenje">
-                <div class="category-picker" role="tablist" aria-label="Kategorije vijesti">
-                  <button type="button" class="category-pill selected" data-value="obavjestenje">📌 Obavještenje</button>
-                  <button type="button" class="category-pill" data-value="humanitarna">🤝 Humanitarna akcija</button>
-                  <button type="button" class="category-pill" data-value="aktivnosti">⚽ Aktivnosti i Sport</button>
-                  <button type="button" class="category-pill" data-value="historija">📜 Historija</button>
-                </div>
-              </div>
-              <div class="field-group">
-                <label for="news-pinned"><input id="news-pinned" name="pinned" type="checkbox"> Istakni vijest (pin)</label>
-              </div>
-              <!-- Admin lozinka uklonjena; login se vrši preko admin panela ili lokalnog dev moda -->
-              <div class="form-actions">
-                <button type="button" id="news-preview" class="btn btn-outline">Pregledaj prije objave</button>
-                <button type="button" id="news-save-draft" class="btn btn-outline">Sačuvaj draft</button>
-                <button type="submit" class="btn btn-primary">Objavi vijest</button>
-                <button type="button" id="news-cancel" class="btn btn-outline" style="display:none;">Poništi izmjene</button>
-              </div>
-            </form>
-            <div id="news-drafts" class="news-drafts" style="margin-top:12px;">
-              <h4>Draftovi</h4>
-              <div id="news-drafts-list"></div>
-            </div>
-          </div>
-
           <div class="news-feed-card">
             <div class="news-feed-header">
               <div>
@@ -366,6 +309,9 @@
                 <h3>Prostor za vijesti</h3>
               </div>
               <span class="news-badge">Aktualno</span>
+            </div>
+            <div class="news-info-card" style="margin-bottom:18px;padding:18px;border-radius:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">
+              <p>Ovde se prikazuju objave i obavještenja za sve posjetioce. Admin panel nije vidljiv javnosti.</p>
             </div>
             <div id="news-highlight" class="news-highlight"></div>
             <div class="news-filter">
@@ -433,35 +379,6 @@
           <button class="btn btn-primary" type="submit">Prijavi se</button>
         </form>
         <p class="muted" style="margin-top:8px;">Možeš se odjaviti u bilo kojem trenutku — u svakoj poruci nalazi se link za odjavu.</p>
-        <div id="admin-newsletter" class="admin-newsletter" style="margin-top:12px;display:none;">
-          <h4>Pošalji newsletter (admin)</h4>
-          <div class="admin-newsletter-grid">
-            <form id="admin-newsletter-form" class="admin-newsletter-form">
-              <label for="nl-subject">Naslov</label>
-              <input type="text" id="nl-subject" placeholder="Naslov" />
-              <label for="nl-html">Sadržaj (HTML)</label>
-              <div class="editor-toolbar" aria-hidden="true">
-                <button type="button" data-cmd="bold"><strong>B</strong></button>
-                <button type="button" data-cmd="italic"><em>I</em></button>
-                <button type="button" data-cmd="insertUnorderedList">• List</button>
-                <button type="button" data-cmd="createLink">Link</button>
-                <button type="button" data-cmd="unlink">Unlink</button>
-              </div>
-              <div id="nl-editor" class="editor" contenteditable="true" aria-label="HTML editor"></div>
-              <textarea id="nl-html" name="html" placeholder="HTML sadržaj" rows="6" style="display:none"></textarea>
-              <label class="admin-option"><input id="nl-include-unsub" type="checkbox" checked /> Uključi link za odjavu</label>
-              <div class="admin-newsletter-actions">
-                <button id="nl-send" class="btn btn-primary" type="button">Pošalji</button>
-                <button id="nl-preview" class="btn btn-outline" type="button">Pretpregled</button>
-                <button id="nl-export" class="btn btn-outline" type="button">Export CSV</button>
-              </div>
-            </form>
-            <div class="admin-subs-panel">
-              <h5>Pretplatnici <span id="subs-count" class="muted">(0)</span></h5>
-              <div id="subs-list" class="subs-list"></div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
