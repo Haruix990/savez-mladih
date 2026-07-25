@@ -25,6 +25,7 @@ MAIL_PORT = int(os.environ.get('MAIL_PORT', '587')) if os.environ.get('MAIL_PORT
 MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').strip().lower() in ('1', 'true', 'yes')
 MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'False').strip().lower() in ('1', 'true', 'yes')
 MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME or f"no-reply@{SUPABASE_URL.split('://')[-1]}").strip()
+MAIL_FROM = os.environ.get('MAIL_FROM', MAIL_DEFAULT_SENDER).strip()
 
 app = Flask(__name__, static_folder='.', template_folder='.')
 app.config.update({
@@ -564,32 +565,24 @@ def send_confirmation_email(email, token):
             SendGridAPIClient = sendgrid.SendGridAPIClient
             Mail = helpers.Mail
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            msg = Mail(from_email=MAIL_FROM, to_emails=email, subject=subject, html_content=html)
+            msg = Mail(from_email=MAIL_DEFAULT_SENDER, to_emails=email, subject=subject, html_content=html)
             sg.send(msg)
             return True
         except ImportError as e:
             print('SendGrid library unavailable:', e)
         except Exception as e:
             print('SendGrid confirm send error:', e)
-    # try SMTP
-    if SMTP_HOST and SMTP_PORT and SMTP_USER and SMTP_PASSWORD:
+    # try Flask-Mail SMTP
+    if MAIL_USERNAME and MAIL_PASSWORD:
         try:
-            msg = EmailMessage()
-            msg['Subject'] = subject
-            msg['From'] = MAIL_FROM
-            msg['To'] = email
-            msg.set_content('Potvrdi prijavu: ' + link)
-            msg.add_alternative(html, subtype='html')
-            context = ssl.create_default_context()
-            if SMTP_PORT == 465:
-                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
-                    server.login(SMTP_USER, SMTP_PASSWORD)
-                    server.send_message(msg)
-            else:
-                with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-                    server.starttls(context=context)
-                    server.login(SMTP_USER, SMTP_PASSWORD)
-                    server.send_message(msg)
+            msg = Message(
+                subject=subject,
+                sender=app.config['MAIL_DEFAULT_SENDER'],
+                recipients=[email]
+            )
+            msg.body = f"Potvrdi prijavu: {link}"
+            msg.html = html
+            mail.send(msg)
             return True
         except Exception as e:
             print('SMTP confirm send error:', e)
@@ -634,26 +627,19 @@ def api_send_newsletter():
         except Exception as e:
             send_errors.append({'error': 'SendGrid error: ' + str(e)})
     else:
-        # SMTP fallback
-        if SMTP_HOST and SMTP_PORT and SMTP_USER and SMTP_PASSWORD:
-            import smtplib
-            from email.mime.text import MIMEText
+        # Flask-Mail SMTP fallback
+        if MAIL_USERNAME and MAIL_PASSWORD:
             for s in confirmed:
                 try:
                     unsub_link = f"{host}/api/unsubscribe?token={s.get('unsub_token')}"
-                    body_text = (html or subject) + f"\n\nAko se želiš odjaviti: {unsub_link}"
-                    msg = MIMEText(body_text)
-                    msg['Subject'] = subject
-                    msg['From'] = MAIL_FROM
-                    msg['To'] = s.get('email')
-                    if SMTP_PORT == 465:
-                        server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT)
-                    else:
-                        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
-                        server.starttls()
-                    server.login(SMTP_USER, SMTP_PASSWORD)
-                    server.sendmail(MAIL_FROM, [s.get('email')], msg.as_string())
-                    server.quit()
+                    msg = Message(
+                        subject=subject,
+                        sender=app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=[s.get('email')]
+                    )
+                    msg.body = (html or subject) + f"\n\nAko se želiš odjaviti: {unsub_link}"
+                    msg.html = (html or subject) + f"<hr><p><small>Ako više ne želiš primati poruke, <a href=\"{unsub_link}\">odjavi se</a>.</small></p>"
+                    mail.send(msg)
                 except Exception as e:
                     send_errors.append({'email': s.get('email'), 'error': str(e)})
         else:
@@ -684,12 +670,13 @@ def api_me():
 
 
 @app.route('/contact', methods=['POST'])
-def contact():
+@app.route('/send-message', methods=['POST'])
+def send_message():
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
     message = request.form.get('message', '').strip()
     if not name or not email or not message:
-        return redirect(url_for('index') + '#kontakt')
+        return jsonify({'ok': False, 'error': 'Ime, email i poruka su obavezni.'}), 400
 
     entry = {
         'name': name,
@@ -698,46 +685,18 @@ def contact():
         'created': datetime.datetime.utcnow().isoformat() + 'Z'
     }
 
-    saved = False
-    error_text = None
-    if SUPABASE_URL and SUPABASE_CLIENT_KEY and SUPABASE_COLUMNS:
-        saved, error_text = save_to_supabase(entry)
-    elif SUPABASE_URL and SUPABASE_CLIENT_KEY:
-        print('Supabase save skipped: table schema not compatible or no supported columns detected')
+    if not supabase:
+        return jsonify({'ok': False, 'error': 'Supabase nije konfigurisan.'}), 500
 
-    email_sent = False
-    email_error = None
-    if MAIL_USERNAME and MAIL_PASSWORD:
-        email_sent, email_error = send_notification_email(entry)
-        if not email_sent:
-            print('Email send failed:', email_error)
-    else:
-        email_error = 'SMTP not configured'
-        print('Email notification skipped: SMTP not configured')
+    saved, error_text = save_to_supabase(entry)
+    if saved:
+        return jsonify({'ok': True, 'message': 'Vaša poruka je uspješno poslata!'}), 200
 
-    local_saved = True
-    save_local(entry)
-
-    response_data = {
-        'saved': saved,
-        'email_sent': email_sent,
-        'local_saved': local_saved,
-        'errors': {}
-    }
-    if error_text:
-        response_data['errors']['supabase'] = str(error_text)
-    if email_error:
-        response_data['errors']['email'] = str(email_error)
-
-    if saved or email_sent:
-        return jsonify(response_data), 200
-
-    if local_saved:
-        response_data['errors']['fallback'] = 'Poruka je sačuvana lokalno, ali nije poslata na email.'
-        return jsonify(response_data), 200
-
-    print('Supabase save failed:', error_text)
-    return jsonify(response_data), 500
+    return jsonify({
+        'ok': False,
+        'error': error_text or 'Greška pri spremanju poruke u Supabase.',
+        'errors': {'supabase': error_text}
+    }), 500
 
 
 @app.route('/api/news', methods=['GET'])

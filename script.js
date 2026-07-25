@@ -88,32 +88,50 @@ function initSmoothLinks(){
 function initContactForm(){
   const form = q('#contact-form');
   if(!form) return;
-  const submitBtn = form.querySelector('button[type="submit"]');
-  form.addEventListener('submit', function(ev){
-    ev.preventDefault();
-    if(submitBtn){submitBtn.disabled = true; submitBtn.textContent = 'Šaljem...';}
-    const data = new FormData(form);
-    const action = form.getAttribute('action') || '/contact';
 
-    fetch(action, {
-      method: 'POST',
-      body: data,
-      headers: action.startsWith('http') ? { 'Accept': 'application/json' } : {}
-    }).then(async response => {
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const messageEl = q('#contact-form-message');
+
+  function setContactMessage(text, isError = false){
+    if(!messageEl) return;
+    messageEl.textContent = text;
+    messageEl.className = 'contact-form-message' + (isError ? ' error' : ' success');
+  }
+
+  form.addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    if(submitBtn){
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Šaljem...';
+    }
+    setContactMessage('');
+
+    const data = new FormData(form);
+    const action = form.getAttribute('action') || '/send-message';
+
+    try {
+      const response = await fetch(action, {
+        method: 'POST',
+        body: data
+      });
       const payload = await response.json().catch(() => ({}));
-      if(response.ok){
-        const msg = payload.message || payload.success || payload.error || payload.errors?.email || payload.errors?.supabase || payload.errors?.fallback || 'Poruka je zaprimljena. Hvala!';
-        showToast(msg);
+
+      if(response.ok && payload.ok){
+        setContactMessage(payload.message || 'Vaša poruka je uspješno poslata!', false);
         form.reset();
       } else {
-        const errorMessage = payload.error || payload.errors?.supabase || payload.errors?.email || payload.errors?.fallback || 'Greška pri slanju. Pokušaj ponovo.';
-        showToast(errorMessage);
+        const errorMessage = payload.error || payload.errors?.supabase || payload.errors?.email || 'Greška pri slanju. Pokušaj ponovo.';
+        setContactMessage(errorMessage, true);
       }
-    }).catch(() => {
-      showToast('Greška pri slanju. Provjeri vezu.');
-    }).finally(() => {
-      if(submitBtn){submitBtn.disabled = false; submitBtn.textContent = 'Pošalji';}
-    });
+    } catch (err) {
+      console.error('Contact submit error:', err);
+      setContactMessage('Greška pri slanju. Provjeri vezu.', true);
+    } finally {
+      if(submitBtn){
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Pošalji';
+      }
+    }
   });
 }
 
