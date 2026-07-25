@@ -99,11 +99,11 @@ function initContactForm(){
     }).then(async response => {
       const payload = await response.json().catch(() => ({}));
       if(response.ok){
-        const msg = payload.errors?.email || payload.errors?.fallback || 'Poruka je zaprimljena. Hvala!';
+        const msg = payload.errors?.email || payload.errors?.supabase || payload.errors?.fallback || 'Poruka je zaprimljena. Hvala!';
         showToast(msg);
         form.reset();
       } else {
-        const errorMessage = payload.errors?.supabase || payload.errors?.email || 'Greška pri slanju. Pokušaj ponovo.';
+        const errorMessage = payload.errors?.email || payload.errors?.supabase || payload.errors?.fallback || 'Greška pri slanju. Pokušaj ponovo.';
         showToast(errorMessage);
       }
     }).catch(() => {

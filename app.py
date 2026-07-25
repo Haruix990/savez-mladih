@@ -217,6 +217,7 @@ def send_notification_email(entry):
         msg['Subject'] = f"Nova poruka sa sajta - {entry['name']}"
         msg['From'] = MAIL_FROM
         msg['To'] = NOTIFICATION_EMAIL
+        msg['Reply-To'] = entry['email']
         msg.set_content(
             f"Nova poruka sa sajta:\n\n"
             f"Ime: {entry['name']}\n"
