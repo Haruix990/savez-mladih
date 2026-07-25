@@ -697,8 +697,10 @@ def contact():
 
     saved = False
     error_text = None
-    if SUPABASE_URL and SUPABASE_CLIENT_KEY:
+    if SUPABASE_URL and SUPABASE_CLIENT_KEY and SUPABASE_COLUMNS:
         saved, error_text = save_to_supabase(entry)
+    elif SUPABASE_URL and SUPABASE_CLIENT_KEY:
+        print('Supabase save skipped: table schema not compatible or no supported columns detected')
 
     email_sent = False
     email_error = None
@@ -707,6 +709,7 @@ def contact():
         if not email_sent:
             print('Email send failed:', email_error)
     else:
+        email_error = 'SMTP not configured'
         print('Email notification skipped: SMTP not configured')
 
     local_saved = True
