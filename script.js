@@ -93,17 +93,20 @@ function initContactForm(){
     ev.preventDefault();
     if(submitBtn){submitBtn.disabled = true; submitBtn.textContent = 'Šaljem...';}
     const data = new FormData(form);
-    fetch('/contact', {
+    const action = form.getAttribute('action') || '/contact';
+
+    fetch(action, {
       method: 'POST',
-      body: data
+      body: data,
+      headers: action.startsWith('http') ? { 'Accept': 'application/json' } : {}
     }).then(async response => {
       const payload = await response.json().catch(() => ({}));
       if(response.ok){
-        const msg = payload.errors?.email || payload.errors?.supabase || payload.errors?.fallback || 'Poruka je zaprimljena. Hvala!';
+        const msg = payload.message || payload.success || payload.error || payload.errors?.email || payload.errors?.supabase || payload.errors?.fallback || 'Poruka je zaprimljena. Hvala!';
         showToast(msg);
         form.reset();
       } else {
-        const errorMessage = payload.errors?.email || payload.errors?.supabase || payload.errors?.fallback || 'Greška pri slanju. Pokušaj ponovo.';
+        const errorMessage = payload.error || payload.errors?.supabase || payload.errors?.email || payload.errors?.fallback || 'Greška pri slanju. Pokušaj ponovo.';
         showToast(errorMessage);
       }
     }).catch(() => {
