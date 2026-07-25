@@ -3,10 +3,8 @@ import os
 import json
 import uuid
 import datetime
-import smtplib
-import ssl
-from email.message import EmailMessage
 from flask import Flask, request, jsonify, redirect, send_from_directory, url_for, session
+from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -20,13 +18,25 @@ SUPABASE_TABLE = os.environ.get('SUPABASE_TABLE', 'messages').strip()
 NEWS_TABLE = os.environ.get('NEWS_TABLE', 'news').strip()
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'zeleneberetke2026').strip()
 NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', 'harunkapo@gmail.com').strip()
-SMTP_HOST = os.environ.get('SMTP_HOST', '').strip()
-SMTP_PORT = int(os.environ.get('SMTP_PORT', '0')) if os.environ.get('SMTP_PORT') else 0
-SMTP_USER = os.environ.get('SMTP_USER', '').strip()
-SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '').strip()
-MAIL_FROM = os.environ.get('MAIL_FROM', SMTP_USER or f"no-reply@{SUPABASE_URL.split('://')[-1]}").strip()
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '').strip()
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '').strip()
+MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com').strip()
+MAIL_PORT = int(os.environ.get('MAIL_PORT', '587')) if os.environ.get('MAIL_PORT') else 587
+MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').strip().lower() in ('1', 'true', 'yes')
+MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'False').strip().lower() in ('1', 'true', 'yes')
+MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME or f"no-reply@{SUPABASE_URL.split('://')[-1]}").strip()
 
 app = Flask(__name__, static_folder='.', template_folder='.')
+app.config.update({
+    'MAIL_SERVER': MAIL_SERVER,
+    'MAIL_PORT': MAIL_PORT,
+    'MAIL_USE_TLS': MAIL_USE_TLS,
+    'MAIL_USE_SSL': MAIL_USE_SSL,
+    'MAIL_USERNAME': MAIL_USERNAME,
+    'MAIL_PASSWORD': MAIL_PASSWORD,
+    'MAIL_DEFAULT_SENDER': MAIL_DEFAULT_SENDER,
+})
+mail = Mail(app)
 app.secret_key = os.environ.get('SECRET_KEY', 'change-me-to-a-secure-random-value')
 DATA_DIR = Path('data')
 DATA_DIR.mkdir(exist_ok=True)
@@ -210,31 +220,23 @@ def update_news_local(news_id, updated_entry):
 
 
 def send_notification_email(entry):
-    if not (SMTP_HOST and SMTP_PORT and SMTP_USER and SMTP_PASSWORD):
+    if not (MAIL_USERNAME and MAIL_PASSWORD):
         return False, 'SMTP not configured'
     try:
-        msg = EmailMessage()
-        msg['Subject'] = f"Nova poruka sa sajta - {entry['name']}"
-        msg['From'] = MAIL_FROM
-        msg['To'] = NOTIFICATION_EMAIL
-        msg['Reply-To'] = entry['email']
-        msg.set_content(
+        msg = Message(
+            subject=f"Nova poruka sa sajta - {entry['name']}",
+            sender=app.config['MAIL_DEFAULT_SENDER'],
+            recipients=[NOTIFICATION_EMAIL],
+            reply_to=entry['email']
+        )
+        msg.body = (
             f"Nova poruka sa sajta:\n\n"
             f"Ime: {entry['name']}\n"
             f"Email: {entry['email']}\n"
             f"Poruka:\n{entry['message']}\n\n"
             f"Poslano: {entry['created']}"
         )
-        context = ssl.create_default_context()
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-                server.starttls(context=context)
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.send_message(msg)
+        mail.send(msg)
         return True, None
     except Exception as err:
         return False, str(err)
@@ -705,7 +707,7 @@ def contact():
 
     email_sent = False
     email_error = None
-    if SMTP_HOST and SMTP_PORT and SMTP_USER and SMTP_PASSWORD:
+    if MAIL_USERNAME and MAIL_PASSWORD:
         email_sent, email_error = send_notification_email(entry)
         if not email_sent:
             print('Email send failed:', email_error)
