@@ -116,11 +116,11 @@ function initContactForm(){
       });
       const payload = await response.json().catch(() => ({}));
 
-      if(response.ok && payload.ok){
-        setContactMessage(payload.message || 'Vaša poruka je uspješno poslata!', false);
+      if(response.ok && payload.success){
+        setContactMessage(payload.message || 'Hvala vam! Vaša poruka je uspješno primljena.', false);
         form.reset();
       } else {
-        const errorMessage = payload.error || payload.errors?.supabase || payload.errors?.email || 'Greška pri slanju. Pokušaj ponovo.';
+        const errorMessage = payload.message || payload.error || 'Greška pri slanju. Pokušaj ponovo.';
         setContactMessage(errorMessage, true);
       }
     } catch (err) {

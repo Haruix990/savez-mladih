@@ -669,34 +669,29 @@ def api_me():
     return jsonify({'is_admin': bool(session.get('is_admin', False))}), 200
 
 
-@app.route('/contact', methods=['POST'])
 @app.route('/send-message', methods=['POST'])
 def send_message():
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
     message = request.form.get('message', '').strip()
     if not name or not email or not message:
-        return jsonify({'ok': False, 'error': 'Ime, email i poruka su obavezni.'}), 400
+        return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
 
     entry = {
         'name': name,
         'email': email,
         'message': message,
-        'created': datetime.datetime.utcnow().isoformat() + 'Z'
+        'created_at': datetime.datetime.utcnow().isoformat() + 'Z'
     }
 
     if not supabase:
-        return jsonify({'ok': False, 'error': 'Supabase nije konfigurisan.'}), 500
+        return jsonify({'success': False, 'message': 'Supabase nije konfigurisan.'}), 500
 
     saved, error_text = save_to_supabase(entry)
-    if saved:
-        return jsonify({'ok': True, 'message': 'Vaša poruka je uspješno poslata!'}), 200
+    if not saved:
+        return jsonify({'success': False, 'message': error_text or 'Greška pri spremanju poruke u Supabase.'}), 500
 
-    return jsonify({
-        'ok': False,
-        'error': error_text or 'Greška pri spremanju poruke u Supabase.',
-        'errors': {'supabase': error_text}
-    }), 500
+    return jsonify({'success': True, 'message': 'Poruka uspješno poslata'}), 200
 
 
 @app.route('/api/news', methods=['GET'])
