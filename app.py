@@ -677,19 +677,22 @@ def send_message():
     if not name or not email or not message:
         return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
 
-    entry = {
-        'name': name,
-        'email': email,
-        'message': message,
-        'created_at': datetime.datetime.utcnow().isoformat() + 'Z'
-    }
-
     if not supabase:
         return jsonify({'success': False, 'message': 'Supabase nije konfigurisan.'}), 500
 
-    saved, error_text = save_to_supabase(entry)
-    if not saved:
-        return jsonify({'success': False, 'message': error_text or 'Greška pri spremanju poruke u Supabase.'}), 500
+    payload = {
+        'username': name,
+        'email': email,
+        'content': message
+    }
+
+    try:
+        result = supabase.from_(SUPABASE_TABLE).insert([payload]).execute()
+        error = getattr(result, 'error', None)
+        if error:
+            return jsonify({'success': False, 'message': str(error)}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
     return jsonify({'success': True, 'message': 'Poruka uspješno poslata'}), 200
 
