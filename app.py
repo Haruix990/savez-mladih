@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, redirect, send_from_directory, url_fo
 from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+import resend
 
 load_dotenv()
 
@@ -26,6 +27,12 @@ MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').strip().lower() in ('1', '
 MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'False').strip().lower() in ('1', 'true', 'yes')
 MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME or f"no-reply@{SUPABASE_URL.split('://')[-1]}").strip()
 MAIL_FROM = os.environ.get('MAIL_FROM', MAIL_DEFAULT_SENDER).strip()
+
+# Resend konfiguracija za slanje email obavještenja
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '').strip()
+MY_EMAIL = os.environ.get('MY_EMAIL', 'harunkapo@gmail.com').strip()
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
 
 app = Flask(__name__, static_folder='.', template_folder='.')
 app.config.update({
@@ -696,6 +703,36 @@ def send_message():
             return jsonify({'success': False, 'message': str(error)}), 500
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+    # Pošalji email obavještenje preko Resenda
+    if RESEND_API_KEY:
+        try:
+            # Kreiraj HTML email sa detaljima poruke
+            html_body = f"""
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <h2 style="color: #2e5e2f;">Nova poruka sa web stranice</h2>
+                <p><strong>Ime:</strong> {name}</p>
+                <p><strong>Email:</strong> {email}</p>
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                <h3>Poruka:</h3>
+                <p style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap;">
+                    {message}
+                </p>
+            </div>
+            """
+            
+            # Pošalji email
+            resend.Emails.send({
+                "from": "Kontakt Forma <onboarding@resend.dev>",
+                "to": MY_EMAIL,
+                "subject": "Nova poruka sa web stranice",
+                "html": html_body
+            })
+            print(f"Email obavještenje poslano za poruku od {name} ({email})")
+        except Exception as email_err:
+            # Ako slanje maila ne uspije, ispis u log ali nastavi normalno
+            print(f"Email slanje neuspješno: {email_err}")
+            # Ne vraćaj grešku jer je poruka već sačuvana u Supabase
 
     return jsonify({'success': True, 'message': 'Poruka je uspješno poslata!'}), 200
 
