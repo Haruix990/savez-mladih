@@ -106,18 +106,31 @@ function initContactForm(){
     }
     setContactMessage('');
 
-    const data = new FormData(form);
+    // Prikupi podatke iz forme
+    const name = form.querySelector('#name')?.value || '';
+    const email = form.querySelector('#email')?.value || '';
+    const message = form.querySelector('#message')?.value || '';
+
+    const jsonData = {
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim()
+    };
+
     const action = form.getAttribute('action') || '/send-message';
 
     try {
       const response = await fetch(action, {
         method: 'POST',
-        body: data
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jsonData)
       });
       const payload = await response.json().catch(() => ({}));
 
       if(response.ok && payload.success){
-        setContactMessage(payload.message || 'Hvala vam! Vaša poruka je uspješno primljena.', false);
+        setContactMessage(payload.message || 'Poruka je uspješno poslata!', false);
         form.reset();
       } else {
         const errorMessage = payload.message || payload.error || 'Greška pri slanju. Pokušaj ponovo.';

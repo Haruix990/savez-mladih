@@ -671,9 +671,12 @@ def api_me():
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
-    name = request.form.get('name', '').strip()
-    email = request.form.get('email', '').strip()
-    message = request.form.get('message', '').strip()
+    # Prihvati JSON podatke
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+    message = data.get('message', '').strip()
+    
     if not name or not email or not message:
         return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
 
@@ -694,7 +697,7 @@ def send_message():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-    return jsonify({'success': True, 'message': 'Poruka uspješno poslata'}), 200
+    return jsonify({'success': True, 'message': 'Poruka je uspješno poslata!'}), 200
 
 
 @app.route('/api/news', methods=['GET'])

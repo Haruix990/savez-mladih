@@ -149,6 +149,10 @@ section.extra-section{display:none !important}
 .contact-form input,.contact-form textarea{width:100%;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:inherit;transition:border-color .2s,box-shadow .2s}
 .contact-form input:focus,.contact-form textarea:focus{outline:none;border-color:rgba(185,143,59,0.7);box-shadow:0 0 0 4px rgba(185,143,59,0.08)}
 .contact-form textarea{min-height:170px;resize:vertical}
+.contact-form-message{display:none;margin-top:14px;padding:14px 16px;border-radius:12px;font-weight:600;animation:slideDown 0.3s ease-out}
+.contact-form-message.success{display:block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7}
+.contact-form-message.error{display:block;background:rgba(139,29,29,0.15);border:1px solid rgba(139,29,29,0.4);color:#fca5a5}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .form-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .form-actions .btn{min-width:160px}
 .join-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
