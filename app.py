@@ -678,11 +678,22 @@ def api_me():
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
-    # Prihvati JSON podatke
-    data = request.get_json() or {}
-    name = data.get('name', '').strip()
-    email = data.get('email', '').strip()
-    message = data.get('message', '').strip()
+    # Pokušaj prvo parsirati JSON, ali budimo tolerantni ako Content-Type nije application/json
+    try:
+        data = request.get_json(silent=True) or {}
+    except Exception:
+        data = {}
+
+    # Ako nije poslano JSON-om (npr. obična forma), fallback na form data
+    if not data:
+        try:
+            data = request.form.to_dict(flat=True) or {}
+        except Exception:
+            data = {}
+
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip()
+    message = (data.get('message') or '').strip()
     
     if not name or not email or not message:
         return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
