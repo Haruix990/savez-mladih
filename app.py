@@ -678,74 +678,77 @@ def api_me():
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
-    # Pokušaj prvo parsirati JSON, ali budimo tolerantni ako Content-Type nije application/json
-    try:
-        data = request.get_json(silent=True) or {}
-    except Exception:
-        data = {}
+    # Ako je zahtjev JSON, koristimo get_json(); inače koristimo form data
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = request.form or {}
 
-    # Ako nije poslano JSON-om (npr. obična forma), fallback na form data
-    if not data:
-        try:
-            data = request.form.to_dict(flat=True) or {}
-        except Exception:
-            data = {}
-
-    name = (data.get('name') or '').strip()
+    ime = (data.get('ime') or data.get('name') or '').strip()
     email = (data.get('email') or '').strip()
-    message = (data.get('message') or '').strip()
-    
-    if not name or not email or not message:
-        return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
+    poruka = (data.get('poruka') or data.get('message') or '').strip()
+
+    if not ime or not email or not poruka:
+        # Ako je AJAX/JSON, vratimo JSON grešku, inače redirect nazad sa statusom
+        if request.is_json:
+            return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
+        else:
+            return redirect('/#kontakt')
 
     if not supabase:
-        return jsonify({'success': False, 'message': 'Supabase nije konfigurisan.'}), 500
+        if request.is_json:
+            return jsonify({'success': False, 'message': 'Supabase nije konfigurisan.'}), 500
+        else:
+            return redirect('/#kontakt')
 
     payload = {
-        'username': name,
+        'username': ime,
         'email': email,
-        'content': message
+        'content': poruka
     }
 
     try:
         result = supabase.from_(SUPABASE_TABLE).insert([payload]).execute()
         error = getattr(result, 'error', None)
         if error:
-            return jsonify({'success': False, 'message': str(error)}), 500
+            if request.is_json:
+                return jsonify({'success': False, 'message': str(error)}), 500
+            else:
+                return redirect('/#kontakt')
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        if request.is_json:
+            return jsonify({'success': False, 'message': str(e)}), 500
+        else:
+            return redirect('/#kontakt')
 
-    # Pošalji email obavještenje preko Resenda
+    # Pošalji email obavještenje preko Resenda (ne blokiramo korisnika ako ne uspije)
     if RESEND_API_KEY:
         try:
-            # Kreiraj HTML email sa detaljima poruke
             html_body = f"""
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
                 <h2 style="color: #2e5e2f;">Nova poruka sa web stranice</h2>
-                <p><strong>Ime:</strong> {name}</p>
+                <p><strong>Ime:</strong> {ime}</p>
                 <p><strong>Email:</strong> {email}</p>
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
                 <h3>Poruka:</h3>
-                <p style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap;">
-                    {message}
-                </p>
+                <p style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap;">{poruka}</p>
             </div>
             """
-            
-            # Pošalji email
             resend.Emails.send({
                 "from": "Kontakt Forma <onboarding@resend.dev>",
                 "to": MY_EMAIL,
                 "subject": "Nova poruka sa web stranice",
                 "html": html_body
             })
-            print(f"Email obavještenje poslano za poruku od {name} ({email})")
+            print(f"Email obavještenje poslano za poruku od {ime} ({email})")
         except Exception as email_err:
-            # Ako slanje maila ne uspije, ispis u log ali nastavi normalno
             print(f"Email slanje neuspješno: {email_err}")
-            # Ne vraćaj grešku jer je poruka već sačuvana u Supabase
 
-    return jsonify({'success': True, 'message': 'Poruka je uspješno poslata!'}), 200
+    # Ako je JSON/AJAX, vrati JSON; ako je klasična forma, redirect nazad na kontakt sekciju
+    if request.is_json:
+        return jsonify({'success': True, 'message': 'Poruka je uspješno poslata!'}), 200
+    else:
+        return redirect('/#kontakt')
 
 
 @app.route('/api/news', methods=['GET'])
