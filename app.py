@@ -735,7 +735,7 @@ def send_message():
             </div>
             """
             resend.Emails.send({
-                "from": "Kontakt Forma <onboarding@resend.dev>",
+                "from": "Savez Mladih <onboarding@resend.dev>",
                 "to": MY_EMAIL,
                 "subject": "Nova poruka sa web stranice",
                 "html": html_body

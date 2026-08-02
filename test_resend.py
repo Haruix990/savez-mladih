@@ -10,7 +10,7 @@ if RESEND_API_KEY:
 
 try:
     r = resend.Emails.send({
-        'from': 'Kontakt Forma <onboarding@resend.dev>',
+        'from': 'Savez Mladih <onboarding@resend.dev>',
         'to': MY_EMAIL,
         'subject': 'Testni email iz test_resend.py',
         'html': '<p>Ovo je testni email poslan iz test_resend.py</p>'
