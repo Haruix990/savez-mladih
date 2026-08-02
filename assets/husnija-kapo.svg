@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" role="img" aria-labelledby="title desc">
+  <title>Husnija Kapo</title>
+  <desc>Stylizirana slika komandanta Husnije Kapoa za tim sekciju</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111"/>
+      <stop offset="100%" stop-color="#1f371f"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d2b56d"/>
+      <stop offset="100%" stop-color="#a47d27"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="520" rx="32" ry="32" fill="url(#bg)"/>
+  <circle cx="360" cy="175" r="110" fill="#2e5e2f" stroke="#92b37b" stroke-width="20"/>
+  <path d="M280 360c0-54 80-54 80-108s-80-54-80 0 80 54 80 108h160c0-54 80-54 80-108s-80-54-80 0 80 54 80 108" fill="#20341c" opacity="0.9"/>
+  <circle cx="320" cy="150" r="16" fill="#f8e8b7" opacity="0.8"/>
+  <path d="M270 205c-20 40 60 40 70 0" stroke="#f8e8b7" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <path d="M400 200c20 40-60 40-70 0" stroke="#f8e8b7" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <path d="M310 260c10 25 40 25 50 0" stroke="#f8e8b7" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <path d="M240 320c-20-30-18-80 20-70 12 4 16 26 34 30 18 4 36-12 52-20 24-12 58-4 74 20 18 28 22 54 4 74-26 30-92 42-148 16-22-10-35-26-36-50z" fill="#354b2b" opacity="0.85"/>
+  <circle cx="360" cy="264" r="42" fill="#a8d09d" opacity="0.45"/>
+  <rect x="240" y="28" width="240" height="72" rx="18" ry="18" fill="url(#badge)"/>
+  <text x="360" y="76" fill="#08100b" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="800" text-anchor="middle" dominant-baseline="middle">ZB</text>
+  <rect x="60" y="400" width="600" height="88" rx="18" ry="18" fill="rgba(255,255,255,0.07)"/>
+  <text x="360" y="438" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle">Husnija Kapo</text>
+  <text x="360" y="472" fill="#d1c287" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="600" text-anchor="middle">Komandant</text>
+</svg>
