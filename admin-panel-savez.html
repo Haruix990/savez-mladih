@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin panel - Savez Mladih</title>
+    <style>
+      :root {
+        --bg: #050805;
+        --bg-soft: #0d170f;
+        --surface: #0f1a12;
+        --surface-2: #142417;
+        --panel: rgba(18, 29, 21, 0.85);
+        --panel-alt: rgba(30, 49, 34, 0.75);
+        --primary: #2e5e2f;
+        --primary-strong: #235225;
+        --accent-gold: #b98f3b;
+        --secondary: #cfe8b9;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #edf5eb;
+        --muted: #b4c1b0;
+        --danger: #ff7070;
+        --shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background:
+          radial-gradient(ellipse at 20% 10%, rgba(46,94,47,0.12) 0%, transparent 18%),
+          linear-gradient(180deg, #020202 0%, #08100b 50%, #020202 100%);
+        color: var(--text);
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 18px;
+      }
+
+      .admin-shell {
+        width: min(980px, 100%);
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        border-radius: 24px;
+        backdrop-filter: blur(8px);
+        overflow: hidden;
+      }
+
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 28px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(46,94,47,0.12), rgba(0,0,0,0.1));
+      }
+
+      .admin-header h1 {
+        font-size: clamp(1.2rem, 2vw, 1.7rem);
+        margin: 0;
+        letter-spacing: 0.4px;
+      }
+
+      .logout-btn,
+      .btn-primary,
+      .btn-secondary {
+        border: 0;
+        border-radius: 12px;
+        padding: 0.8rem 1.15rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+
+      .logout-btn,
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .btn-primary {
+        background: linear-gradient(180deg, var(--primary), var(--primary-strong));
+        color: #edf5eb;
+        border: 1px solid rgba(0,0,0,0.25);
+        box-shadow: 0 12px 28px rgba(35,82,37,0.2);
+      }
+
+      .logout-btn:hover,
+      .btn-primary:hover,
+      .btn-secondary:hover {
+        transform: translateY(-1px);
+      }
+
+      .panel {
+        display: none;
+        padding: 30px 28px 34px;
+      }
+
+      .panel.active {
+        display: block;
+      }
+
+      .login-wrap {
+        padding: 28px;
+      }
+
+      .login-card {
+        max-width: 460px;
+        margin: 20px auto;
+        background: linear-gradient(180deg, rgba(20,30,18,0.92), rgba(5,9,7,0.96));
+        border: 1px solid rgba(185,143,59,0.18);
+        border-radius: 22px;
+        padding: 26px 22px 22px;
+        box-shadow: 0 24px 56px rgba(0,0,0,0.2);
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--accent-gold);
+        font-size: 0.76rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .login-card h2 {
+        margin: 0 0 8px;
+        font-size: clamp(1.5rem, 2vw, 2rem);
+      }
+
+      .login-card p {
+        margin: 0 0 22px;
+        color: var(--muted);
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      label {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      input, textarea {
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(10, 16, 12, 0.72);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        font: inherit;
+      }
+
+      input:focus, textarea:focus {
+        outline: 2px solid rgba(46,94,47,0.35);
+        border-color: rgba(46,94,47,0.45);
+      }
+
+      textarea {
+        min-height: 130px;
+        resize: vertical;
+      }
+
+      .status {
+        min-height: 24px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .status.error {
+        color: #ffb3b3;
+      }
+
+      .status.success {
+        color: #c9ffd9;
+      }
+
+      .dashboard-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .dashboard-top h2 {
+        margin: 0;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 22px;
+      }
+
+      .card {
+        background: linear-gradient(180deg, rgba(25,38,29,0.82), rgba(10,14,11,0.76));
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      }
+
+      .card h3 {
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+
+      .meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: var(--muted);
+      }
+
+      .tiny-note {
+        color: var(--muted);
+        font-size: 0.8rem;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 760px) {
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-shell">
+      <header class="admin-header">
+        <h1>Admin panel - Savez Mladih</h1>
+        <button id="logoutButton" class="logout-btn" type="button" hidden>Odjavi se</button>
+      </header>
+
+      <section id="loginPanel" class="panel active login-wrap" aria-live="polite">
+        <div class="login-card">
+          <p class="eyebrow">Pristup admin area</p>
+          <h2>Prijava</h2>
+          <p>Unesite email i lozinku za pristup objavljivanju vijesti.</p>
+
+          <form id="loginForm">
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" value="zeleneberetke.savezmladihsg@gmail.com" placeholder="admin@example.com" autocomplete="email" required />
+            </div>
+
+            <div class="field">
+              <label for="password">Lozinka</label>
+              <input id="password" name="password" type="password" value="Savezmladih2026" placeholder="••••••••" autocomplete="current-password" required />
+            </div>
+
+            <button class="btn-primary" type="submit">Prijavi se</button>
+            <div id="loginStatus" class="status" aria-live="polite"></div>
+          </form>
+        </div>
+      </section>
+
+      <section id="dashboardPanel" class="panel" aria-live="polite">
+        <div class="dashboard-top">
+          <h2>Objavi novu vijest</h2>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>Forma za vijest</h3>
+            <form id="newsForm">
+              <div class="field">
+                <label for="title">Naslov vijesti</label>
+                <input id="title" name="title" type="text" placeholder="Npr. Obilježavanje Dana Republike" required />
+              </div>
+
+              <div class="field">
+                <label for="imageUrl">URL naslovne slike</label>
+                <input id="imageUrl" name="imageUrl" type="url" placeholder="https://example.com/slika.jpg" required />
+              </div>
+
+              <div class="field">
+                <label for="content">Kratak opis / Sadržaj</label>
+                <textarea id="content" name="content" placeholder="Unesite sadržaj vijesti..." required></textarea>
+              </div>
+
+              <div class="field">
+                <label for="publishedAt">Datum objave</label>
+                <input id="publishedAt" name="publishedAt" type="date" required />
+              </div>
+
+              <button class="btn-primary" type="submit">Objavi vijest</button>
+              <div id="newsStatus" class="status" aria-live="polite"></div>
+            </form>
+          </div>
+
+          <aside class="card">
+            <h3>Sigurnost</h3>
+            <div class="meta"><span>Prijavljeni korisnik</span><strong id="adminEmail">-</strong></div>
+            <p class="tiny-note">Ova stranica je namijenjena samo za administratore i ne prikazuje se u glavnoj navigaciji sajta.</p>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const SUPABASE_URL = window.SUPABASE_PUBLIC_CONFIG?.url || 'PASTE_YOUR_SUPABASE_URL';
+      const SUPABASE_ANON_KEY = window.SUPABASE_PUBLIC_CONFIG?.anonKey || 'PASTE_YOUR_SUPABASE_ANON_KEY';
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      });
+
+      const loginPanel = document.getElementById('loginPanel');
+      const dashboardPanel = document.getElementById('dashboardPanel');
+      const loginForm = document.getElementById('loginForm');
+      const loginStatus = document.getElementById('loginStatus');
+      const newsForm = document.getElementById('newsForm');
+      const newsStatus = document.getElementById('newsStatus');
+      const logoutButton = document.getElementById('logoutButton');
+      const adminEmail = document.getElementById('adminEmail');
+
+      function setStatus(element, message, type) {
+        element.textContent = message || '';
+        element.classList.remove('success', 'error');
+        if (type) {
+          element.classList.add(type);
+        }
+      }
+
+      function renderAuthState(session) {
+        const isLoggedIn = Boolean(session?.user);
+
+        loginPanel.classList.toggle('active', !isLoggedIn);
+        dashboardPanel.classList.toggle('active', isLoggedIn);
+        logoutButton.hidden = !isLoggedIn;
+
+        if (isLoggedIn) {
+          adminEmail.textContent = session.user.email || 'Admin';
+        } else {
+          adminEmail.textContent = '-';
+        }
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+        const formData = new FormData(loginForm);
+        const email = (formData.get('email') || '').toString().trim();
+        const password = (formData.get('password') || '').toString();
+
+        if (!email || !password) {
+          setStatus(loginStatus, 'Unesite email i lozinku.', 'error');
+          return;
+        }
+
+        try {
+          setStatus(loginStatus, 'Prijava u toku...', '');
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+          if (error) {
+            throw error;
+          }
+
+          if (data?.user) {
+            setStatus(loginStatus, 'Uspješno ste prijavljeni.', 'success');
+            renderAuthState(data);
+            loginForm.reset();
+          }
+        } catch (error) {
+          setStatus(loginStatus, error?.message || 'Neuspješna prijava.', 'error');
+        }
+      }
+
+      async function handleLogout() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) {
+            throw error;
+          }
+          renderAuthState(null);
+          loginForm.reset();
+          setStatus(loginStatus, 'Uspješno ste odjavljeni.', 'success');
+        } catch (error) {
+          setStatus(loginStatus, error?.message || 'Odjava nije uspjela.', 'error');
+        }
+      }
+
+      async function handleNewsSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(newsForm);
+        const title = (formData.get('title') || '').toString().trim();
+        const imageUrl = (formData.get('imageUrl') || '').toString().trim();
+        const content = (formData.get('content') || '').toString().trim();
+        const publishedAt = (formData.get('publishedAt') || '').toString();
+
+        if (!title || !imageUrl || !content || !publishedAt) {
+          setStatus(newsStatus, 'Popunite sva polja za vijest.', 'error');
+          return;
+        }
+
+        try {
+          setStatus(newsStatus, 'Objava vijesti u toku...', '');
+
+          const payload = {
+            title,
+            image_url: imageUrl,
+            content,
+            published_at: publishedAt,
+            created_at: new Date().toISOString(),
+          };
+
+          const { data, error } = await supabase
+            .from('vijesti')
+            .insert([payload])
+            .select();
+
+          if (error) {
+            throw error;
+          }
+
+          newsForm.reset();
+          setStatus(newsStatus, 'Vijest je uspješno objavljena.', 'success');
+          if (data && data[0]) {
+            console.log('Vijest je dodana:', data[0]);
+          }
+        } catch (error) {
+          setStatus(newsStatus, error?.message || 'Došlo je do greške pri objavljivanju vijesti.', 'error');
+        }
+      }
+
+      loginForm.addEventListener('submit', handleLogin);
+      newsForm.addEventListener('submit', handleNewsSubmit);
+      logoutButton.addEventListener('click', handleLogout);
+
+      async function initSession() {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) {
+            throw error;
+          }
+          renderAuthState(session);
+        } catch (error) {
+          console.error('Session error:', error);
+          renderAuthState(null);
+        }
+      }
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        renderAuthState(session);
+        if (event === 'SIGNED_OUT') {
+          setStatus(loginStatus, 'Odjavljeni ste.', 'success');
+        }
+      });
+
+      initSession();
+    </script>
+  </body>
+</html>
