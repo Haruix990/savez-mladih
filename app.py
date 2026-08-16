@@ -280,7 +280,21 @@ def save_to_supabase(entry):
 
 @app.route('/')
 def index():
+    host = request.host.lower()
+    site_name = (os.environ.get('WEBSITE_SITE_NAME') or '').lower()
+    if 'savez-mladih-admin' in host or 'savez-mladih-admin' in site_name:
+        return app.send_static_file('admin-panel-savez.html')
     return app.send_static_file('index.html')
+
+
+@app.route('/admin-panel-savez.html')
+def admin_panel_savez_html():
+    return app.send_static_file('admin-panel-savez.html')
+
+
+@app.route('/admin')
+def admin_panel_route():
+    return app.send_static_file('admin-panel-savez.html')
 
 
 def get_client_ip():
@@ -290,15 +304,6 @@ def get_client_ip():
         # take the first IP in the chain
         return forwarded.split(',')[0].strip()
     return request.remote_addr or ''
-
-
-@app.route('/admin')
-def admin():
-    allowed_ip = '77.238.220.113'
-    client_ip = get_client_ip()
-    if client_ip == allowed_ip:
-        return app.send_static_file('admin.html')
-    return redirect(url_for('index'))
 
 
 def save_news_to_supabase(entry):
