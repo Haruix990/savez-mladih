@@ -3,24 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin panel - Savez Mladih</title>
+    <title>Vijesti i aktivnosti</title>
     <style>
       :root {
-        --bg: #050805;
-        --bg-soft: #0d170f;
-        --surface: #0f1a12;
-        --surface-2: #142417;
-        --panel: rgba(18, 29, 21, 0.85);
-        --panel-alt: rgba(30, 49, 34, 0.75);
+        --bg: #030606;
+        --bg-2: #0a1110;
+        --panel: #0f1715;
+        --panel-strong: #121d1a;
+        --panel-soft: rgba(255,255,255,0.03);
         --primary: #2e5e2f;
-        --primary-strong: #235225;
-        --accent-gold: #b98f3b;
-        --secondary: #cfe8b9;
-        --border: rgba(255, 255, 255, 0.08);
-        --text: #edf5eb;
-        --muted: #b4c1b0;
-        --danger: #ff7070;
-        --shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+        --primary-soft: rgba(46,94,47,0.18);
+        --gold: #b98f3b;
+        --text: #edf3ee;
+        --muted: #a8b5ad;
+        --soft-line: rgba(255,255,255,0.08);
+        --green: #40b96a;
+        --green-soft: rgba(64,185,106,0.18);
+        --danger: #ff8d8d;
+        --toast-bg: rgba(0,0,0,0.85);
+        --shadow: 0 20px 50px rgba(0,0,0,0.42);
       }
 
       * { box-sizing: border-box; }
@@ -28,119 +29,81 @@
       html, body {
         margin: 0;
         min-height: 100%;
-        font-family: Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background:
-          radial-gradient(ellipse at 20% 10%, rgba(46,94,47,0.12) 0%, transparent 18%),
-          linear-gradient(180deg, #020202 0%, #08100b 50%, #020202 100%);
+        font-family: Inter, "Segoe UI", Tahoma, sans-serif;
+        background: #040606;
         color: var(--text);
       }
 
       body {
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 32px 18px;
+        padding: 34px 18px 52px;
+        background:
+          radial-gradient(1200px 400px at 50% 0%, rgba(42, 75, 49, 0.18), transparent 50%),
+          linear-gradient(180deg, #020303 0%, #050807 100%);
       }
 
-      .admin-shell {
-        width: min(980px, 100%);
-        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2));
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow);
-        border-radius: 24px;
-        backdrop-filter: blur(8px);
-        overflow: hidden;
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
       }
 
-      .admin-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 22px 28px;
-        border-bottom: 1px solid var(--border);
-        background: linear-gradient(180deg, rgba(46,94,47,0.12), rgba(0,0,0,0.1));
+      .page-header {
+        margin-bottom: 26px;
       }
 
-      .admin-header h1 {
-        font-size: clamp(1.2rem, 2vw, 1.7rem);
+      .page-header h1 {
         margin: 0;
-        letter-spacing: 0.4px;
+        font-size: clamp(2rem, 2.4vw, 3rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
       }
 
-      .logout-btn,
-      .btn-primary,
-      .btn-secondary {
-        border: 0;
-        border-radius: 12px;
-        padding: 0.8rem 1.15rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: transform 0.2s ease, opacity 0.2s ease;
+      .page-header p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 1.05rem;
       }
 
-      .logout-btn,
-      .btn-secondary {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text);
-        border: 1px solid rgba(255,255,255,0.08);
-      }
-
-      .btn-primary {
-        background: linear-gradient(180deg, var(--primary), var(--primary-strong));
-        color: #edf5eb;
-        border: 1px solid rgba(0,0,0,0.25);
-        box-shadow: 0 12px 28px rgba(35,82,37,0.2);
-      }
-
-      .logout-btn:hover,
-      .btn-primary:hover,
-      .btn-secondary:hover {
-        transform: translateY(-1px);
-      }
-
-      .panel {
-        display: none;
-        padding: 30px 28px 34px;
-      }
-
-      .panel.active {
+      #login-card {
         display: block;
+        width: min(460px, 100%);
+        margin: 30px auto 0;
+        background: linear-gradient(180deg, rgba(16,23,22,0.96), rgba(7,11,10,0.96));
+        border: 1px solid var(--soft-line);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 28px 22px;
       }
 
-      .login-wrap {
-        padding: 28px;
+      #login-card.hidden,
+      #admin-content.hidden {
+        display: none;
       }
 
-      .login-card {
-        max-width: 460px;
-        margin: 20px auto;
-        background: linear-gradient(180deg, rgba(20,30,18,0.92), rgba(5,9,7,0.96));
-        border: 1px solid rgba(185,143,59,0.18);
-        border-radius: 22px;
-        padding: 26px 22px 22px;
-        box-shadow: 0 24px 56px rgba(0,0,0,0.2);
-      }
-
-      .eyebrow {
-        margin: 0 0 12px;
-        color: var(--accent-gold);
-        font-size: 0.76rem;
-        letter-spacing: 0.14em;
+      .login-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(185,143,59,0.12);
+        border: 1px solid rgba(185,143,59,0.2);
+        color: var(--gold);
         text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 14px;
       }
 
       .login-card h2 {
         margin: 0 0 8px;
-        font-size: clamp(1.5rem, 2vw, 2rem);
+        font-size: 2rem;
       }
 
-      .login-card p {
-        margin: 0 0 22px;
+      .login-card .login-sub {
+        margin: 0 0 20px;
         color: var(--muted);
       }
 
-      form {
+      .login-form {
         display: grid;
         gap: 16px;
       }
@@ -151,225 +114,905 @@
       }
 
       label {
-        font-size: 0.9rem;
         color: var(--muted);
+        font-size: 0.9rem;
       }
 
       input, textarea {
         width: 100%;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(10, 16, 12, 0.72);
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--soft-line);
+        border-radius: 10px;
         color: var(--text);
-        border-radius: 12px;
-        padding: 0.9rem 1rem;
+        padding: 0.85rem 0.9rem;
         font: inherit;
       }
 
       input:focus, textarea:focus {
-        outline: 2px solid rgba(46,94,47,0.35);
-        border-color: rgba(46,94,47,0.45);
+        outline: none;
+        border-color: rgba(64,185,106,0.6);
+        box-shadow: 0 0 0 3px rgba(64,185,106,0.08);
       }
 
       textarea {
-        min-height: 130px;
+        min-height: 140px;
         resize: vertical;
       }
 
-      .status {
-        min-height: 24px;
+      .btn-primary {
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(180deg, var(--primary), var(--primary));
+        color: var(--text);
+        padding: 0.85rem 1rem;
+        font-size: 0.98rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn-primary:hover {
+        filter: brightness(1.05);
+      }
+
+      .form-status {
+        min-height: 22px;
         font-size: 0.9rem;
-        line-height: 1.4;
       }
 
-      .status.error {
-        color: #ffb3b3;
+      .form-status.error {
+        color: var(--danger);
       }
 
-      .status.success {
-        color: #c9ffd9;
+      .form-status.success {
+        color: #bceec7;
       }
 
-      .dashboard-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 20px;
+      #admin-content {
+        display: block;
       }
 
-      .dashboard-top h2 {
-        margin: 0;
-      }
-
-      .dashboard-grid {
+      .admin-grid {
         display: grid;
-        grid-template-columns: 1.3fr 0.7fr;
+        grid-template-columns: 1fr 1.1fr;
         gap: 22px;
       }
 
-      .card {
-        background: linear-gradient(180deg, rgba(25,38,29,0.82), rgba(10,14,11,0.76));
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 20px;
-        padding: 18px;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      .panel {
+        background: linear-gradient(180deg, rgba(15,23,21,0.96), rgba(10,14,13,0.96));
+        border: 1px solid var(--soft-line);
+        border-radius: 18px;
+        padding: 18px 18px 20px;
+        box-shadow: var(--shadow);
       }
 
-      .card h3 {
-        margin-top: 0;
-        margin-bottom: 16px;
-      }
-
-      .meta {
+      .panel-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .panel-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .panel-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--soft-line);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logout-btn {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--soft-line);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 0.7rem 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .admin-form {
+        display: grid;
+        gap: 14px;
+      }
+
+      .field-group {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field-group label {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .field-group input,
+      .field-group textarea {
+        background: rgba(255,255,255,0.02);
+      }
+
+      .field-group textarea {
+        min-height: 130px;
+      }
+
+      .featured-toggle {
+        margin-top: 2px;
+      }
+
+      .featured-toggle label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 0.8rem 0.9rem;
+        border-radius: 12px;
+        border: 1px solid rgba(185,143,59,0.28);
+        background: linear-gradient(180deg, rgba(185,143,59,0.08), rgba(185,143,59,0.02));
+        color: #f1d99d;
+        font-weight: 700;
+      }
+
+      .featured-toggle input {
+        width: 18px;
+        height: 18px;
+        accent-color: #d7a33b;
+        margin: 0;
+      }
+
+      .file-upload-wrap {
+        display: grid;
+        gap: 10px;
+      }
+
+      .file-upload-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .file-input-hidden {
+        display: none;
+      }
+
+      .file-pick-btn {
+        border: 1px solid var(--soft-line);
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .file-name {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .category-group {
+        display: grid;
+        gap: 10px;
+      }
+
+      .category-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .category-btn,
+      .filter-btn {
+        border: 1px solid var(--soft-line);
+        background: rgba(255,255,255,0.02);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 9px 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .category-btn.active,
+      .filter-btn.active {
+        background: linear-gradient(180deg, rgba(46,94,47,0.32), rgba(46,94,47,0.18));
+        border-color: rgba(64,185,106,0.4);
+        color: var(--text);
+      }
+
+      .category-btn.active {
+        box-shadow: 0 8px 18px rgba(64,185,106,0.12);
+      }
+
+      .publish-btn,
+      .secondary-btn,
+      .danger-btn,
+      .action-btn,
+      .preview-btn,
+      .modal-close-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 0.72rem 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+      }
+
+      .publish-btn {
+        flex: 1;
+        background: linear-gradient(180deg, #2ca75a, #2a8d52);
+        color: #dffbe9;
+        box-shadow: 0 6px 18px rgba(64,185,106,0.18);
+      }
+
+      .preview-btn {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--soft-line);
+        color: var(--text);
+      }
+
+      .publish-btn:disabled,
+      .secondary-btn:disabled,
+      .danger-btn:disabled,
+      .action-btn:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+
+      .secondary-btn {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--soft-line);
+        color: var(--text);
+      }
+
+      .danger-btn {
+        background: rgba(255,141,141,0.08);
+        border: 1px solid rgba(255,141,141,0.2);
+        color: #ffd4d4;
+      }
+
+      .action-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+
+      .action-btn {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--soft-line);
+        color: var(--text);
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+      }
+
+      .featured-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(180deg, rgba(185,143,59,0.18), rgba(185,143,59,0.1));
+        color: #f7d67a;
+        border: 1px solid rgba(185,143,59,0.35);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .search-wrap {
+        margin-bottom: 16px;
+      }
+
+      .search-input {
+        width: 100%;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--soft-line);
+        border-radius: 10px;
+        color: var(--text);
+        padding: 0.8rem 0.9rem;
+        font: inherit;
+      }
+
+      .news-panel .panel-header {
         margin-bottom: 12px;
+      }
+
+      .news-title {
+        margin: 0;
+        font-size: clamp(1.5rem, 2vw, 2rem);
+      }
+
+      .news-subtitle {
+        margin: 8px 0 18px;
         color: var(--muted);
       }
 
-      .tiny-note {
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .empty-state {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--soft-line);
+        border-radius: 12px;
+        padding: 18px 16px;
+        color: var(--muted);
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      .news-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .news-item {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--soft-line);
+        border-radius: 12px;
+        padding: 14px 14px 12px;
+      }
+
+      .news-item-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .news-category {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--soft-line);
+      }
+
+      .news-item h4 {
+        margin: 0 0 6px;
+        font-size: 1.1rem;
+      }
+
+      .news-meta {
         color: var(--muted);
         font-size: 0.8rem;
+      }
+
+      .news-item p {
+        margin: 8px 0 0;
+        color: var(--muted);
         line-height: 1.6;
       }
 
-      @media (max-width: 760px) {
-        .dashboard-grid {
+      .news-item img {
+        width: 100%;
+        max-height: 190px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-top: 12px;
+        border: 1px solid var(--soft-line);
+      }
+
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        background: var(--toast-bg);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: #ffdada;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(8px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: 50;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .preview-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 100;
+      }
+
+      .preview-modal.show {
+        display: flex;
+      }
+
+      .preview-dialog {
+        width: min(540px, 100%);
+        background: linear-gradient(180deg, rgba(15,23,21,0.98), rgba(7,10,9,0.98));
+        border: 1px solid var(--soft-line);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 18px 12px;
+        border-bottom: 1px solid var(--soft-line);
+      }
+
+      .preview-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .modal-close-btn {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--soft-line);
+        color: var(--text);
+      }
+
+      .preview-content {
+        padding: 18px;
+      }
+
+      .preview-card {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--soft-line);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .preview-card .news-item-head {
+        margin-bottom: 12px;
+      }
+
+      .preview-card h4 {
+        margin: 0 0 8px;
+        font-size: 1.25rem;
+      }
+
+      .preview-card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .preview-card img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-top: 14px;
+      }
+
+      @media (max-width: 900px) {
+        .admin-grid {
           grid-template-columns: 1fr;
         }
 
-        .admin-header {
+        .button-row {
           flex-direction: column;
-          align-items: flex-start;
-          gap: 10px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="admin-shell">
-      <header class="admin-header">
-        <h1>Admin panel - Savez Mladih</h1>
-        <button id="logoutButton" class="logout-btn" type="button" hidden>Odjavi se</button>
+    <div class="page">
+      <header class="page-header">
+        <h1>Vijesti i aktivnosti</h1>
+        <p>Pratite najnovije akcije, izvještaje sa terena i objave povezane sa radom Saveza.</p>
       </header>
 
-      <section id="loginPanel" class="panel active login-wrap" aria-live="polite">
-        <div class="login-card">
-          <p class="eyebrow">Pristup admin area</p>
-          <h2>Prijava</h2>
-          <p>Unesite email i lozinku za pristup objavljivanju vijesti.</p>
+      <div id="login-card">
+        <div class="login-badge">Pristup admin area</div>
+        <h2>Prijava</h2>
+        <p class="login-sub">Unesite email i lozinku za pristup admin panelu.</p>
 
-          <form id="loginForm">
-            <div class="field">
-              <label for="email">Email</label>
-              <input id="email" name="email" type="email" value="zeleneberetke.savezmladihsg@gmail.com" placeholder="admin@example.com" autocomplete="email" required />
-            </div>
-
-            <div class="field">
-              <label for="password">Lozinka</label>
-              <input id="password" name="password" type="password" value="Savezmladih2026" placeholder="••••••••" autocomplete="current-password" required />
-            </div>
-
-            <button class="btn-primary" type="submit">Prijavi se</button>
-            <div id="loginStatus" class="status" aria-live="polite"></div>
-          </form>
-        </div>
-      </section>
-
-      <section id="dashboardPanel" class="panel" aria-live="polite">
-        <div class="dashboard-top">
-          <h2>Objavi novu vijest</h2>
-        </div>
-
-        <div class="dashboard-grid">
-          <div class="card">
-            <h3>Forma za vijest</h3>
-            <form id="newsForm">
-              <div class="field">
-                <label for="title">Naslov vijesti</label>
-                <input id="title" name="title" type="text" placeholder="Npr. Obilježavanje Dana Republike" required />
-              </div>
-
-              <div class="field">
-                <label for="imageUrl">URL naslovne slike</label>
-                <input id="imageUrl" name="imageUrl" type="url" placeholder="https://example.com/slika.jpg" required />
-              </div>
-
-              <div class="field">
-                <label for="content">Kratak opis / Sadržaj</label>
-                <textarea id="content" name="content" placeholder="Unesite sadržaj vijesti..." required></textarea>
-              </div>
-
-              <div class="field">
-                <label for="publishedAt">Datum objave</label>
-                <input id="publishedAt" name="publishedAt" type="date" required />
-              </div>
-
-              <button class="btn-primary" type="submit">Objavi vijest</button>
-              <div id="newsStatus" class="status" aria-live="polite"></div>
-            </form>
+        <form id="loginForm" class="login-form">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="zeleneberetke.savezmladihsg@gmail.com" required />
           </div>
 
-          <aside class="card">
-            <h3>Sigurnost</h3>
-            <div class="meta"><span>Prijavljeni korisnik</span><strong id="adminEmail">-</strong></div>
-            <p class="tiny-note">Ova stranica je namijenjena samo za administratore i ne prikazuje se u glavnoj navigaciji sajta.</p>
-          </aside>
+          <div class="field">
+            <label for="password">Lozinka</label>
+            <input id="password" name="password" type="password" value="Savezmladih2026" required />
+          </div>
+
+          <button class="btn-primary" type="submit">Prijavi se</button>
+          <div id="loginStatus" class="form-status" aria-live="polite"></div>
+        </form>
+      </div>
+
+      <main id="admin-content" class="hidden">
+        <div class="admin-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div class="panel-label">ADMIN PANEL</div>
+              <div class="header-actions">
+                <span class="panel-badge">Brzo i sigurno</span>
+                <button id="logoutButton" type="button" class="logout-btn">Odjavi se</button>
+              </div>
+            </div>
+
+            <form id="newsForm" class="admin-form">
+              <div class="field-group">
+                <label for="naslov">Naslov</label>
+                <input id="naslov" type="text" placeholder="Unesite naslov vijesti" required />
+              </div>
+
+              <div class="field-group">
+                <label for="sadrzaj">Tekst</label>
+                <textarea id="sadrzaj" placeholder="Napišite tekst vijesti..." required></textarea>
+              </div>
+
+              <div class="field-group">
+                <label for="slika_url">URL Slike</label>
+                <input id="slika_url" type="text" placeholder="https://example.com/slika.jpg" />
+              </div>
+
+              <div class="field-group">
+                <label for="slika-input">Slika sa računara</label>
+                <div class="file-upload-wrap">
+                  <div class="file-upload-row">
+                    <input id="slika-input" class="file-input-hidden" type="file" accept="image/*" />
+                    <button id="slika-pick-btn" type="button" class="file-pick-btn">Odaberi datoteku</button>
+                  </div>
+                  <div id="slika-file-name" class="file-name">Nijedna datoteka nije odabrana</div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label>Kategorija</label>
+                <div class="category-grid" id="categoryGrid">
+                  <button type="button" class="category-btn active" data-category="obavjestenje">📌 Obavještenje</button>
+                  <button type="button" class="category-btn" data-category="humanitarna">🤝 Humanitarna akcija</button>
+                  <button type="button" class="category-btn" data-category="aktivnosti">⚽ Aktivnosti i Sport</button>
+                  <button type="button" class="category-btn" data-category="historija">📜 Historija</button>
+                </div>
+              </div>
+
+              <div class="field-group featured-toggle">
+                <label for="is-featured">
+                  <input id="is-featured" type="checkbox" />
+                  <span>Označi kao istaknutu (Udarna vijest)</span>
+                </label>
+              </div>
+
+              <div class="button-row">
+                <button id="submitButton" class="publish-btn" type="submit">Objavi vijest</button>
+                <button id="previewButton" type="button" class="preview-btn">Pregledaj</button>
+              </div>
+              <button id="cancelEditButton" type="button" class="secondary-btn" style="display:none; margin-top: 8px;">Odustani</button>
+              <div id="newsStatus" class="form-status" aria-live="polite"></div>
+            </form>
+          </section>
+
+          <section class="panel news-panel">
+            <div class="panel-header">
+              <div class="panel-label">NAJNOVIJE</div>
+              <span class="panel-badge">Aktualno</span>
+            </div>
+
+            <h2 class="news-title">Prostor za vijesti</h2>
+            <p class="news-subtitle">Objave će se ovdje prikazivati kao najnovije i važno.</p>
+
+            <div class="search-wrap">
+              <input id="searchInput" class="search-input" type="search" placeholder="Pretraži vijesti po naslovu..." />
+            </div>
+
+            <div class="filters" id="filterBar">
+              <button type="button" class="filter-btn active" data-filter="sve">Sve</button>
+              <button type="button" class="filter-btn" data-filter="obavjestenje">📌 Obavještenje</button>
+              <button type="button" class="filter-btn" data-filter="humanitarna">🤝 Humanitarna akcija</button>
+              <button type="button" class="filter-btn" data-filter="aktivnosti">⚽ Aktivnosti i Sport</button>
+              <button type="button" class="filter-btn" data-filter="historija">📜 Historija</button>
+            </div>
+
+            <div id="newsList" class="news-list"></div>
+          </section>
         </div>
-      </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">Neuspješan unos vijesti.</div>
+
+    <div id="previewModal" class="preview-modal" aria-hidden="true">
+      <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+        <div class="preview-header">
+          <h3 id="previewTitle">Pregled vijesti</h3>
+          <button id="closePreviewButton" type="button" class="modal-close-btn">Zatvori</button>
+        </div>
+        <div class="preview-content">
+          <div id="previewCard" class="preview-card"></div>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      const SUPABASE_URL = window.SUPABASE_PUBLIC_CONFIG?.url || 'PASTE_YOUR_SUPABASE_URL';
-      const SUPABASE_ANON_KEY = window.SUPABASE_PUBLIC_CONFIG?.anonKey || 'PASTE_YOUR_SUPABASE_ANON_KEY';
+      const supabaseUrl = 'https://enxvnjwdrpvlmywqtqwl.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVueHZuandkcnB2bG15d3F0cXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjcwODksImV4cCI6MjA5ODg0MzA4OX0.kC4VKtBLcuHtb01rAMQ-3qXLxmpdpFb1rBia8HgF_Vk';
+      const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-        },
-      });
-
-      const loginPanel = document.getElementById('loginPanel');
-      const dashboardPanel = document.getElementById('dashboardPanel');
+      const loginCard = document.getElementById('login-card');
+      const adminContent = document.getElementById('admin-content');
       const loginForm = document.getElementById('loginForm');
       const loginStatus = document.getElementById('loginStatus');
       const newsForm = document.getElementById('newsForm');
       const newsStatus = document.getElementById('newsStatus');
+      const newsList = document.getElementById('newsList');
+      const toast = document.getElementById('toast');
       const logoutButton = document.getElementById('logoutButton');
-      const adminEmail = document.getElementById('adminEmail');
+      const slikaInput = document.getElementById('slika-input');
+      const slikaPickButton = document.getElementById('slika-pick-btn');
+      const slikaFileName = document.getElementById('slika-file-name');
+      const submitButton = document.getElementById('submitButton');
+      const previewButton = document.getElementById('previewButton');
+      const cancelEditButton = document.getElementById('cancelEditButton');
+      const previewModal = document.getElementById('previewModal');
+      const closePreviewButton = document.getElementById('closePreviewButton');
+      const previewCard = document.getElementById('previewCard');
+      const categoryButtons = [...document.querySelectorAll('.category-btn')];
+      const filterButtons = [...document.querySelectorAll('.filter-btn')];
+      const searchInput = document.getElementById('searchInput');
+      const featuredCheckbox = document.getElementById('is-featured');
+
+      let selectedCategory = 'obavjestenje';
+      let selectedFilter = 'sve';
+      let searchText = '';
+      let newsData = [];
+      let editingId = null;
 
       function setStatus(element, message, type) {
         element.textContent = message || '';
-        element.classList.remove('success', 'error');
-        if (type) {
-          element.classList.add(type);
-        }
+        element.classList.remove('error', 'success');
+        if (type) element.classList.add(type);
       }
 
-      function renderAuthState(session) {
-        const isLoggedIn = Boolean(session?.user);
+      function showToast(message = 'Neuspješan unos vijesti.') {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove('show'), 3000);
+      }
 
-        loginPanel.classList.toggle('active', !isLoggedIn);
-        dashboardPanel.classList.toggle('active', isLoggedIn);
-        logoutButton.hidden = !isLoggedIn;
+      function setLoginVisibility(isLoggedIn) {
+        loginCard.classList.toggle('hidden', isLoggedIn);
+        adminContent.classList.toggle('hidden', !isLoggedIn);
+      }
 
-        if (isLoggedIn) {
-          adminEmail.textContent = session.user.email || 'Admin';
-        } else {
-          adminEmail.textContent = '-';
+      function getCategoryLabel(category) {
+        const labels = {
+          obavjestenje: '📌 Obavještenje',
+          humanitarna: '🤝 Humanitarna akcija',
+          aktivnosti: '⚽ Aktivnosti i Sport',
+          historija: '📜 Historija',
+        };
+        return labels[category] || category;
+      }
+
+      function updateCategorySelection(nextCategory) {
+        selectedCategory = nextCategory;
+        categoryButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.category === nextCategory);
+        });
+      }
+
+      function updateFilterSelection(nextFilter) {
+        selectedFilter = nextFilter;
+        filterButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.filter === nextFilter);
+        });
+        renderNewsList();
+      }
+
+      function resetNewsForm() {
+        editingId = null;
+        submitButton.textContent = 'Objavi vijest';
+        cancelEditButton.style.display = 'none';
+        submitButton.disabled = false;
+        newsForm.reset();
+        slikaInput.value = '';
+        slikaFileName.textContent = 'Nijedna datoteka nije odabrana';
+        featuredCheckbox.checked = false;
+        updateCategorySelection('obavjestenje');
+      }
+
+      function populateEditForm(item) {
+        editingId = item.id;
+        document.getElementById('naslov').value = item.naslov || '';
+        document.getElementById('sadrzaj').value = item.sadrzaj || '';
+        document.getElementById('slika_url').value = item.slika_url || '';
+        featuredCheckbox.checked = Boolean(item.is_featured);
+        updateCategorySelection(item.kategorija || 'obavjestenje');
+        submitButton.textContent = 'Spremi izmjene';
+        cancelEditButton.style.display = 'inline-block';
+        slikaInput.value = '';
+        slikaFileName.textContent = 'Nijedna datoteka nije odabrana';
+      }
+
+      function openPreviewModal() {
+        const title = document.getElementById('naslov').value.trim() || 'Naslov vijesti';
+        const text = document.getElementById('sadrzaj').value.trim() || 'Ovdje ide sadržaj vijesti.';
+        const imageValue = document.getElementById('slika_url').value.trim();
+        const file = slikaInput.files[0];
+        const imageSrc = file ? URL.createObjectURL(file) : (imageValue || '');
+        const previewDate = new Date().toISOString().slice(0, 10);
+
+        previewCard.innerHTML = `
+          <div class="news-item-head">
+            <span class="news-category">${getCategoryLabel(selectedCategory)}</span>
+            <span class="news-meta">${previewDate ? new Date(previewDate).toLocaleDateString('bs-BA') : ''}</span>
+          </div>
+          ${featuredCheckbox.checked ? '<div class="featured-badge">Udarna vijest</div>' : ''}
+          <h4>${title}</h4>
+          <p>${text}</p>
+          ${imageSrc ? `<img src="${imageSrc}" alt="${title}" />` : ''}
+        `;
+
+        previewModal.classList.add('show');
+        previewModal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closePreviewModal() {
+        previewModal.classList.remove('show');
+        previewModal.setAttribute('aria-hidden', 'true');
+      }
+
+      function renderNewsList() {
+        const items = newsData.filter((item) => {
+          const matchesFilter = selectedFilter === 'sve' || (item.kategorija || item.category || 'obavjestenje') === selectedFilter;
+          const title = (item.naslov || item.title || '').toLowerCase();
+          const matchesSearch = !searchText || title.includes(searchText.toLowerCase());
+          return matchesFilter && matchesSearch;
+        });
+
+        if (!items.length) {
+          newsList.innerHTML = `
+            <div class="empty-state">
+              Nema objava još. Prva vijest će se pojaviti ovdje odmah nakon što je objaviš.
+            </div>
+          `;
+          return;
+        }
+
+        newsList.innerHTML = items.map((item) => {
+          const category = item.kategorija || item.category || 'obavjestenje';
+          const title = item.naslov || item.title || 'Bez naslova';
+          const text = item.sadrzaj || item.content || '';
+          const image = item.slika_url || item.image_url || '';
+          const date = item.datum || item.created_at || '';
+          const isFeatured = Boolean(item.is_featured);
+
+          return `
+            <article class="news-item">
+              <div class="news-item-head">
+                <span class="news-category">${getCategoryLabel(category)}</span>
+                <span class="news-meta">${date ? new Date(date).toLocaleDateString('bs-BA') : ''}</span>
+              </div>
+              ${isFeatured ? '<div class="featured-badge">Udarna vijest</div>' : ''}
+              <h4>${title}</h4>
+              <p>${text}</p>
+              ${image ? `<img src="${image}" alt="${title}" />` : ''}
+              <div class="action-row">
+                <button type="button" class="action-btn edit-btn" data-id="${item.id}">Uredi</button>
+                <button type="button" class="action-btn danger-btn delete-btn" data-id="${item.id}">Izbriši</button>
+                <button type="button" class="action-btn copy-link-btn" data-id="${item.id}">Kopiraj link</button>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        document.querySelectorAll('.edit-btn').forEach((button) => {
+          button.addEventListener('click', () => {
+            const item = newsData.find((entry) => String(entry.id) === String(button.dataset.id));
+            if (item) populateEditForm(item);
+          });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const id = Number(button.dataset.id);
+            if (!id || !window.confirm('Jeste li sigurni da želite izbrisati ovu vijest?')) return;
+
+            try {
+              const { error } = await supabaseClient.from('vijesti').delete().eq('id', id);
+              if (error) throw error;
+              showToast('Vijest je uspješno izbrisana.');
+              await fetchNews();
+            } catch (error) {
+              console.error(error);
+              showToast(error?.message || 'Brisanje vijesti nije uspjelo.');
+            }
+          });
+        });
+
+        document.querySelectorAll('.copy-link-btn').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const target = newsData.find((entry) => String(entry.id) === String(button.dataset.id));
+            if (!target) return;
+
+            const url = `${location.origin}${location.pathname}#news-${target.id}`;
+
+            try {
+              await navigator.clipboard.writeText(url);
+              showToast('Link kopiran!');
+            } catch (error) {
+              console.error(error);
+              showToast('Nije moguće kopirati link.');
+            }
+          });
+        });
+      }
+
+      async function fetchNews() {
+        try {
+          const { data, error } = await supabaseClient
+            .from('vijesti')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          newsData = data || [];
+          renderNewsList();
+        } catch (error) {
+          console.error(error);
+          showToast('Neuspješan unos vijesti.');
         }
       }
 
       async function handleLogin(event) {
         event.preventDefault();
-        const formData = new FormData(loginForm);
-        const email = (formData.get('email') || '').toString().trim();
-        const password = (formData.get('password') || '').toString();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
 
         if (!email || !password) {
           setStatus(loginStatus, 'Unesite email i lozinku.', 'error');
@@ -378,101 +1021,162 @@
 
         try {
           setStatus(loginStatus, 'Prijava u toku...', '');
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-          if (error) {
-            throw error;
-          }
+          if (error) throw error;
 
           if (data?.user) {
             setStatus(loginStatus, 'Uspješno ste prijavljeni.', 'success');
-            renderAuthState(data);
-            loginForm.reset();
+            setLoginVisibility(true);
+            await fetchNews();
           }
         } catch (error) {
-          setStatus(loginStatus, error?.message || 'Neuspješna prijava.', 'error');
+          setStatus(loginStatus, error?.message || 'Prijava nije uspjela.', 'error');
+          showToast('Neuspješan unos vijesti.');
         }
       }
 
       async function handleLogout() {
         try {
-          const { error } = await supabase.auth.signOut();
-          if (error) {
-            throw error;
-          }
-          renderAuthState(null);
-          loginForm.reset();
+          const { error } = await supabaseClient.auth.signOut();
+          if (error) throw error;
+          setLoginVisibility(false);
           setStatus(loginStatus, 'Uspješno ste odjavljeni.', 'success');
+          loginForm.reset();
         } catch (error) {
-          setStatus(loginStatus, error?.message || 'Odjava nije uspjela.', 'error');
+          showToast('Neuspješan unos vijesti.');
         }
       }
 
       async function handleNewsSubmit(event) {
         event.preventDefault();
 
-        const formData = new FormData(newsForm);
-        const title = (formData.get('title') || '').toString().trim();
-        const imageUrl = (formData.get('imageUrl') || '').toString().trim();
-        const content = (formData.get('content') || '').toString().trim();
-        const publishedAt = (formData.get('publishedAt') || '').toString();
+        const naslov = document.getElementById('naslov').value.trim();
+        const sadrzaj = document.getElementById('sadrzaj').value.trim();
+        const slikaUrlText = document.getElementById('slika_url').value.trim();
+        const datum = new Date().toISOString().slice(0, 10);
+        const file = slikaInput.files[0];
+        const isFeatured = featuredCheckbox.checked;
 
-        if (!title || !imageUrl || !content || !publishedAt) {
-          setStatus(newsStatus, 'Popunite sva polja za vijest.', 'error');
+        if (!naslov || !sadrzaj) {
+          setStatus(newsStatus, 'Unesite naslov i tekst vijesti.', 'error');
+          showToast('Unesite naslov i tekst vijesti.');
           return;
         }
 
         try {
-          setStatus(newsStatus, 'Objava vijesti u toku...', '');
+          submitButton.disabled = true;
+          submitButton.textContent = 'Spremanje u toku...';
+          setStatus(newsStatus, 'Spremanje u toku...', '');
+
+          let slikaUrl = slikaUrlText;
+
+          if (file) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+
+            const { error: uploadError } = await supabaseClient.storage
+              .from('slike-vijesti')
+              .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: publicUrlData } = supabaseClient.storage
+              .from('slike-vijesti')
+              .getPublicUrl(fileName);
+
+            slikaUrl = publicUrlData.publicUrl;
+          }
 
           const payload = {
-            title,
-            image_url: imageUrl,
-            content,
-            published_at: publishedAt,
+            naslov,
+            sadrzaj,
+            slika_url: slikaUrl,
+            datum,
+            kategorija: selectedCategory,
+            is_featured: isFeatured,
             created_at: new Date().toISOString(),
           };
 
-          const { data, error } = await supabase
-            .from('vijesti')
-            .insert([payload])
-            .select();
-
-          if (error) {
-            throw error;
+          if (editingId) {
+            const { error } = await supabaseClient.from('vijesti').update(payload).eq('id', editingId);
+            if (error) throw error;
+          } else {
+            const { error } = await supabaseClient.from('vijesti').insert([payload]);
+            if (error) throw error;
           }
 
-          newsForm.reset();
-          setStatus(newsStatus, 'Vijest je uspješno objavljena.', 'success');
-          if (data && data[0]) {
-            console.log('Vijest je dodana:', data[0]);
-          }
+          const successMessage = editingId ? 'Vijest je uspješno ažurirana.' : 'Vijest je uspješno objavljena.';
+          resetNewsForm();
+          setStatus(newsStatus, successMessage, 'success');
+          showToast(successMessage);
+          await fetchNews();
+          editingId = null;
         } catch (error) {
-          setStatus(newsStatus, error?.message || 'Došlo je do greške pri objavljivanju vijesti.', 'error');
+          console.error(error);
+          setStatus(newsStatus, error?.message || 'Neuspješan unos vijesti.', 'error');
+          showToast(error?.message || 'Neuspješan unos vijesti.');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = editingId ? 'Spremi izmjene' : 'Objavi vijest';
+          if (!editingId && cancelEditButton.style.display !== 'none') {
+            cancelEditButton.style.display = 'none';
+          }
         }
       }
 
+      cancelEditButton.addEventListener('click', () => {
+        resetNewsForm();
+        setStatus(newsStatus, 'Uređivanje je otkazano.', 'success');
+      });
+
+      slikaPickButton.addEventListener('click', () => slikaInput.click());
+      slikaInput.addEventListener('change', () => {
+        slikaFileName.textContent = slikaInput.files[0]?.name || 'Nijedna datoteka nije odabrana';
+      });
+
+      categoryButtons.forEach((button) => {
+        button.addEventListener('click', () => updateCategorySelection(button.dataset.category));
+      });
+
+      filterButtons.forEach((button) => {
+        button.addEventListener('click', () => updateFilterSelection(button.dataset.filter));
+      });
+
+      previewButton.addEventListener('click', openPreviewModal);
+      closePreviewButton.addEventListener('click', closePreviewModal);
+      previewModal.addEventListener('click', (event) => {
+        if (event.target === previewModal) closePreviewModal();
+      });
+
+      searchInput.addEventListener('input', (event) => {
+        searchText = event.target.value.trim();
+        renderNewsList();
+      });
+
       loginForm.addEventListener('submit', handleLogin);
-      newsForm.addEventListener('submit', handleNewsSubmit);
       logoutButton.addEventListener('click', handleLogout);
+      newsForm.addEventListener('submit', handleNewsSubmit);
 
       async function initSession() {
         try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) {
-            throw error;
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+          if (error) throw error;
+          setLoginVisibility(Boolean(session?.user));
+          if (session?.user) {
+            await fetchNews();
           }
-          renderAuthState(session);
         } catch (error) {
-          console.error('Session error:', error);
-          renderAuthState(null);
+          console.error(error);
+          setLoginVisibility(false);
         }
       }
 
-      supabase.auth.onAuthStateChange((event, session) => {
-        renderAuthState(session);
-        if (event === 'SIGNED_OUT') {
-          setStatus(loginStatus, 'Odjavljeni ste.', 'success');
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        const isLoggedIn = Boolean(session?.user);
+        setLoginVisibility(isLoggedIn);
+        if (isLoggedIn) {
+          fetchNews();
         }
       });
 
