@@ -1046,6 +1046,17 @@
             try {
               const { error } = await supabaseClient.from('vijesti').delete().eq('id', rawId);
               if (error) throw error;
+
+              const card = button.closest('.news-item');
+              if (card) {
+                card.remove();
+              }
+
+              newsData = newsData.filter((item) => String(item.id) !== String(rawId));
+              if (!newsData.some((item) => String(item.id) === String(rawId))) {
+                renderNewsList();
+              }
+
               showToast('Vijest je uspješno izbrisana.');
               await fetchNews();
             } catch (error) {
