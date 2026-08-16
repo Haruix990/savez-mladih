@@ -366,7 +366,21 @@
               <p>Ovde se prikazuju objave i obavještenja za sve posjetioce. Admin panel nije vidljiv javnosti.</p>
             </div>
             <div id="news-highlight" class="news-highlight"></div>
-            <div class="news-filter">
+
+            <div class="news-toolbar">
+              <div class="news-search-wrap">
+                <input id="news-search-input" type="search" placeholder="Pretraži vijesti po naslovu..." aria-label="Pretraži vijesti po naslovu" />
+              </div>
+              <div class="news-sort-wrap">
+                <select id="news-sort-select" aria-label="Sortiranje vijesti">
+                  <option value="newest">Najnovije prvo</option>
+                  <option value="oldest">Najstarije prvo</option>
+                  <option value="featured">Samo udarne vijesti</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="news-filter" id="news-category-filters">
               <button type="button" class="filter-pill selected" data-filter="all">Sve</button>
               <button type="button" class="filter-pill" data-filter="obavjestenje">📌 Obavještenje</button>
               <button type="button" class="filter-pill" data-filter="humanitarna">🤝 Humanitarna akcija</button>
@@ -374,6 +388,7 @@
               <button type="button" class="filter-pill" data-filter="historija">📜 Historija</button>
             </div>
             <div id="news-list" class="news-list"></div>
+            <div id="news-empty-state" class="news-empty-state" style="display:none;"></div>
           </div>
         </div>
       </div>
@@ -464,6 +479,220 @@
     </div>
   </footer>
 
+  <style>
+    .news-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(180px, 220px);
+      gap: 12px;
+      margin: 18px 0 14px;
+    }
+    .news-search-wrap input,
+    .news-sort-wrap select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: #f4f4ee;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .news-search-wrap input:focus,
+    .news-sort-wrap select:focus {
+      border-color: rgba(244, 210, 111, 0.75);
+      box-shadow: 0 0 0 3px rgba(244, 210, 111, 0.12);
+    }
+    .filter-pill {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #f5f5f0;
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-pill.selected {
+      background: linear-gradient(135deg, rgba(185,143,59,0.25), rgba(185,143,59,0.12));
+      border-color: rgba(245,210,108,0.7);
+      box-shadow: 0 0 0 1px rgba(245,210,108,0.22), 0 0 16px rgba(185,143,59,0.18);
+      color: #fff5d8;
+    }
+    .news-empty-state {
+      margin-top: 18px;
+      padding: 26px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      text-align: center;
+      color: #f2f2ee;
+    }
+    .news-card { cursor: pointer; }
+    .news-card-tags,
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .news-tag,
+    .article-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(238,203,110,0.4);
+      background: rgba(191,146,51,0.08);
+      color: #f0d28b;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .news-tag:hover,
+    .article-tag:hover {
+      transform: translateY(-1px);
+      opacity: 0.96;
+    }
+    .news-article-view {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 9, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    .news-article-view.visible { display: block; }
+    .news-article-shell {
+      width: min(980px, calc(100% - 28px));
+      margin: 34px auto 48px;
+      background: linear-gradient(180deg, rgba(18,24,18,0.98), rgba(11,13,11,0.97));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 30px 90px rgba(0,0,0,0.45);
+    }
+    .news-article-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .news-back-btn,
+    .article-size-controls button,
+    .news-share-btn,
+    .news-reaction {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: #f4f4ee;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .news-back-btn {
+      padding: 10px 16px;
+    }
+    .article-size-controls {
+      display: flex;
+      gap: 8px;
+    }
+    .article-size-controls button {
+      width: 42px;
+      height: 36px;
+      border-radius: 10px;
+    }
+    .news-article-progress {
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      width: 100%;
+      overflow: hidden;
+    }
+    .news-article-progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #c69d3d, #f7d77a);
+      box-shadow: 0 0 18px rgba(220,180,87,0.8);
+      transition: width 0.08s linear;
+    }
+    .news-article-body {
+      padding: 26px 22px 32px;
+      color: #f2f2ed;
+      line-height: 1.9;
+      font-size: 1.02rem;
+    }
+    .news-article-body.article-large { font-size: 1.12rem; }
+    .news-article-body.article-medium { font-size: 1.02rem; }
+    .news-article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      color: #d7d7d1;
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+    }
+    .news-article-category {
+      display: inline-flex;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(225,196,118,0.28);
+      background: rgba(191,146,51,0.12);
+      color: #f2d77c;
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .news-article-image {
+      width: 100%;
+      max-height: 520px;
+      object-fit: cover;
+      border-radius: 22px;
+      margin: 18px 0 20px;
+      display: block;
+    }
+    .article-text p {
+      margin: 0 0 1.1em;
+      color: #efefe8;
+    }
+    .news-share-bar {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .news-share-btn {
+      padding: 10px 14px;
+    }
+    .news-reactions {
+      display: flex;
+      gap: 10px;
+    }
+    .news-reaction {
+      padding: 8px 12px;
+      font-size: 1rem;
+    }
+    .news-reaction.selected {
+      background: rgba(245,210,108,0.14);
+      border-color: rgba(245,210,108,0.5);
+      box-shadow: 0 0 16px rgba(245,210,108,0.14);
+    }
+    @media (max-width: 680px) {
+      .news-toolbar { grid-template-columns: 1fr; }
+      .news-article-shell { width: min(100% - 12px, 980px); margin-top: 12px; }
+      .news-article-body { padding: 22px 16px 24px; }
+    }
+  </style>
   <script src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -472,70 +701,449 @@
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
+        .replace(/\"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
 
-    window.addEventListener('load', async function () {
+    function normalizeDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleDateString('bs-BA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function humanizeReadingTime(text) {
+      const words = String(text || '').trim().split(/\s+/).filter(Boolean).length;
+      const minutes = Math.max(1, Math.ceil(words / 180));
+      return `${minutes} min čitanja`;
+    }
+
+    function buildTagList(title, body, category) {
+      const source = `${title || ''} ${body || ''} ${category || ''}`.toLowerCase();
+      const words = source
+        .replace(/[^a-z0-9šđčćž\s]/gi, ' ')
+        .split(/\s+/)
+        .filter((word) => word.length > 3 && !['nego', 'kroz', 'ovdje', 'tako', 'sa', 'za', 'ova', 'ovo', 'već', 'u', 'na', 'ko', 'kao', 'sve', 'sada', 'biti', 'bilo', 'kada'].includes(word));
+
+      const seen = new Set();
+      const picks = [];
+      words.forEach((word) => {
+        const tag = word.replace(/s$/, '').trim();
+        if (tag && !seen.has(tag)) {
+          seen.add(tag);
+          picks.push(tag);
+        }
+      });
+
+      const fallback = ['sarajevo', 'mladi', 'akcija', 'savez', 'zajednica'];
+      return [...picks.slice(0, 3), ...fallback].filter(Boolean).slice(0, 4).map((tag) => `#${tag.replace(/[^a-z0-9šđčćž]/gi, '')}`);
+    }
+
+    function categoryLabelFor(value) {
+      const map = {
+        obavjestenje: '📌 Obavještenje',
+        humanitarna: '🤝 Humanitarna akcija',
+        aktivnosti: '⚽ Aktivnosti i sport',
+        historija: '📜 Historija'
+      };
+      return map[value] || value || 'Objava';
+    }
+
+    function isFeatured(item) {
+      return !!(item.is_featured === true || item.is_featured === 'true' || item.is_featured === 1);
+    }
+
+    function getArticleData(item) {
+      const title = item.naslov || item.title || 'Naslov vijesti';
+      const body = item.sadrzaj || item.body || item.content || '';
+      const image = item.slika_url || item.image_url || '';
+      const category = item.kategorija || item.category || 'obavjestenje';
+      const createdAt = item.datum || item.created_at || new Date().toISOString();
+      const tags = Array.isArray(item.tags) && item.tags.length ? item.tags : buildTagList(title, body, category);
+      return {
+        id: item.id || `${title}-${Date.now()}`,
+        title,
+        body,
+        image,
+        category,
+        createdAt,
+        createdLabel: normalizeDate(createdAt) || 'Nedavno objavljeno',
+        readTime: humanizeReadingTime(body),
+        featured: isFeatured(item),
+        tags
+      };
+    }
+
+    function buildArticleListMarkup(items, state) {
+      const visibleItems = getVisibleItems(items, state);
       const newsList = document.getElementById('news-list');
+      const emptyState = document.getElementById('news-empty-state');
       if (!newsList) return;
+
+      if (!visibleItems.length) {
+        newsList.innerHTML = '';
+        emptyState.style.display = 'block';
+        emptyState.innerHTML = `
+          <div style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">Nema pronađenih vijesti.</div>
+          <div style="color:#d4d3cc; margin-bottom:10px;">Pokušajte promijeniti filtere ili pretragu.</div>
+          <button type="button" class="btn btn-outline" id="clear-filters-btn">Poništi sve filtere</button>
+        `;
+        const clearBtn = document.getElementById('clear-filters-btn');
+        if (clearBtn) clearBtn.addEventListener('click', () => resetNewsFilters());
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      emptyState.innerHTML = '';
+
+      newsList.innerHTML = visibleItems.map((item) => {
+        const article = getArticleData(item);
+        const previewText = article.body.length > 180 ? `${article.body.slice(0, 180).trim()}…` : article.body;
+        const featuredBadge = article.featured ? '<span style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,#f2d36b,#d4a63a);color:#122611;font-weight:800;font-size:0.68rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px;">Udarna vijest</span>' : '';
+        const tagButtons = article.tags.map((tag) => `<button type="button" class="news-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('');
+        const imageMarkup = article.image ? `<img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-top:12px;display:block;">` : '';
+
+        return `
+          <article class="news-item news-card" data-id="${escapeHtml(article.id)}" style="position:relative;">
+            <div class="news-content" style="width:100%;">
+              ${featuredBadge}
+              <h3 style="margin:0 0 10px;">${escapeHtml(article.title)}</h3>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:#d7d6d0;font-size:0.78rem;margin-bottom:12px;">
+                <span>${escapeHtml(categoryLabelFor(article.category))}</span>
+                <span>•</span>
+                <span>${escapeHtml(article.createdLabel)}</span>
+                <span>•</span>
+                <span>${escapeHtml(article.readTime)}</span>
+              </div>
+              <p style="margin:0;line-height:1.8;color:#ecece7;">${escapeHtml(previewText)}</p>
+              ${imageMarkup}
+              <div class="news-card-tags">${tagButtons}</div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      newsList.querySelectorAll('.news-card').forEach((card) => {
+        card.addEventListener('click', (event) => {
+          const tagButton = event.target.closest('[data-tag]');
+          if (tagButton) {
+            event.stopPropagation();
+            const tag = tagButton.getAttribute('data-tag');
+            state.tag = tag;
+            applyNewsFilters(state);
+            return;
+          }
+
+          const itemId = card.getAttribute('data-id');
+          const item = items.find((entry) => String(getArticleData(entry).id) === String(itemId));
+          if (item) openFullArticle(item, state);
+        });
+      });
+    }
+
+    function getVisibleItems(items, state) {
+      const term = state.search.trim().toLowerCase();
+      const filtered = items.filter((item) => {
+        const article = getArticleData(item);
+        const matchesCategory = state.category === 'all' || article.category === state.category;
+        const matchesTag = !state.tag || article.tags.some((tag) => tag.toLowerCase() === state.tag.toLowerCase());
+        const matchesText = !term || article.title.toLowerCase().includes(term) || article.body.toLowerCase().includes(term);
+        return matchesCategory && matchesTag && matchesText;
+      });
+
+      if (state.sort === 'oldest') {
+        return filtered.slice().sort((a, b) => new Date(getArticleData(a).createdAt) - new Date(getArticleData(b).createdAt));
+      }
+
+      if (state.sort === 'featured') {
+        return filtered.filter((item) => isFeatured(item)).sort((a, b) => new Date(getArticleData(b).createdAt) - new Date(getArticleData(a).createdAt));
+      }
+
+      return filtered.slice().sort((a, b) => new Date(getArticleData(b).createdAt) - new Date(getArticleData(a).createdAt));
+    }
+
+    function updateCategoryButtons(items) {
+      const buttons = document.querySelectorAll('#news-category-filters .filter-pill');
+      const counts = items.reduce((acc, item) => {
+        const category = getArticleData(item).category || 'obavjestenje';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      }, {});
+
+      buttons.forEach((button) => {
+        const filter = button.getAttribute('data-filter');
+        if (filter === 'all') {
+          button.textContent = `Sve (${items.length})`;
+          return;
+        }
+        button.textContent = `${categoryLabelFor(filter)} (${counts[filter] || 0})`;
+      });
+    }
+
+    function applyNewsFilters(state) {
+      const searchInput = document.getElementById('news-search-input');
+      const sortInput = document.getElementById('news-sort-select');
+      const categoryButtons = document.querySelectorAll('#news-category-filters .filter-pill');
+
+      if (searchInput) searchInput.value = state.search;
+      if (sortInput) sortInput.value = state.sort;
+
+      categoryButtons.forEach((button) => {
+        const isSelected = button.getAttribute('data-filter') === state.category;
+        button.classList.toggle('selected', isSelected);
+      });
+
+      buildArticleListMarkup(state.items || [], state);
+    }
+
+    function resetNewsFilters() {
+      const state = window.__newsState;
+      if (!state) return;
+      state.category = 'all';
+      state.search = '';
+      state.sort = 'newest';
+      state.tag = '';
+      applyNewsFilters(state);
+    }
+
+    function ensureArticleView() {
+      let view = document.getElementById('news-article-view');
+      if (view) return view;
+
+      view = document.createElement('div');
+      view.id = 'news-article-view';
+      view.className = 'news-article-view';
+      view.innerHTML = `
+        <div class="news-article-shell">
+          <div class="news-article-topbar">
+            <button type="button" id="article-back-btn" class="news-back-btn">← Nazad na sve vijesti</button>
+            <div class="article-size-controls">
+              <button type="button" data-font-size="small">A-</button>
+              <button type="button" data-font-size="large">A+</button>
+            </div>
+          </div>
+          <div class="news-article-progress"><span id="article-progress"></span></div>
+          <article class="news-article-body article-medium">
+            <div class="news-article-meta">
+              <span id="article-category" class="news-article-category"></span>
+              <span id="article-date"></span>
+              <span class="news-article-read-time" id="article-read-time"></span>
+            </div>
+            <h1 id="article-title" style="margin:0 0 14px; font-size: clamp(2rem, 4vw, 3rem); line-height:1.2;"></h1>
+            <div id="article-image-wrap" style="display:none;">
+              <img id="article-image" class="news-article-image" alt="" />
+            </div>
+            <div id="article-tags" class="article-tags"></div>
+            <div class="article-text" id="article-text"></div>
+            <div class="news-share-bar">
+              <button type="button" id="article-share-btn" class="news-share-btn">Dijeli link</button>
+              <div class="news-reactions">
+                <button type="button" class="news-reaction" aria-label="Sviđa mi se">👍</button>
+                <button type="button" class="news-reaction" aria-label="Volim">❤️</button>
+                <button type="button" class="news-reaction" aria-label="Popularno">🔥</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      `;
+      document.body.appendChild(view);
+      return view;
+    }
+
+    function openFullArticle(item, state) {
+      const view = ensureArticleView();
+      const article = getArticleData(item);
+      const titleEl = view.querySelector('#article-title');
+      const categoryEl = view.querySelector('#article-category');
+      const dateEl = view.querySelector('#article-date');
+      const readTimeEl = view.querySelector('#article-read-time');
+      const imageEl = view.querySelector('#article-image');
+      const imageWrap = view.querySelector('#article-image-wrap');
+      const textEl = view.querySelector('#article-text');
+      const tagsEl = view.querySelector('#article-tags');
+      const progressEl = view.querySelector('#article-progress');
+      const shareBtn = view.querySelector('#article-share-btn');
+      const articleBody = view.querySelector('.news-article-body');
+
+      if (titleEl) titleEl.textContent = article.title;
+      if (categoryEl) categoryEl.textContent = categoryLabelFor(article.category);
+      if (dateEl) dateEl.textContent = article.createdLabel;
+      if (readTimeEl) readTimeEl.textContent = article.readTime;
+
+      if (imageEl && article.image) {
+        imageEl.src = article.image;
+        imageEl.alt = article.title;
+        imageWrap.style.display = 'block';
+      } else if (imageWrap) {
+        imageWrap.style.display = 'none';
+      }
+
+      if (textEl) {
+        textEl.innerHTML = article.body
+          .split(/\n+/)
+          .filter((p) => p.trim())
+          .map((paragraph) => `<p>${escapeHtml(paragraph.trim())}</p>`)
+          .join('');
+      }
+
+      if (tagsEl) {
+        tagsEl.innerHTML = article.tags.map((tag) => `<button type="button" class="article-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('');
+        tagsEl.querySelectorAll('[data-tag]').forEach((tagBtn) => {
+          tagBtn.addEventListener('click', () => {
+            const tag = tagBtn.getAttribute('data-tag');
+            closeFullArticle();
+            state.tag = tag;
+            applyNewsFilters(state);
+            const feed = document.getElementById('news-list');
+            if (feed) feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        });
+      }
+
+      if (shareBtn) {
+        shareBtn.textContent = 'Dijeli link';
+        shareBtn.onclick = async () => {
+          const url = `${window.location.href.split('#')[0]}#vijesti`;
+          try {
+            if (navigator.clipboard) await navigator.clipboard.writeText(`${article.title} ${url}`);
+            shareBtn.textContent = 'Link kopiran';
+            setTimeout(() => { shareBtn.textContent = 'Dijeli link'; }, 1400);
+          } catch (error) {
+            shareBtn.textContent = 'Nije kopirano';
+            setTimeout(() => { shareBtn.textContent = 'Dijeli link'; }, 1400);
+          }
+        };
+      }
+
+      if (articleBody) {
+        articleBody.classList.remove('article-large', 'article-medium');
+        articleBody.classList.add('article-medium');
+        const sizeButtons = view.querySelectorAll('[data-font-size]');
+        sizeButtons.forEach((button) => {
+          button.onclick = () => {
+            const size = button.getAttribute('data-font-size');
+            articleBody.classList.remove('article-large', 'article-medium');
+            articleBody.classList.add(size === 'large' ? 'article-large' : 'article-medium');
+          };
+        });
+      }
+
+      view.querySelectorAll('.news-reaction').forEach((reaction) => {
+        reaction.addEventListener('click', () => {
+          reaction.classList.toggle('selected');
+        });
+      });
+
+      const backButton = view.querySelector('#article-back-btn');
+      if (backButton) {
+        backButton.onclick = () => closeFullArticle();
+      }
+
+      window.__newsScrollY = window.scrollY;
+      state.lastScrollPosition = window.scrollY;
+      view.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+      view.scrollTop = 0;
+      if (progressEl) progressEl.style.width = '0%';
+
+      const onScroll = () => {
+        const maxScroll = Math.max(view.scrollHeight - view.clientHeight, 1);
+        const ratio = (view.scrollTop / maxScroll) * 100;
+        if (progressEl) progressEl.style.width = `${Math.min(100, Math.max(0, ratio))}%`;
+      };
+      view.onscroll = onScroll;
+      onScroll();
+    }
+
+    function closeFullArticle() {
+      const view = document.getElementById('news-article-view');
+      if (!view) return;
+      view.classList.remove('visible');
+      document.body.style.overflow = '';
+      const y = typeof window.__newsScrollY === 'number' ? window.__newsScrollY : 0;
+      window.scrollTo({ top: y, behavior: 'auto' });
+      view.onscroll = null;
+    }
+
+    function initializeNewsFeed() {
+      const newsList = document.getElementById('news-list');
+      const filterBar = document.getElementById('news-category-filters');
+      const searchInput = document.getElementById('news-search-input');
+      const sortSelect = document.getElementById('news-sort-select');
+      const emptyState = document.getElementById('news-empty-state');
+      if (!newsList || !filterBar) return;
+
+      const state = {
+        items: [],
+        category: 'all',
+        search: '',
+        sort: 'newest',
+        tag: '',
+        lastScrollPosition: 0
+      };
+      window.__newsState = state;
+
+      filterBar.querySelectorAll('.filter-pill').forEach((button) => {
+        button.addEventListener('click', () => {
+          state.category = button.getAttribute('data-filter') || 'all';
+          state.tag = '';
+          applyNewsFilters(state);
+        });
+      });
+
+      if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+          state.search = event.target.value;
+          applyNewsFilters(state);
+        });
+      }
+
+      if (sortSelect) {
+        sortSelect.addEventListener('change', (event) => {
+          state.sort = event.target.value;
+          applyNewsFilters(state);
+        });
+      }
+
+      if (emptyState) {
+        emptyState.addEventListener('click', (event) => {
+          const clearBtn = event.target.closest('#clear-filters-btn');
+          if (clearBtn) resetNewsFilters();
+        });
+      }
 
       const supabaseUrl = 'https://enxvnjwdrpvlmywqtqwl.supabase.co';
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVueHZuandkcnB2bG15d3F0cXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjcwODksImV4cCI6MjA5ODg0MzA4OX0.kC4VKtBLcuHtb01rAMQ-3qXLxmpdpFb1rBia8HgF_Vk';
 
-      if (!window.supabase) {
-        newsList.innerHTML = '<div class="news-item"><p>Trenutno nema objavljenih vijesti.</p></div>';
-        return;
-      }
+      async function loadNews() {
+        try {
+          if (!window.supabase) {
+            state.items = [];
+            updateCategoryButtons(state.items);
+            applyNewsFilters(state);
+            return;
+          }
 
-      const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+          const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+          const { data, error } = await supabaseClient.from('vijesti').select('*').order('created_at', { ascending: false });
+          if (error) throw error;
 
-      try {
-        const { data, error } = await supabaseClient
-          .from('vijesti')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          newsList.innerHTML = '<div class="news-item"><p>Trenutno nema objavljenih vijesti.</p></div>';
-          return;
+          state.items = Array.isArray(data) ? data : [];
+          updateCategoryButtons(state.items);
+          applyNewsFilters(state);
+        } catch (error) {
+          console.error('Greška pri učitavanju vijesti:', error);
+          state.items = [];
+          updateCategoryButtons(state.items);
+          applyNewsFilters(state);
         }
-
-        const cards = data.map((item) => {
-          const title = item.naslov || item.title || 'Naslov vijesti';
-          const body = item.sadrzaj || item.body || item.content || '';
-          const image = item.slika_url || item.image_url || '';
-          const category = item.kategorija || item.category || 'Obavještenje';
-          const featured = item.is_featured === true || item.is_featured === 'true' || item.is_featured === 1;
-          const createdAt = item.datum || item.created_at || new Date().toISOString();
-          const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString('bs-BA', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          }) : '';
-          const featuredBadge = featured ? '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,#f2d36b,#d4a63a);color:#11210d;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">Udarna vijest</span>' : '';
-          const imageMarkup = image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(title) + '" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-top:10px;">' : '';
-
-          return `
-            <article class="news-item" style="position:relative;">
-              <div class="news-content" style="width:100%;">
-                ${featuredBadge}
-                <h3 style="margin:0 0 8px;">${escapeHtml(title)}</h3>
-                <p style="margin:0 0 10px; color:#cfcfc6; font-size:0.8rem;">${escapeHtml(category)}${formattedDate ? ' • ' + escapeHtml(formattedDate) : ''}</p>
-                <p style="margin:0; line-height:1.7; color:#e8e8e1;">${escapeHtml(body)}</p>
-                ${imageMarkup}
-              </div>
-            </article>
-          `;
-        }).join('');
-
-        newsList.innerHTML = cards;
-      } catch (error) {
-        console.error('Greška pri učitavanju vijesti sa Supabase:', error);
-        newsList.innerHTML = '<div class="news-item"><p>Trenutno nema objavljenih vijesti.</p></div>';
       }
+
+      loadNews();
+    }
+
+    window.addEventListener('load', function () {
+      initializeNewsFeed();
     });
   </script>
     <!-- Bulk extra HTML: prošireni sadržaj -->
