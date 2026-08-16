@@ -256,6 +256,26 @@
         min-height: 130px;
       }
 
+      .tag-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .tag-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+        color: #d8d8d0;
+        font-size: 0.72rem;
+        line-height: 1;
+        letter-spacing: 0.02em;
+      }
+
       .featured-toggle {
         margin-top: 2px;
       }
@@ -717,6 +737,11 @@
                 </div>
               </div>
 
+              <div class="field-group">
+                <label for="tagovi">TAGOVI / HASHTAGOVI</label>
+                <input id="tagovi" type="text" placeholder="#sarajevo, #mladi, #sport" />
+              </div>
+
               <div class="field-group featured-toggle">
                 <label for="is-featured">
                   <input id="is-featured" type="checkbox" />
@@ -780,6 +805,25 @@
       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVueHZuandkcnB2bG15d3F0cXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjcwODksImV4cCI6MjA5ODg0MzA4OX0.kC4VKtBLcuHtb01rAMQ-3qXLxmpdpFb1rBia8HgF_Vk';
       const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+      async function enforceAdminAccess() {
+        try {
+          const { data: { user }, error } = await supabaseClient.auth.getUser();
+          if (error || !user || user.email !== 'zeleneberetke.savezmladihsg@gmail.com') {
+            window.location.href = 'index.html';
+            return false;
+          }
+          return true;
+        } catch (error) {
+          window.location.href = 'index.html';
+          return false;
+        }
+      }
+
+      const guardPassed = await enforceAdminAccess();
+      if (!guardPassed) {
+        throw new Error('Unauthorized access to admin panel.');
+      }
+
       const loginCard = document.getElementById('login-card');
       const adminContent = document.getElementById('admin-content');
       const loginForm = document.getElementById('loginForm');
@@ -802,12 +846,38 @@
       const filterButtons = [...document.querySelectorAll('.filter-btn')];
       const searchInput = document.getElementById('searchInput');
       const featuredCheckbox = document.getElementById('is-featured');
+      const tagoviInput = document.getElementById('tagovi');
 
       let selectedCategory = 'obavjestenje';
       let selectedFilter = 'sve';
       let searchText = '';
       let newsData = [];
       let editingId = null;
+
+      function normalizeTags(rawValue) {
+        if (Array.isArray(rawValue)) {
+          return rawValue
+            .map((tag) => String(tag || '').trim())
+            .filter(Boolean)
+            .map((tag) => (tag.startsWith('#') ? tag : `#${tag}`));
+        }
+
+        return String(rawValue || '')
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+          .map((tag) => (tag.startsWith('#') ? tag : `#${tag}`));
+      }
+
+      function renderTagBadges(tags) {
+        const normalized = normalizeTags(tags);
+        if (!normalized.length) return '';
+        return `
+          <div class="tag-badges">
+            ${normalized.map((tag) => `<span class="tag-badge">${tag}</span>`).join('')}
+          </div>
+        `;
+      }
 
       function setStatus(element, message, type) {
         element.textContent = message || '';
@@ -860,6 +930,7 @@
         newsForm.reset();
         slikaInput.value = '';
         slikaFileName.textContent = 'Nijedna datoteka nije odabrana';
+        tagoviInput.value = '';
         featuredCheckbox.checked = false;
         updateCategorySelection('obavjestenje');
       }
@@ -869,6 +940,9 @@
         document.getElementById('naslov').value = item.naslov || '';
         document.getElementById('sadrzaj').value = item.sadrzaj || '';
         document.getElementById('slika_url').value = item.slika_url || '';
+        tagoviInput.value = Array.isArray(item.tagovi)
+          ? item.tagovi.join(', ')
+          : (item.tagovi || '');
         featuredCheckbox.checked = Boolean(item.is_featured);
         updateCategorySelection(item.kategorija || 'obavjestenje');
         submitButton.textContent = 'Spremi izmjene';
@@ -884,6 +958,7 @@
         const file = slikaInput.files[0];
         const imageSrc = file ? URL.createObjectURL(file) : (imageValue || '');
         const previewDate = new Date().toISOString().slice(0, 10);
+        const previewTags = renderTagBadges(tagoviInput.value);
 
         previewCard.innerHTML = `
           <div class="news-item-head">
@@ -893,6 +968,7 @@
           ${featuredCheckbox.checked ? '<div class="featured-badge">Udarna vijest</div>' : ''}
           <h4>${title}</h4>
           <p>${text}</p>
+          ${previewTags}
           ${imageSrc ? `<img src="${imageSrc}" alt="${title}" />` : ''}
         `;
 
@@ -929,6 +1005,7 @@
           const image = item.slika_url || item.image_url || '';
           const date = item.datum || item.created_at || '';
           const isFeatured = Boolean(item.is_featured);
+          const tagsMarkup = renderTagBadges(item.tagovi);
 
           return `
             <article class="news-item">
@@ -939,6 +1016,7 @@
               ${isFeatured ? '<div class="featured-badge">Udarna vijest</div>' : ''}
               <h4>${title}</h4>
               <p>${text}</p>
+              ${tagsMarkup}
               ${image ? `<img src="${image}" alt="${title}" />` : ''}
               <div class="action-row">
                 <button type="button" class="action-btn edit-btn" data-id="${item.id}">Uredi</button>
@@ -1057,6 +1135,7 @@
         const datum = new Date().toISOString().slice(0, 10);
         const file = slikaInput.files[0];
         const isFeatured = featuredCheckbox.checked;
+        const tagoviValue = normalizeTags(tagoviInput.value).join(', ');
 
         if (!naslov || !sadrzaj) {
           setStatus(newsStatus, 'Unesite naslov i tekst vijesti.', 'error');
@@ -1094,6 +1173,7 @@
             slika_url: slikaUrl,
             datum,
             kategorija: selectedCategory,
+            tagovi: tagoviValue,
             is_featured: isFeatured,
             created_at: new Date().toISOString(),
           };
