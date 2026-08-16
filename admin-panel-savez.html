@@ -1040,11 +1040,11 @@
 
         document.querySelectorAll('.delete-btn').forEach((button) => {
           button.addEventListener('click', async () => {
-            const id = Number(button.dataset.id);
-            if (!id || !window.confirm('Jeste li sigurni da želite izbrisati ovu vijest?')) return;
+            const rawId = String(button.dataset.id || '').trim();
+            if (!rawId || rawId === 'undefined' || !window.confirm('Jeste li sigurni da želite izbrisati ovu vijest?')) return;
 
             try {
-              const { error } = await supabaseClient.from('vijesti').delete().eq('id', id);
+              const { error } = await supabaseClient.from('vijesti').delete().eq('id', rawId);
               if (error) throw error;
               showToast('Vijest je uspješno izbrisana.');
               await fetchNews();
