@@ -465,6 +465,79 @@
   </footer>
 
   <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.addEventListener('load', async function () {
+      const newsList = document.getElementById('news-list');
+      if (!newsList) return;
+
+      const supabaseUrl = 'https://enxvnjwdrpvlmywqtqwl.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVueHZuandkcnB2bG15d3F0cXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjcwODksImV4cCI6MjA5ODg0MzA4OX0.kC4VKtBLcuHtb01rAMQ-3qXLxmpdpFb1rBia8HgF_Vk';
+
+      if (!window.supabase) {
+        newsList.innerHTML = '<div class="news-item"><p>Trenutno nema objavljenih vijesti.</p></div>';
+        return;
+      }
+
+      const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('vijesti')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          newsList.innerHTML = '<div class="news-item"><p>Trenutno nema objavljenih vijesti.</p></div>';
+          return;
+        }
+
+        const cards = data.map((item) => {
+          const title = item.naslov || item.title || 'Naslov vijesti';
+          const body = item.sadrzaj || item.body || item.content || '';
+          const image = item.slika_url || item.image_url || '';
+          const category = item.kategorija || item.category || 'Obavještenje';
+          const featured = item.is_featured === true || item.is_featured === 'true' || item.is_featured === 1;
+          const createdAt = item.datum || item.created_at || new Date().toISOString();
+          const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString('bs-BA', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }) : '';
+          const featuredBadge = featured ? '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,#f2d36b,#d4a63a);color:#11210d;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">Udarna vijest</span>' : '';
+          const imageMarkup = image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(title) + '" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-top:10px;">' : '';
+
+          return `
+            <article class="news-item" style="position:relative;">
+              <div class="news-content" style="width:100%;">
+                ${featuredBadge}
+                <h3 style="margin:0 0 8px;">${escapeHtml(title)}</h3>
+                <p style="margin:0 0 10px; color:#cfcfc6; font-size:0.8rem;">${escapeHtml(category)}${formattedDate ? ' • ' + escapeHtml(formattedDate) : ''}</p>
+                <p style="margin:0; line-height:1.7; color:#e8e8e1;">${escapeHtml(body)}</p>
+                ${imageMarkup}
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        newsList.innerHTML = cards;
+      } catch (error) {
+        console.error('Greška pri učitavanju vijesti sa Supabase:', error);
+        newsList.innerHTML = '<div class="news-item"><p>Trenutno nema objavljenih vijesti.</p></div>';
+      }
+    });
+  </script>
     <!-- Bulk extra HTML: prošireni sadržaj -->
     <section class="section extra-section extra-section-1">
       <div class="container">
