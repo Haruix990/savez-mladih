@@ -718,25 +718,23 @@
       return `${minutes} min čitanja`;
     }
 
-    function buildTagList(title, body, category) {
-      const source = `${title || ''} ${body || ''} ${category || ''}`.toLowerCase();
-      const words = source
-        .replace(/[^a-z0-9šđčćž\s]/gi, ' ')
-        .split(/\s+/)
-        .filter((word) => word.length > 3 && !['nego', 'kroz', 'ovdje', 'tako', 'sa', 'za', 'ova', 'ovo', 'već', 'u', 'na', 'ko', 'kao', 'sve', 'sada', 'biti', 'bilo', 'kada'].includes(word));
+    function normalizeManualTags(value) {
+      if (!value) return [];
+      const list = Array.isArray(value)
+        ? value
+        : String(value).split(/[\n,]/);
 
       const seen = new Set();
-      const picks = [];
-      words.forEach((word) => {
-        const tag = word.replace(/s$/, '').trim();
-        if (tag && !seen.has(tag)) {
-          seen.add(tag);
-          picks.push(tag);
-        }
-      });
-
-      const fallback = ['sarajevo', 'mladi', 'akcija', 'savez', 'zajednica'];
-      return [...picks.slice(0, 3), ...fallback].filter(Boolean).slice(0, 4).map((tag) => `#${tag.replace(/[^a-z0-9šđčćž]/gi, '')}`);
+      return list
+        .map((tag) => String(tag || '').trim())
+        .filter(Boolean)
+        .map((tag) => (tag.startsWith('#') ? tag : `#${tag}`))
+        .filter((tag) => {
+          const key = tag.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
     }
 
     function categoryLabelFor(value) {
@@ -759,7 +757,7 @@
       const image = item.slika_url || item.image_url || '';
       const category = item.kategorija || item.category || 'obavjestenje';
       const createdAt = item.datum || item.created_at || new Date().toISOString();
-      const tags = Array.isArray(item.tags) && item.tags.length ? item.tags : buildTagList(title, body, category);
+      const tags = normalizeManualTags(item.tagovi || item.tags || item.hashtags || []);
       return {
         id: item.id || `${title}-${Date.now()}`,
         title,
@@ -800,7 +798,9 @@
         const article = getArticleData(item);
         const previewText = article.body.length > 180 ? `${article.body.slice(0, 180).trim()}…` : article.body;
         const featuredBadge = article.featured ? '<span style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,#f2d36b,#d4a63a);color:#122611;font-weight:800;font-size:0.68rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px;">Udarna vijest</span>' : '';
-        const tagButtons = article.tags.map((tag) => `<button type="button" class="news-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('');
+        const tagButtons = article.tags.length
+          ? article.tags.map((tag) => `<button type="button" class="news-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('')
+          : '';
         const imageMarkup = article.image ? `<img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-top:12px;display:block;">` : '';
 
         return `
@@ -817,7 +817,7 @@
               </div>
               <p style="margin:0;line-height:1.8;color:#ecece7;">${escapeHtml(previewText)}</p>
               ${imageMarkup}
-              <div class="news-card-tags">${tagButtons}</div>
+              ${article.tags.length ? `<div class="news-card-tags">${tagButtons}</div>` : ''}
             </div>
           </article>
         `;
@@ -987,17 +987,22 @@
       }
 
       if (tagsEl) {
-        tagsEl.innerHTML = article.tags.map((tag) => `<button type="button" class="article-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('');
-        tagsEl.querySelectorAll('[data-tag]').forEach((tagBtn) => {
-          tagBtn.addEventListener('click', () => {
-            const tag = tagBtn.getAttribute('data-tag');
-            closeFullArticle();
-            state.tag = tag;
-            applyNewsFilters(state);
-            const feed = document.getElementById('news-list');
-            if (feed) feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        tagsEl.innerHTML = article.tags.length
+          ? article.tags.map((tag) => `<button type="button" class="article-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('')
+          : '';
+
+        if (article.tags.length) {
+          tagsEl.querySelectorAll('[data-tag]').forEach((tagBtn) => {
+            tagBtn.addEventListener('click', () => {
+              const tag = tagBtn.getAttribute('data-tag');
+              closeFullArticle();
+              state.tag = tag;
+              applyNewsFilters(state);
+              const feed = document.getElementById('news-list');
+              if (feed) feed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
           });
-        });
+        }
       }
 
       if (shareBtn) {
