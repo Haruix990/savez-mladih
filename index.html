@@ -589,7 +589,7 @@
     }
     .news-article-view.visible { display: block; }
     .news-article-shell {
-      width: min(980px, calc(100% - 28px));
+      width: min(800px, calc(100% - 28px));
       margin: 34px auto 48px;
       background: linear-gradient(180deg, rgba(18,24,18,0.98), rgba(11,13,11,0.97));
       border: 1px solid rgba(255,255,255,0.08);
@@ -681,6 +681,7 @@
       border-radius: 22px;
       margin: 18px 0 20px;
       display: block;
+      border: 1px solid var(--gold-border);
     }
     .article-text p {
       margin: 0 0 1.1em;
@@ -712,10 +713,133 @@
       border-color: rgba(245,210,108,0.5);
       box-shadow: 0 0 16px rgba(245,210,108,0.14);
     }
+    .news-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+    .news-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0;
+      border: 1px solid var(--gold-border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(20, 30, 20, 0.92), rgba(5, 8, 5, 0.98));
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+    .news-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold-accent);
+      box-shadow: 0 12px 32px var(--gold-glow);
+    }
+    .news-card-image-wrap {
+      height: 190px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(46, 94, 47, 0.22), rgba(0, 0, 0, 0.38));
+    }
+    .news-card-image {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform .3s ease;
+    }
+    .news-card:hover .news-card-image { transform: scale(1.04); }
+    .news-card-no-image {
+      display: grid;
+      place-items: center;
+      height: 100%;
+      color: var(--gold-accent);
+      font-size: 1.8rem;
+    }
+    .news-card-content { display: flex; flex: 1; flex-direction: column; padding: 18px; }
+    .news-card-category {
+      align-self: flex-start;
+      margin-bottom: 12px;
+      padding: 5px 9px;
+      border: 1px solid var(--gold-accent);
+      border-radius: 999px;
+      color: var(--gold-accent);
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .news-card h3 { margin: 0 0 9px; color: #fff; font-size: 1.08rem; line-height: 1.35; }
+    .news-card-meta { margin-bottom: 10px; color: #aaa99f; font-size: .78rem; }
+    .news-card-excerpt {
+      display: -webkit-box;
+      overflow: hidden;
+      margin: 0 0 16px;
+      color: #d8d8d0;
+      line-height: 1.65;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    .news-card-featured {
+      align-self: flex-start;
+      display: inline-flex;
+      margin-bottom: 10px;
+      padding: 5px 9px;
+      border: 1px solid var(--gold-accent);
+      border-radius: 999px;
+      color: var(--gold-accent);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .news-card-read-more {
+      align-self: flex-start;
+      margin-top: auto;
+      padding: 8px 0;
+      border: 0;
+      background: transparent;
+      color: var(--gold-accent);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .news-card-read-more:hover { color: #f0d28c; }
+    .news-card--hero {
+      grid-column: 1 / -1;
+      min-height: 310px;
+      justify-content: flex-end;
+      position: relative;
+      background-position: center;
+      background-size: cover;
+    }
+    .news-card--hero::after {
+      position: absolute;
+      inset: 0;
+      content: '';
+      background: linear-gradient(180deg, rgba(3, 6, 3, .05), rgba(3, 6, 3, .94));
+    }
+    .news-card--hero .news-card-image-wrap { position: absolute; inset: 0; height: 100%; }
+    .news-card--hero .news-card-content { position: relative; z-index: 1; max-width: 720px; padding: 28px; }
+    .news-card--hero h3 { font-size: clamp(1.5rem, 3vw, 2.4rem); }
+    .news-card--hero .news-card-excerpt { max-width: 650px; }
+    .article-related { margin-top: 34px; padding-top: 24px; border-top: 1px solid var(--gold-border); }
+    .article-related h2 { margin-bottom: 14px; color: var(--gold-accent); font-size: 1.15rem; }
+    .article-related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .article-related-card { overflow: hidden; border: 1px solid var(--gold-border); border-radius: 14px; background: rgba(0,0,0,.2); cursor: pointer; transition: transform .2s ease, border-color .2s ease; }
+    .article-related-card:hover { transform: translateY(-3px); border-color: var(--gold-accent); }
+    .article-related-card img { width: 100%; height: 110px; display: block; object-fit: cover; }
+    .article-related-card-body { padding: 12px; }
+    .article-related-card strong { display: block; color: #fff; font-size: .9rem; line-height: 1.4; }
+    .article-related-card small { display: block; margin-top: 6px; color: var(--gold-accent); }
+    @media (max-width: 900px) {
+      .news-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
     @media (max-width: 680px) {
       .news-toolbar { grid-template-columns: 1fr; }
-      .news-article-shell { width: min(100% - 12px, 980px); margin-top: 12px; }
+      .news-list { grid-template-columns: 1fr; }
+      .news-card--hero { grid-column: auto; }
+      .news-article-shell { width: min(100% - 12px, 800px); margin-top: 12px; }
       .news-article-body { padding: 22px 16px 24px; }
+      .article-related-grid { grid-template-columns: 1fr; }
     }
   </style>
   <script src="script.js"></script>
@@ -819,30 +943,29 @@
       emptyState.style.display = 'none';
       emptyState.innerHTML = '';
 
-      newsList.innerHTML = visibleItems.map((item) => {
+      newsList.innerHTML = visibleItems.map((item, index) => {
         const article = getArticleData(item);
         const previewText = article.body.length > 180 ? `${article.body.slice(0, 180).trim()}…` : article.body;
-        const featuredBadge = article.featured ? '<span style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,#f2d36b,#d4a63a);color:#122611;font-weight:800;font-size:0.68rem;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px;">Udarna vijest</span>' : '';
+        const isHero = index === 0 && article.featured;
+        const featuredBadge = article.featured ? '<span class="news-card-featured">Aktualno</span>' : '';
         const tagButtons = article.tags.length
           ? article.tags.map((tag) => `<button type="button" class="news-tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join('')
           : '';
-        const imageMarkup = article.image ? `<img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-top:12px;display:block;">` : '';
+        const imageMarkup = article.image
+          ? `<img class="news-card-image" src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}">`
+          : '<div class="news-card-no-image" aria-hidden="true">✦</div>';
 
         return `
-          <article class="news-item news-card" data-id="${escapeHtml(article.id)}" style="position:relative;">
-            <div class="news-content" style="width:100%;">
+          <article class="news-card${isHero ? ' news-card--hero' : ''}" data-id="${escapeHtml(article.id)}">
+            <div class="news-card-image-wrap">${imageMarkup}</div>
+            <div class="news-card-content">
               ${featuredBadge}
-              <h3 style="margin:0 0 10px;">${escapeHtml(article.title)}</h3>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:#d7d6d0;font-size:0.78rem;margin-bottom:12px;">
-                <span>${escapeHtml(categoryLabelFor(article.category))}</span>
-                <span>•</span>
-                <span>${escapeHtml(article.createdLabel)}</span>
-                <span>•</span>
-                <span>${escapeHtml(article.readTime)}</span>
-              </div>
-              <p style="margin:0;line-height:1.8;color:#ecece7;">${escapeHtml(previewText)}</p>
-              ${imageMarkup}
+              <span class="news-card-category">${escapeHtml(categoryLabelFor(article.category))}</span>
+              <h3>${escapeHtml(article.title)}</h3>
+              <div class="news-card-meta">${escapeHtml(article.createdLabel)} · ${escapeHtml(article.readTime)}</div>
+              <p class="news-card-excerpt">${escapeHtml(previewText)}</p>
               ${article.tags.length ? `<div class="news-card-tags">${tagButtons}</div>` : ''}
+              <button type="button" class="news-card-read-more">Pročitaj više →</button>
             </div>
           </article>
         `;
@@ -960,6 +1083,10 @@
             </div>
             <div id="article-tags" class="article-tags"></div>
             <div class="article-text" id="article-text"></div>
+            <section class="article-related" aria-labelledby="article-related-title">
+              <h2 id="article-related-title">Povezane vijesti</h2>
+              <div id="article-related-grid" class="article-related-grid"></div>
+            </section>
             <div class="news-share-bar">
               <button type="button" id="article-share-btn" class="news-share-btn">Dijeli link</button>
               <div class="news-reactions">
@@ -989,6 +1116,7 @@
       const progressEl = view.querySelector('#article-progress');
       const shareBtn = view.querySelector('#article-share-btn');
       const articleBody = view.querySelector('.news-article-body');
+      const relatedGrid = view.querySelector('#article-related-grid');
 
       if (titleEl) titleEl.textContent = article.title;
       if (categoryEl) categoryEl.textContent = categoryLabelFor(article.category);
@@ -1030,16 +1158,41 @@
         }
       }
 
+      if (relatedGrid) {
+        const relatedItems = (state.items || [])
+          .filter((entry) => String(getArticleData(entry).id) !== String(article.id))
+          .sort((a, b) => {
+            const aSame = getArticleData(a).category === article.category ? 1 : 0;
+            const bSame = getArticleData(b).category === article.category ? 1 : 0;
+            return bSame - aSame || new Date(getArticleData(b).createdAt) - new Date(getArticleData(a).createdAt);
+          })
+          .slice(0, 2);
+        relatedGrid.innerHTML = relatedItems.map((entry) => {
+          const related = getArticleData(entry);
+          const relatedImage = related.image ? `<img src="${escapeHtml(related.image)}" alt="${escapeHtml(related.title)}">` : '';
+          return `<article class="article-related-card" data-related-id="${escapeHtml(related.id)}">${relatedImage}<div class="article-related-card-body"><strong>${escapeHtml(related.title)}</strong><small>${escapeHtml(related.createdLabel)}</small></div></article>`;
+        }).join('');
+        relatedGrid.querySelectorAll('[data-related-id]').forEach((card) => {
+          card.addEventListener('click', () => {
+            const relatedItem = (state.items || []).find((entry) => String(getArticleData(entry).id) === String(card.getAttribute('data-related-id')));
+            if (relatedItem) openFullArticle(relatedItem, state);
+          });
+        });
+      }
+
       if (shareBtn) {
         shareBtn.textContent = 'Dijeli link';
         shareBtn.onclick = async () => {
           const url = `${window.location.href.split('#')[0]}#vijesti`;
           try {
-            if (navigator.clipboard) await navigator.clipboard.writeText(`${article.title} ${url}`);
+            if (!navigator.clipboard) throw new Error('Clipboard API unavailable');
+            await navigator.clipboard.writeText(url);
             shareBtn.textContent = 'Link kopiran';
+            if (typeof showToast === 'function') showToast('Link članka je kopiran.');
             setTimeout(() => { shareBtn.textContent = 'Dijeli link'; }, 1400);
           } catch (error) {
             shareBtn.textContent = 'Nije kopirano';
+            if (typeof showToast === 'function') showToast('Kopiranje linka nije uspjelo.');
             setTimeout(() => { shareBtn.textContent = 'Dijeli link'; }, 1400);
           }
         };
