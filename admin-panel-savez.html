@@ -14,7 +14,9 @@
         --panel-soft: rgba(255,255,255,0.03);
         --primary: #2e5e2f;
         --primary-soft: rgba(46,94,47,0.18);
-        --gold: #b98f3b;
+        --gold: #C5A059;
+        --gold-border: rgba(197, 160, 89, 0.25);
+        --gold-glow: rgba(197, 160, 89, 0.15);
         --text: #edf3ee;
         --muted: #a8b5ad;
         --soft-line: rgba(255,255,255,0.08);
@@ -70,7 +72,7 @@
         width: min(460px, 100%);
         margin: 30px auto 0;
         background: linear-gradient(180deg, rgba(16,23,22,0.96), rgba(7,11,10,0.96));
-        border: 1px solid var(--soft-line);
+        border: 1px solid var(--gold-border);
         border-radius: 18px;
         box-shadow: var(--shadow);
         padding: 28px 22px;
@@ -180,7 +182,7 @@
 
       .panel {
         background: linear-gradient(180deg, rgba(15,23,21,0.96), rgba(10,14,13,0.96));
-        border: 1px solid var(--soft-line);
+        border: 1px solid var(--gold-border);
         border-radius: 18px;
         padding: 18px 18px 20px;
         box-shadow: var(--shadow);
@@ -257,6 +259,10 @@
         min-height: 130px;
       }
 
+      .editor-toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
+      .format-btn { min-width: 36px; padding: 7px 10px; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(255,255,255,0.03); color: var(--gold); cursor: pointer; font-weight: 800; }
+      .format-btn:hover { border-color: var(--gold); box-shadow: 0 0 16px var(--gold-glow); }
+
       .tag-badges {
         display: flex;
         flex-wrap: wrap;
@@ -304,7 +310,15 @@
       .file-upload-wrap {
         display: grid;
         gap: 10px;
+        padding: 18px;
+        border: 1px dashed rgba(197, 160, 89, 0.65);
+        border-radius: 14px;
+        background: rgba(46,94,47,0.06);
+        transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
       }
+      .file-upload-wrap.dragover { border-color: var(--gold); background: rgba(46,94,47,0.14); box-shadow: 0 0 22px var(--gold-glow); }
+      .upload-icon { color: var(--gold); font-size: 1.4rem; }
+      .upload-hint { color: var(--muted); font-size: .82rem; }
 
       .file-upload-row {
         display: flex;
@@ -388,8 +402,11 @@
         flex: 1;
         background: linear-gradient(180deg, #2ca75a, #2a8d52);
         color: #dffbe9;
-        box-shadow: 0 6px 18px rgba(64,185,106,0.18);
+        border: 1px solid var(--gold);
+        box-shadow: 0 6px 18px rgba(64,185,106,0.18), 0 0 0 1px var(--gold-glow);
       }
+      .publish-btn:hover { transform: translateY(-2px); border-color: #f0d28c; box-shadow: 0 10px 26px rgba(64,185,106,0.22), 0 0 18px var(--gold-glow); }
+      .draft-btn { background: rgba(197,160,89,0.08); border: 1px solid var(--gold-border); color: var(--gold); }
 
       .preview-btn {
         background: rgba(255,255,255,0.04);
@@ -651,6 +668,11 @@
         margin-top: 14px;
       }
 
+      .delete-dialog { width: min(460px, 100%); padding-bottom: 18px; border-color: rgba(197,160,89,0.4); }
+      .delete-dialog > p { padding: 18px; margin: 0; color: var(--muted); line-height: 1.6; }
+      .delete-dialog .button-row { padding: 0 18px; justify-content: flex-end; }
+      .delete-dialog .danger-btn { border-color: rgba(197,160,89,0.4); }
+
       @media (max-width: 900px) {
         .admin-grid {
           grid-template-columns: 1fr;
@@ -709,6 +731,11 @@
 
               <div class="field-group">
                 <label for="sadrzaj">Tekst</label>
+                <div class="editor-toolbar" aria-label="Formatiranje teksta">
+                  <button type="button" class="format-btn" data-format="bold" title="Podebljano"><strong>B</strong></button>
+                  <button type="button" class="format-btn" data-format="italic" title="Kurziv"><em>I</em></button>
+                  <button type="button" class="format-btn" data-format="link" title="Dodaj link">Link</button>
+                </div>
                 <textarea id="sadrzaj" placeholder="Napišite tekst vijesti..." required></textarea>
               </div>
 
@@ -720,6 +747,8 @@
               <div class="field-group">
                 <label for="slika-input">Slika sa računara</label>
                 <div class="file-upload-wrap">
+                  <div class="upload-icon" aria-hidden="true">↥</div>
+                  <div class="upload-hint">Prevucite sliku ovdje ili odaberite datoteku</div>
                   <div class="file-upload-row">
                     <input id="slika-input" class="file-input-hidden" type="file" accept="image/*" />
                     <button id="slika-pick-btn" type="button" class="file-pick-btn">Odaberi datoteku</button>
@@ -752,6 +781,7 @@
 
               <div class="button-row">
                 <button id="submitButton" class="publish-btn" type="submit">Objavi vijest</button>
+                <button id="draftButton" class="secondary-btn draft-btn" type="button">Sačuvaj nacrt</button>
                 <button id="previewButton" type="button" class="preview-btn">Pregledaj</button>
               </div>
               <button id="cancelEditButton" type="button" class="secondary-btn" style="display:none; margin-top: 8px;">Odustani</button>
@@ -773,13 +803,25 @@
             </div>
 
             <div class="filters" id="filterBar">
-              <button type="button" class="filter-btn active" data-filter="sve">Sve</button>
+              <button type="button" class="filter-btn status-filter active" data-status-filter="sve">Sve</button>
+              <button type="button" class="filter-btn status-filter" data-status-filter="published">Objavljeno</button>
+              <button type="button" class="filter-btn status-filter" data-status-filter="draft">Nacrti</button>
+            </div>
+            <div class="filters" id="categoryFilterBar">
+              <button type="button" class="filter-btn active" data-filter="sve">Sve kategorije</button>
               <button type="button" class="filter-btn" data-filter="obavjestenje">📌 Obavještenje</button>
               <button type="button" class="filter-btn" data-filter="humanitarna">🤝 Humanitarna akcija</button>
               <button type="button" class="filter-btn" data-filter="aktivnosti">⚽ Aktivnosti i Sport</button>
               <button type="button" class="filter-btn" data-filter="historija">📜 Historija</button>
             </div>
 
+            <div id="livePreview" class="live-preview" aria-live="polite">
+              <div class="live-preview-label">Live pregled</div>
+              <div id="livePreviewImage" class="live-preview-placeholder">Slika će se prikazati ovdje</div>
+              <span id="livePreviewCategory" class="news-category">📌 Obavještenje</span>
+              <h3 id="livePreviewTitle">Naslov vijesti</h3>
+              <p id="livePreviewText">Tekst vijesti će se ažurirati dok kucate.</p>
+            </div>
             <div id="newsList" class="news-list"></div>
           </section>
         </div>
@@ -796,6 +838,20 @@
         </div>
         <div class="preview-content">
           <div id="previewCard" class="preview-card"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteModal" class="preview-modal" aria-hidden="true">
+      <div class="preview-dialog delete-dialog" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+        <div class="preview-header">
+          <h3 id="deleteTitle">Izbrisati vijest?</h3>
+          <button id="closeDeleteButton" type="button" class="modal-close-btn">Zatvori</button>
+        </div>
+        <p>Ova radnja je trajna. Da li sigurno želiš izbrisati odabranu vijest?</p>
+        <div class="button-row">
+          <button id="cancelDeleteButton" type="button" class="secondary-btn">Odustani</button>
+          <button id="confirmDeleteButton" type="button" class="danger-btn">Izbriši vijest</button>
         </div>
       </div>
     </div>
@@ -848,16 +904,28 @@
       const closePreviewButton = document.getElementById('closePreviewButton');
       const previewCard = document.getElementById('previewCard');
       const categoryButtons = [...document.querySelectorAll('.category-btn')];
-      const filterButtons = [...document.querySelectorAll('.filter-btn')];
+      const filterButtons = [...document.querySelectorAll('#categoryFilterBar .filter-btn')];
+      const statusFilterButtons = [...document.querySelectorAll('[data-status-filter]')];
       const searchInput = document.getElementById('searchInput');
       const featuredCheckbox = document.getElementById('is-featured');
       const tagoviInput = document.getElementById('tagovi');
+      const draftButton = document.getElementById('draftButton');
+      const livePreviewTitle = document.getElementById('livePreviewTitle');
+      const livePreviewText = document.getElementById('livePreviewText');
+      const livePreviewCategory = document.getElementById('livePreviewCategory');
+      const livePreviewImage = document.getElementById('livePreviewImage');
+      const deleteModal = document.getElementById('deleteModal');
+      const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+      const closeDeleteButton = document.getElementById('closeDeleteButton');
+      const cancelDeleteButton = document.getElementById('cancelDeleteButton');
 
       let selectedCategory = 'obavjestenje';
       let selectedFilter = 'sve';
+      let selectedStatusFilter = 'sve';
       let searchText = '';
       let newsData = [];
       let editingId = null;
+      let pendingDeleteId = null;
 
       function normalizeTags(rawValue) {
         if (Array.isArray(rawValue)) {
@@ -927,6 +995,16 @@
         renderNewsList();
       }
 
+      function isDraft(item) {
+        return Boolean(item.localDraft || item.status === 'draft' || item.draft === true || item.is_published === false);
+      }
+
+      function updateStatusSelection(nextStatus) {
+        selectedStatusFilter = nextStatus;
+        statusFilterButtons.forEach((button) => button.classList.toggle('active', button.dataset.statusFilter === nextStatus));
+        renderNewsList();
+      }
+
       function resetNewsForm() {
         editingId = null;
         submitButton.textContent = 'Objavi vijest';
@@ -938,6 +1016,21 @@
         tagoviInput.value = '';
         featuredCheckbox.checked = false;
         updateCategorySelection('obavjestenje');
+        updateLivePreview();
+      }
+
+      function updateLivePreview() {
+        if (!livePreviewTitle) return;
+        const title = document.getElementById('naslov').value.trim();
+        const text = document.getElementById('sadrzaj').value.trim();
+        const imageUrl = document.getElementById('slika_url').value.trim();
+        livePreviewTitle.textContent = title || 'Naslov vijesti';
+        livePreviewText.textContent = text || 'Tekst vijesti će se ažurirati dok kucate.';
+        livePreviewCategory.textContent = getCategoryLabel(selectedCategory);
+        const file = slikaInput.files[0];
+        const source = file ? URL.createObjectURL(file) : imageUrl;
+        livePreviewImage.innerHTML = source ? `<img src="${source}" alt="Live pregled slike" />` : 'Slika će se prikazati ovdje';
+        livePreviewImage.classList.toggle('live-preview-placeholder', !source);
       }
 
       function populateEditForm(item) {
@@ -989,9 +1082,12 @@
       function renderNewsList() {
         const items = newsData.filter((item) => {
           const matchesFilter = selectedFilter === 'sve' || (item.kategorija || item.category || 'obavjestenje') === selectedFilter;
+          const matchesStatus = selectedStatusFilter === 'sve'
+            || (selectedStatusFilter === 'draft' && isDraft(item))
+            || (selectedStatusFilter === 'published' && !isDraft(item));
           const title = (item.naslov || item.title || '').toLowerCase();
           const matchesSearch = !searchText || title.includes(searchText.toLowerCase());
-          return matchesFilter && matchesSearch;
+          return matchesFilter && matchesStatus && matchesSearch;
         });
 
         if (!items.length) {
@@ -1023,10 +1119,12 @@
               <p>${text}</p>
               ${tagsMarkup}
               ${image ? `<img src="${image}" alt="${title}" />` : ''}
+              ${isDraft(item) ? '<div class="draft-status">Nacrt</div>' : ''}
               <div class="action-row">
                 <button type="button" class="action-btn edit-btn" data-id="${item.id}">Uredi</button>
                 <button type="button" class="action-btn danger-btn delete-btn" data-id="${item.id}">Izbriši</button>
                 <button type="button" class="action-btn copy-link-btn" data-id="${item.id}">Kopiraj link</button>
+                <button type="button" class="action-btn copy-social-btn" data-id="${item.id}">Kopiraj za FB/IG</button>
               </div>
             </article>
           `;
@@ -1040,30 +1138,12 @@
         });
 
         document.querySelectorAll('.delete-btn').forEach((button) => {
-          button.addEventListener('click', async () => {
+          button.addEventListener('click', () => {
             const rawId = String(button.dataset.id || '').trim();
-            if (!rawId || rawId === 'undefined' || !window.confirm('Jeste li sigurni da želite izbrisati ovu vijest?')) return;
-
-            try {
-              const { error } = await supabaseClient.from('vijesti').delete().eq('id', rawId);
-              if (error) throw error;
-
-              const card = button.closest('.news-item');
-              if (card) {
-                card.remove();
-              }
-
-              newsData = newsData.filter((item) => String(item.id) !== String(rawId));
-              if (!newsData.some((item) => String(item.id) === String(rawId))) {
-                renderNewsList();
-              }
-
-              showToast('Vijest je uspješno izbrisana.');
-              await fetchNews();
-            } catch (error) {
-              console.error(error);
-              showToast(error?.message || 'Brisanje vijesti nije uspjelo.');
-            }
+            if (!rawId || rawId === 'undefined') return;
+            pendingDeleteId = rawId;
+            deleteModal.classList.add('show');
+            deleteModal.setAttribute('aria-hidden', 'false');
           });
         });
 
@@ -1083,6 +1163,18 @@
             }
           });
         });
+
+        document.querySelectorAll('.copy-social-btn').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const target = newsData.find((entry) => String(entry.id) === String(button.dataset.id));
+            if (!target) return;
+            const title = target.naslov || target.title || 'Nova vijest';
+            const url = `${location.origin}${location.pathname}#news-${target.id}`;
+            const socialText = `${title}\n\n${url}\n\n#ZeleneBeretke #StariGrad #Sarajevo`;
+            try { await navigator.clipboard.writeText(socialText); showToast('Format za FB/IG je kopiran.'); }
+            catch (error) { showToast('Nije moguće kopirati format za društvene mreže.'); }
+          });
+        });
       }
 
       async function fetchNews() {
@@ -1094,12 +1186,65 @@
 
           if (error) throw error;
 
-          newsData = data || [];
+          const localDrafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]');
+          newsData = [...localDrafts, ...(data || [])];
           renderNewsList();
         } catch (error) {
           console.error(error);
           showToast('Neuspješan unos vijesti.');
         }
+      }
+
+      function closeDeleteModal() {
+        pendingDeleteId = null;
+        deleteModal.classList.remove('show');
+        deleteModal.setAttribute('aria-hidden', 'true');
+      }
+
+      async function confirmDelete() {
+        const rawId = pendingDeleteId;
+        if (!rawId) return;
+        const localDraft = newsData.find((item) => String(item.id) === rawId && item.localDraft);
+        closeDeleteModal();
+        if (localDraft) {
+          const drafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]').filter((item) => String(item.id) !== rawId);
+          localStorage.setItem('admin_news_drafts_v1', JSON.stringify(drafts));
+          newsData = newsData.filter((item) => String(item.id) !== rawId);
+          renderNewsList();
+          showToast('Nacrt je izbrisan.');
+          return;
+        }
+        try {
+          const { error } = await supabaseClient.from('vijesti').delete().eq('id', rawId);
+          if (error) throw error;
+          newsData = newsData.filter((item) => String(item.id) !== rawId);
+          renderNewsList();
+          showToast('Vijest je uspješno izbrisana.');
+          await fetchNews();
+        } catch (error) {
+          console.error(error);
+          showToast(error?.message || 'Brisanje vijesti nije uspjelo.');
+        }
+      }
+
+      function saveCurrentDraft() {
+        const draft = {
+          id: `draft-${Date.now()}`,
+          localDraft: true,
+          naslov: document.getElementById('naslov').value.trim() || 'Nacrt bez naslova',
+          sadrzaj: document.getElementById('sadrzaj').value.trim(),
+          slika_url: document.getElementById('slika_url').value.trim(),
+          kategorija: selectedCategory,
+          tagovi: normalizeTags(tagoviInput.value).join(', '),
+          is_featured: featuredCheckbox.checked,
+          created_at: new Date().toISOString()
+        };
+        const drafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]');
+        drafts.unshift(draft);
+        localStorage.setItem('admin_news_drafts_v1', JSON.stringify(drafts.slice(0, 20)));
+        newsData = [draft, ...newsData];
+        updateStatusSelection('draft');
+        showToast('Nacrt je sačuvan lokalno.');
       }
 
       async function handleLogin(event) {
@@ -1229,20 +1374,67 @@
       slikaPickButton.addEventListener('click', () => slikaInput.click());
       slikaInput.addEventListener('change', () => {
         slikaFileName.textContent = slikaInput.files[0]?.name || 'Nijedna datoteka nije odabrana';
+        updateLivePreview();
+      });
+
+      draftButton.addEventListener('click', saveCurrentDraft);
+
+      document.querySelectorAll('[data-format]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const textarea = document.getElementById('sadrzaj');
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const selected = textarea.value.slice(start, end) || 'tekst';
+          const format = button.dataset.format;
+          const replacement = format === 'bold' ? `**${selected}**` : format === 'italic' ? `*${selected}*` : `[${selected}](url)`;
+          textarea.setRangeText(replacement, start, end, 'select');
+          textarea.focus();
+          updateLivePreview();
+        });
+      });
+
+      ['naslov', 'sadrzaj', 'slika_url'].forEach((id) => document.getElementById(id).addEventListener('input', updateLivePreview));
+      const uploadZone = document.querySelector('.file-upload-wrap');
+      ['dragenter', 'dragover'].forEach((eventName) => uploadZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        uploadZone.classList.add('dragover');
+      }));
+      ['dragleave', 'drop'].forEach((eventName) => uploadZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        uploadZone.classList.remove('dragover');
+      }));
+      uploadZone.addEventListener('drop', (event) => {
+        if (event.dataTransfer.files.length) {
+          slikaInput.files = event.dataTransfer.files;
+          slikaFileName.textContent = slikaInput.files[0].name;
+          updateLivePreview();
+        }
       });
 
       categoryButtons.forEach((button) => {
-        button.addEventListener('click', () => updateCategorySelection(button.dataset.category));
+        button.addEventListener('click', () => {
+          updateCategorySelection(button.dataset.category);
+          updateLivePreview();
+        });
       });
 
       filterButtons.forEach((button) => {
         button.addEventListener('click', () => updateFilterSelection(button.dataset.filter));
+      });
+      statusFilterButtons.forEach((button) => {
+        button.addEventListener('click', () => updateStatusSelection(button.dataset.statusFilter));
       });
 
       previewButton.addEventListener('click', openPreviewModal);
       closePreviewButton.addEventListener('click', closePreviewModal);
       previewModal.addEventListener('click', (event) => {
         if (event.target === previewModal) closePreviewModal();
+      });
+      closeDeleteButton.addEventListener('click', closeDeleteModal);
+      cancelDeleteButton.addEventListener('click', closeDeleteModal);
+      confirmDeleteButton.addEventListener('click', confirmDelete);
+      deleteModal.addEventListener('click', (event) => {
+        if (event.target === deleteModal) closeDeleteModal();
       });
 
       searchInput.addEventListener('input', (event) => {
@@ -1253,6 +1445,7 @@
       loginForm.addEventListener('submit', handleLogin);
       logoutButton.addEventListener('click', handleLogout);
       newsForm.addEventListener('submit', handleNewsSubmit);
+      updateLivePreview();
 
       async function initSession() {
         try {
