@@ -6,6 +6,7 @@
   <title>Savez Mladih - Zelene Beretke — Stari Grad</title>
   <meta name="description" content="Zvanična prezentacija Saveza Mladih Zelene Beretke - Stari Grad. Takticka zelena, grb Bosne sa ljiljanima kao logo.">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <!-- Logo postavi kao assets/logo.png koristeći priloženu sliku sa grbom saveza -->
 </head>
 <body>
@@ -25,6 +26,11 @@
           <li><a href="#galerija">Galerija</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
         </ul>
+        <div class="nav-social" aria-label="Društvene mreže">
+          <a href="https://www.instagram.com/smzeleneberetkesg/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+          <a href="https://www.facebook.com/profile.php?id=61590398024511&amp;locale=hr_HR" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+          <a href="https://www.tiktok.com/@smzeleneberetkesg" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>
+        </div>
       </nav>
     </div>
   </header>
@@ -469,12 +475,31 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-inner">
+    <div class="container">
+      <section class="footer-social" aria-labelledby="footer-social-title">
+        <h2 id="footer-social-title">Pratite naš rad</h2>
+        <div class="footer-social-grid">
+          <a class="footer-social-card" href="https://www.instagram.com/smzeleneberetkesg/" target="_blank" rel="noopener noreferrer">
+            <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+            <span><strong>Instagram</strong><small>@smzeleneberetkesg</small></span>
+          </a>
+          <a class="footer-social-card" href="https://www.facebook.com/profile.php?id=61590398024511&amp;locale=hr_HR" target="_blank" rel="noopener noreferrer">
+            <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+            <span><strong>Facebook</strong><small>Savez Mladih</small></span>
+          </a>
+          <a class="footer-social-card" href="https://www.tiktok.com/@smzeleneberetkesg" target="_blank" rel="noopener noreferrer">
+            <i class="fa-brands fa-tiktok" aria-hidden="true"></i>
+            <span><strong>TikTok</strong><small>@smzeleneberetkesg</small></span>
+          </a>
+        </div>
+      </section>
+      <div class="footer-inner">
       <div>© <span id="year"></span> Savez Mladih — Zelene Beretke. Sva prava zadržana.</div>
       <div class="footer-links">
         <a href="#">Privatnost</a>
         <a href="#">Uslovi</a>
         <a href="#" class="admin-secret-link" role="button">Admin</a>
+      </div>
       </div>
     </div>
   </footer>
