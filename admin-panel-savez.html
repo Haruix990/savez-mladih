@@ -260,6 +260,10 @@
         background: rgba(255,255,255,0.02);
       }
 
+      .image-url-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+      .media-pick-btn { white-space: nowrap; border: 1px solid var(--gold-border); background: rgba(197,160,89,0.08); color: var(--gold); border-radius: 10px; padding: .85rem .9rem; font-weight: 800; cursor: pointer; }
+      .media-pick-btn:hover { border-color: var(--gold); box-shadow: 0 0 16px var(--gold-glow); }
+
       .field-group textarea {
         min-height: 130px;
       }
@@ -984,6 +988,15 @@
       const confirmDeleteButton = document.getElementById('confirmDeleteButton');
       const closeDeleteButton = document.getElementById('closeDeleteButton');
       const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+      const adminTabs = [...document.querySelectorAll('[data-admin-tab]')];
+      const tabPanels = [...document.querySelectorAll('.tab-panel')];
+      const mediaPickButton = document.getElementById('media-pick-button');
+      const mediaUploadZone = document.getElementById('mediaUploadZone');
+      const mediaUploadInput = document.getElementById('mediaUploadInput');
+      const mediaSearch = document.getElementById('mediaSearch');
+      const mediaFilters = [...document.querySelectorAll('[data-media-filter]')];
+      const mediaGrid = document.getElementById('mediaGrid');
+      const mediaCount = document.getElementById('mediaCount');
 
       let selectedCategory = 'obavjestenje';
       let selectedFilter = 'sve';
@@ -992,6 +1005,98 @@
       let newsData = [];
       let editingId = null;
       let pendingDeleteId = null;
+      let mediaItems = [];
+      let selectedMediaFilter = 'all';
+      let mediaPickerOpen = false;
+
+      function setAdminTab(tabId) {
+        adminTabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.adminTab === tabId));
+        tabPanels.forEach((panel) => { panel.hidden = panel.id !== tabId; });
+        if (tabId === 'mediaTab') loadMedia();
+      }
+
+      function mediaCategory(name) {
+        const value = String(name || '').toLowerCase();
+        if (value.includes('sastan')) return 'sastanci';
+        if (value.includes('logo') || value.includes('grb')) return 'logotipi';
+        if (value.includes('akc') || value.includes('event') || value.includes('doga')) return 'akcije';
+        return 'all';
+      }
+
+      function renderMedia() {
+        const search = (mediaSearch.value || '').trim().toLowerCase();
+        const visible = mediaItems.filter((item) => {
+          const matchesSearch = !search || item.name.toLowerCase().includes(search);
+          const category = mediaCategory(item.name);
+          const matchesCategory = selectedMediaFilter === 'all' || category === selectedMediaFilter;
+          return matchesSearch && matchesCategory;
+        });
+        mediaCount.textContent = `${visible.length} slika`;
+        if (!visible.length) {
+          mediaGrid.innerHTML = '<div class="media-empty">Nema slika za odabrane kriterije.</div>';
+          return;
+        }
+        mediaGrid.innerHTML = visible.map((item) => `
+          <article class="media-card">
+            <img src="${item.url}" alt="${item.name}" loading="lazy">
+            <div class="media-card-body">
+              <div class="media-card-name" title="${item.name}">${item.name}</div>
+              <div class="media-card-meta">${mediaCategory(item.name) === 'all' ? 'Ostalo' : mediaCategory(item.name)}</div>
+              <div class="media-card-actions">
+                <button type="button" data-media-copy="${item.path}">📋 Kopiraj URL</button>
+                <button type="button" data-media-select="${item.path}">Izaberi</button>
+                <button type="button" data-media-delete="${item.path}">🗑️ Obriši</button>
+              </div>
+            </div>
+          </article>
+        `).join('');
+
+        mediaGrid.querySelectorAll('[data-media-copy]').forEach((button) => button.addEventListener('click', async () => {
+          const item = mediaItems.find((entry) => entry.path === button.dataset.mediaCopy);
+          if (!item) return;
+          try { await navigator.clipboard.writeText(item.url); showToast('URL slike je kopiran.'); }
+          catch (error) { showToast('Kopiranje URL-a nije uspjelo.'); }
+        }));
+        mediaGrid.querySelectorAll('[data-media-select]').forEach((button) => button.addEventListener('click', () => {
+          const item = mediaItems.find((entry) => entry.path === button.dataset.mediaSelect);
+          if (!item) return;
+          document.getElementById('slika_url').value = item.url;
+          slikaInput.value = '';
+          slikaFileName.textContent = `Izabrano iz medija: ${item.name}`;
+          updateLivePreview();
+          mediaPickerOpen = false;
+          setAdminTab('newsTab');
+          showToast('Slika je izabrana za vijest.');
+        }));
+        mediaGrid.querySelectorAll('[data-media-delete]').forEach((button) => button.addEventListener('click', async () => {
+          const item = mediaItems.find((entry) => entry.path === button.dataset.mediaDelete);
+          if (!item || !window.confirm(`Obrisati sliku "${item.name}"?`)) return;
+          const { error } = await supabaseClient.storage.from('slike-vijesti').remove([item.path]);
+          if (error) { showToast('Brisanje slike nije uspjelo.'); return; }
+          mediaItems = mediaItems.filter((entry) => entry.path !== item.path);
+          renderMedia();
+          showToast('Slika je obrisana.');
+        }));
+      }
+
+      async function loadMedia() {
+        const bucket = supabaseClient.storage.from('slike-vijesti');
+        const [rootResult, mediaResult] = await Promise.all([
+          bucket.list('', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } }),
+          bucket.list('media', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } })
+        ]);
+        if (rootResult.error || mediaResult.error) { mediaGrid.innerHTML = '<div class="media-empty">Media biblioteka trenutno nije dostupna.</div>'; return; }
+        const files = [
+          ...(rootResult.data || []).filter((file) => file.name && file.name !== 'media').map((file) => ({ ...file, path: file.name })),
+          ...(mediaResult.data || []).filter((file) => file.name).map((file) => ({ ...file, path: `media/${file.name}` }))
+        ];
+        mediaItems = files.map((file) => ({
+          name: file.name,
+          path: file.path,
+          url: bucket.getPublicUrl(file.path).data.publicUrl
+        }));
+        renderMedia();
+      }
 
       function normalizeTags(rawValue) {
         if (Array.isArray(rawValue)) {
@@ -1442,6 +1547,46 @@
         slikaFileName.textContent = slikaInput.files[0]?.name || 'Nijedna datoteka nije odabrana';
         updateLivePreview();
       });
+
+      adminTabs.forEach((tab) => tab.addEventListener('click', () => setAdminTab(tab.dataset.adminTab)));
+      mediaPickButton.addEventListener('click', () => {
+        mediaPickerOpen = true;
+        setAdminTab('mediaTab');
+        mediaUploadZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      async function uploadMediaFiles(files) {
+        const selectedFiles = [...files].filter((file) => file.type.startsWith('image/'));
+        if (!selectedFiles.length) return showToast('Odaberi najmanje jednu sliku.');
+        mediaUploadZone.classList.add('dragover');
+        let uploaded = 0;
+        for (const file of selectedFiles) {
+          const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
+          const path = `media/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${safeName}`;
+          const { error } = await supabaseClient.storage.from('slike-vijesti').upload(path, file, { upsert: false });
+          if (!error) uploaded += 1;
+        }
+        mediaUploadZone.classList.remove('dragover');
+        await loadMedia();
+        showToast(`${uploaded} slika je učitana u media biblioteku.`);
+      }
+
+      mediaUploadInput.addEventListener('change', () => uploadMediaFiles(mediaUploadInput.files));
+      ['dragenter', 'dragover'].forEach((eventName) => mediaUploadZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        mediaUploadZone.classList.add('dragover');
+      }));
+      ['dragleave', 'drop'].forEach((eventName) => mediaUploadZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        mediaUploadZone.classList.remove('dragover');
+      }));
+      mediaUploadZone.addEventListener('drop', (event) => uploadMediaFiles(event.dataTransfer.files));
+      mediaSearch.addEventListener('input', renderMedia);
+      mediaFilters.forEach((button) => button.addEventListener('click', () => {
+        selectedMediaFilter = button.dataset.mediaFilter;
+        mediaFilters.forEach((filterButton) => filterButton.classList.toggle('active', filterButton === button));
+        renderMedia();
+      }));
 
       draftButton.addEventListener('click', saveCurrentDraft);
 
