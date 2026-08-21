@@ -180,15 +180,10 @@
         gap: 22px;
       }
 
-      .admin-tabs { display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--gold-border); }
-      .admin-tab { padding: 10px 16px; border: 1px solid transparent; border-bottom: 0; border-radius: 10px 10px 0 0; background: transparent; color: var(--muted); cursor: pointer; font-weight: 800; letter-spacing: .06em; }
-      .admin-tab.active, .admin-tab:hover { border-color: var(--gold-border); background: rgba(197,160,89,0.08); color: var(--gold); }
-      .tab-panel[hidden] { display: none; }
-
       .panel {
         background: linear-gradient(180deg, rgba(15,23,21,0.96), rgba(10,14,13,0.96));
-        border: 1px solid var(--gold-border);
-        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
         padding: 18px 18px 20px;
         box-shadow: var(--shadow);
       }
@@ -260,13 +255,12 @@
         background: rgba(255,255,255,0.02);
       }
 
-      .image-url-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
-      .media-pick-btn { white-space: nowrap; border: 1px solid var(--gold-border); background: rgba(197,160,89,0.08); color: var(--gold); border-radius: 10px; padding: .85rem .9rem; font-weight: 800; cursor: pointer; }
-      .media-pick-btn:hover { border-color: var(--gold); box-shadow: 0 0 16px var(--gold-glow); }
 
       .field-group textarea {
         min-height: 130px;
       }
+
+      .character-count { color: var(--muted); font-size: .72rem; text-align: right; }
 
       .editor-toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
       .format-btn { min-width: 36px; padding: 7px 10px; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(255,255,255,0.03); color: var(--gold); cursor: pointer; font-weight: 800; }
@@ -308,6 +302,13 @@
         color: #f1d99d;
         font-weight: 700;
       }
+
+      .toggle-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .toggle-control input { position: absolute; opacity: 0; pointer-events: none; }
+      .toggle-switch { position: relative; width: 46px; height: 26px; flex: 0 0 auto; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(0,0,0,.35); cursor: pointer; transition: background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+      .toggle-switch::after { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; content: ''; border-radius: 50%; background: #8b978d; transition: transform .2s ease, background .2s ease; }
+      .toggle-control input:checked + .toggle-switch { border-color: var(--gold); background: rgba(197,160,89,.18); box-shadow: 0 0 16px var(--gold-glow); }
+      .toggle-control input:checked + .toggle-switch::after { transform: translateX(20px); background: var(--gold); }
 
       .featured-toggle input {
         width: 18px;
@@ -525,12 +526,39 @@
         gap: 12px;
       }
 
+      .live-preview { margin-bottom: 22px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(0,0,0,.22); box-shadow: 0 14px 30px rgba(0,0,0,.22); overflow: hidden; }
+      .live-preview-label { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.08); color: var(--gold); font-size: .72rem; font-weight: 800; letter-spacing: .14em; }
+      .live-preview-image { width: 100%; height: 150px; display: block; object-fit: cover; background: linear-gradient(135deg, rgba(46,94,47,.2), rgba(0,0,0,.3)); }
+      .live-preview-content { display: grid; gap: 8px; padding: 14px; }
+      .live-preview-content h3 { margin: 0; font-size: 1.25rem; }
+      .live-preview-content p { margin: 0; color: var(--muted); line-height: 1.6; white-space: pre-wrap; }
+      .published-heading { margin: 0 0 12px; color: var(--text); font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
+
       .news-item {
+        display: grid;
+        grid-template-columns: 80px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
         background: rgba(255,255,255,0.02);
-        border: 1px solid var(--soft-line);
+        border: 1px solid rgba(255,255,255,0.08);
         border-radius: 12px;
         padding: 14px 14px 12px;
+        box-shadow: 0 10px 24px rgba(0,0,0,.16);
+        transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
       }
+      .news-item:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 14px 30px var(--gold-glow); }
+      .news-thumb { width: 80px; height: 80px; overflow: hidden; border-radius: 10px; background: rgba(46,94,47,.14); }
+      .news-thumb img { width: 100%; height: 100%; display: block; object-fit: cover; }
+      .news-thumb-empty { display: grid; place-items: center; width: 100%; height: 100%; color: var(--gold); font-size: 1.35rem; }
+      .news-item-main { min-width: 0; }
+      .news-item-main h4 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .news-item-main p { overflow: hidden; display: -webkit-box; line-clamp: 2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .news-item-actions { display: flex; align-items: center; gap: 6px; }
+      .news-item-actions .action-btn { padding: 7px 8px; font-size: .74rem; }
+      .status-badge { display: inline-flex; align-items: center; margin-right: 6px; padding: 4px 7px; border-radius: 999px; font-size: .66rem; font-weight: 800; }
+      .status-published { color: #9ce7ae; background: rgba(64,185,106,.12); }
+      .status-draft { color: #f0d28c; background: rgba(197,160,89,.12); }
+      .status-featured { color: #f0d28c; background: rgba(197,160,89,.12); }
 
       .news-item-head {
         display: flex;
@@ -569,34 +597,8 @@
       }
 
       .news-item img {
-        width: 100%;
-        max-height: 190px;
-        object-fit: cover;
-        border-radius: 10px;
-        margin-top: 12px;
-        border: 1px solid var(--soft-line);
+        display: none;
       }
-
-      .media-panel { display: grid; gap: 18px; }
-      .media-upload-zone { display: grid; place-items: center; gap: 8px; min-height: 190px; padding: 24px; border: 2px dashed #C5A059; border-radius: 18px; background: rgba(46,94,47,0.08); text-align: center; cursor: pointer; transition: background .2s ease, box-shadow .2s ease, border-color .2s ease; }
-      .media-upload-zone:hover, .media-upload-zone.dragover { background: rgba(46,94,47,0.18); border-color: #e3c27e; box-shadow: 0 0 28px var(--gold-glow); }
-      .media-upload-icon { color: var(--gold); font-size: 2.2rem; }
-      .media-upload-zone strong { color: var(--text); font-size: 1.05rem; }
-      .media-upload-zone span { color: var(--muted); font-size: .86rem; }
-      .media-toolbar { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
-      .media-filters { display: flex; gap: 8px; flex-wrap: wrap; }
-      .media-filter.active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 14px var(--gold-glow); }
-      .media-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-      .media-card { min-width: 0; overflow: hidden; border: 1px solid var(--gold-border); border-radius: 14px; background: rgba(0,0,0,0.24); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-      .media-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 12px 28px var(--gold-glow); }
-      .media-card img { width: 100%; height: 130px; display: block; object-fit: cover; background: rgba(255,255,255,0.03); }
-      .media-card-body { display: grid; gap: 8px; padding: 10px; }
-      .media-card-name { overflow: hidden; color: var(--text); font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
-      .media-card-meta { color: var(--muted); font-size: .7rem; }
-      .media-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-      .media-card-actions button { padding: 7px 5px; border: 1px solid var(--gold-border); border-radius: 8px; background: rgba(255,255,255,0.03); color: var(--gold); cursor: pointer; font-size: .72rem; font-weight: 700; }
-      .media-card-actions button:hover { border-color: var(--gold); background: rgba(197,160,89,0.1); }
-      .media-empty { padding: 26px; border: 1px dashed var(--gold-border); border-radius: 14px; color: var(--muted); text-align: center; }
 
       .toast {
         position: fixed;
@@ -707,7 +709,6 @@
         .admin-grid {
           grid-template-columns: 1fr;
         }
-        .media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
         .button-row {
           flex-direction: column;
@@ -715,8 +716,10 @@
       }
 
       @media (max-width: 560px) {
-        .media-toolbar { grid-template-columns: 1fr; }
-        .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .news-item { grid-template-columns: 64px minmax(0, 1fr); }
+        .news-thumb { width: 64px; height: 64px; }
+        .news-item-actions { grid-column: 1 / -1; justify-content: flex-start; flex-wrap: wrap; }
+        .news-item-actions .action-btn { flex: 1; }
       }
     </style>
   </head>
@@ -749,11 +752,6 @@
       </div>
 
       <main id="admin-content" class="hidden">
-        <nav class="admin-tabs" aria-label="Admin sekcije">
-          <button type="button" class="admin-tab active" data-admin-tab="newsTab">VIJESTI</button>
-          <button type="button" class="admin-tab" data-admin-tab="mediaTab">MEDIJI</button>
-        </nav>
-        <section id="newsTab" class="tab-panel">
         <div class="admin-grid">
           <section class="panel">
             <div class="panel-header">
@@ -767,7 +765,8 @@
             <form id="newsForm" class="admin-form">
               <div class="field-group">
                 <label for="naslov">Naslov</label>
-                <input id="naslov" type="text" placeholder="Unesite naslov vijesti" required />
+                <input id="naslov" type="text" maxlength="120" placeholder="Unesite naslov vijesti" required />
+                <div id="titleCount" class="character-count">0 / 120</div>
               </div>
 
               <div class="field-group">
@@ -778,14 +777,12 @@
                   <button type="button" class="format-btn" data-format="link" title="Dodaj link">Link</button>
                 </div>
                 <textarea id="sadrzaj" placeholder="Napišite tekst vijesti..." required></textarea>
+                <div id="bodyCount" class="character-count">0 znakova</div>
               </div>
 
               <div class="field-group">
                 <label for="slika_url">URL Slike</label>
-                <div class="image-url-row">
-                  <input id="slika_url" type="text" placeholder="https://example.com/slika.jpg" />
-                  <button id="media-pick-button" type="button" class="media-pick-btn">Izaberi iz medija</button>
-                </div>
+                <input id="slika_url" type="text" placeholder="https://example.com/slika.jpg" />
               </div>
 
               <div class="field-group">
@@ -817,9 +814,10 @@
               </div>
 
               <div class="field-group featured-toggle">
-                <label for="is-featured">
+                <label for="is-featured" class="toggle-control">
                   <input id="is-featured" type="checkbox" />
                   <span>Označi kao istaknutu (Udarna vijest)</span>
+                  <span class="toggle-switch" aria-hidden="true"></span>
                 </label>
               </div>
 
@@ -839,8 +837,17 @@
               <span class="panel-badge">Aktualno</span>
             </div>
 
-            <h2 class="news-title">Prostor za vijesti</h2>
-            <p class="news-subtitle">Objave će se ovdje prikazivati kao najnovije i važno.</p>
+            <div id="livePreview" class="live-preview" aria-live="polite">
+              <div class="live-preview-label">LIVE PREVIEW</div>
+              <div id="livePreviewImage" class="live-preview-image"></div>
+              <div class="live-preview-content">
+                <span id="livePreviewCategory" class="news-category">📌 Obavještenje</span>
+                <h3 id="livePreviewTitle">Naslov vijesti</h3>
+                <p id="livePreviewText">Tekst vijesti će se ažurirati dok kucate.</p>
+              </div>
+            </div>
+
+            <h2 class="published-heading">Objavljene vijesti</h2>
 
             <div class="search-wrap">
               <input id="searchInput" class="search-input" type="search" placeholder="Pretraži vijesti po naslovu..." />
@@ -859,42 +866,9 @@
               <button type="button" class="filter-btn" data-filter="historija">📜 Historija</button>
             </div>
 
-            <div id="livePreview" class="live-preview" aria-live="polite">
-              <div class="live-preview-label">Live pregled</div>
-              <div id="livePreviewImage" class="live-preview-placeholder">Slika će se prikazati ovdje</div>
-              <span id="livePreviewCategory" class="news-category">📌 Obavještenje</span>
-              <h3 id="livePreviewTitle">Naslov vijesti</h3>
-              <p id="livePreviewText">Tekst vijesti će se ažurirati dok kucate.</p>
-            </div>
             <div id="newsList" class="news-list"></div>
           </section>
         </div>
-        </section>
-        <section id="mediaTab" class="tab-panel media-panel" hidden>
-          <div class="panel-header">
-            <div>
-              <div class="panel-label">MEDIA LIBRARY</div>
-              <h2 class="news-title">Mediji</h2>
-            </div>
-            <span id="mediaCount" class="panel-badge">0 slika</span>
-          </div>
-          <label id="mediaUploadZone" class="media-upload-zone" for="mediaUploadInput">
-            <span class="media-upload-icon" aria-hidden="true">↥</span>
-            <strong>Prevuci slike ovdje za masovni upload</strong>
-            <span>ili klikni da odabereš više slika</span>
-            <input id="mediaUploadInput" type="file" accept="image/*" multiple hidden />
-          </label>
-          <div class="media-toolbar">
-            <input id="mediaSearch" class="search-input" type="search" placeholder="Pretraži po nazivu fajla..." />
-            <div class="media-filters" id="mediaFilters">
-              <button type="button" class="filter-btn media-filter active" data-media-filter="all">Sve slike</button>
-              <button type="button" class="filter-btn media-filter" data-media-filter="akcije">Akcije</button>
-              <button type="button" class="filter-btn media-filter" data-media-filter="sastanci">Sastanci</button>
-              <button type="button" class="filter-btn media-filter" data-media-filter="logotipi">Logotipi</button>
-            </div>
-          </div>
-          <div id="mediaGrid" class="media-grid"></div>
-        </section>
       </main>
     </div>
 
@@ -925,6 +899,7 @@
         </div>
       </div>
     </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -984,19 +959,12 @@
       const livePreviewText = document.getElementById('livePreviewText');
       const livePreviewCategory = document.getElementById('livePreviewCategory');
       const livePreviewImage = document.getElementById('livePreviewImage');
+      const titleCount = document.getElementById('titleCount');
+      const bodyCount = document.getElementById('bodyCount');
       const deleteModal = document.getElementById('deleteModal');
       const confirmDeleteButton = document.getElementById('confirmDeleteButton');
       const closeDeleteButton = document.getElementById('closeDeleteButton');
       const cancelDeleteButton = document.getElementById('cancelDeleteButton');
-      const adminTabs = [...document.querySelectorAll('[data-admin-tab]')];
-      const tabPanels = [...document.querySelectorAll('.tab-panel')];
-      const mediaPickButton = document.getElementById('media-pick-button');
-      const mediaUploadZone = document.getElementById('mediaUploadZone');
-      const mediaUploadInput = document.getElementById('mediaUploadInput');
-      const mediaSearch = document.getElementById('mediaSearch');
-      const mediaFilters = [...document.querySelectorAll('[data-media-filter]')];
-      const mediaGrid = document.getElementById('mediaGrid');
-      const mediaCount = document.getElementById('mediaCount');
 
       let selectedCategory = 'obavjestenje';
       let selectedFilter = 'sve';
@@ -1005,99 +973,6 @@
       let newsData = [];
       let editingId = null;
       let pendingDeleteId = null;
-      let mediaItems = [];
-      let selectedMediaFilter = 'all';
-      let mediaPickerOpen = false;
-
-      function setAdminTab(tabId) {
-        adminTabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.adminTab === tabId));
-        tabPanels.forEach((panel) => { panel.hidden = panel.id !== tabId; });
-        if (tabId === 'mediaTab') loadMedia();
-      }
-
-      function mediaCategory(name) {
-        const value = String(name || '').toLowerCase();
-        if (value.includes('sastan')) return 'sastanci';
-        if (value.includes('logo') || value.includes('grb')) return 'logotipi';
-        if (value.includes('akc') || value.includes('event') || value.includes('doga')) return 'akcije';
-        return 'all';
-      }
-
-      function renderMedia() {
-        const search = (mediaSearch.value || '').trim().toLowerCase();
-        const visible = mediaItems.filter((item) => {
-          const matchesSearch = !search || item.name.toLowerCase().includes(search);
-          const category = mediaCategory(item.name);
-          const matchesCategory = selectedMediaFilter === 'all' || category === selectedMediaFilter;
-          return matchesSearch && matchesCategory;
-        });
-        mediaCount.textContent = `${visible.length} slika`;
-        if (!visible.length) {
-          mediaGrid.innerHTML = '<div class="media-empty">Nema slika za odabrane kriterije.</div>';
-          return;
-        }
-        mediaGrid.innerHTML = visible.map((item) => `
-          <article class="media-card">
-            <img src="${item.url}" alt="${item.name}" loading="lazy">
-            <div class="media-card-body">
-              <div class="media-card-name" title="${item.name}">${item.name}</div>
-              <div class="media-card-meta">${mediaCategory(item.name) === 'all' ? 'Ostalo' : mediaCategory(item.name)}</div>
-              <div class="media-card-actions">
-                <button type="button" data-media-copy="${item.path}">📋 Kopiraj URL</button>
-                <button type="button" data-media-select="${item.path}">Izaberi</button>
-                <button type="button" data-media-delete="${item.path}">🗑️ Obriši</button>
-              </div>
-            </div>
-          </article>
-        `).join('');
-
-        mediaGrid.querySelectorAll('[data-media-copy]').forEach((button) => button.addEventListener('click', async () => {
-          const item = mediaItems.find((entry) => entry.path === button.dataset.mediaCopy);
-          if (!item) return;
-          try { await navigator.clipboard.writeText(item.url); showToast('URL slike je kopiran.'); }
-          catch (error) { showToast('Kopiranje URL-a nije uspjelo.'); }
-        }));
-        mediaGrid.querySelectorAll('[data-media-select]').forEach((button) => button.addEventListener('click', () => {
-          const item = mediaItems.find((entry) => entry.path === button.dataset.mediaSelect);
-          if (!item) return;
-          document.getElementById('slika_url').value = item.url;
-          slikaInput.value = '';
-          slikaFileName.textContent = `Izabrano iz medija: ${item.name}`;
-          updateLivePreview();
-          mediaPickerOpen = false;
-          setAdminTab('newsTab');
-          showToast('Slika je izabrana za vijest.');
-        }));
-        mediaGrid.querySelectorAll('[data-media-delete]').forEach((button) => button.addEventListener('click', async () => {
-          const item = mediaItems.find((entry) => entry.path === button.dataset.mediaDelete);
-          if (!item || !window.confirm(`Obrisati sliku "${item.name}"?`)) return;
-          const { error } = await supabaseClient.storage.from('slike-vijesti').remove([item.path]);
-          if (error) { showToast('Brisanje slike nije uspjelo.'); return; }
-          mediaItems = mediaItems.filter((entry) => entry.path !== item.path);
-          renderMedia();
-          showToast('Slika je obrisana.');
-        }));
-      }
-
-      async function loadMedia() {
-        const bucket = supabaseClient.storage.from('slike-vijesti');
-        const [rootResult, mediaResult] = await Promise.all([
-          bucket.list('', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } }),
-          bucket.list('media', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } })
-        ]);
-        if (rootResult.error || mediaResult.error) { mediaGrid.innerHTML = '<div class="media-empty">Media biblioteka trenutno nije dostupna.</div>'; return; }
-        const files = [
-          ...(rootResult.data || []).filter((file) => file.name && file.name !== 'media').map((file) => ({ ...file, path: file.name })),
-          ...(mediaResult.data || []).filter((file) => file.name).map((file) => ({ ...file, path: `media/${file.name}` }))
-        ];
-        mediaItems = files.map((file) => ({
-          name: file.name,
-          path: file.path,
-          url: bucket.getPublicUrl(file.path).data.publicUrl
-        }));
-        renderMedia();
-      }
-
       function normalizeTags(rawValue) {
         if (Array.isArray(rawValue)) {
           return rawValue
@@ -1200,8 +1075,10 @@
         livePreviewCategory.textContent = getCategoryLabel(selectedCategory);
         const file = slikaInput.files[0];
         const source = file ? URL.createObjectURL(file) : imageUrl;
-        livePreviewImage.innerHTML = source ? `<img src="${source}" alt="Live pregled slike" />` : 'Slika će se prikazati ovdje';
-        livePreviewImage.classList.toggle('live-preview-placeholder', !source);
+        livePreviewImage.innerHTML = source ? `<img src="${source}" alt="Live pregled slike" class="live-preview-image" />` : '';
+        livePreviewImage.style.display = source ? 'block' : 'none';
+        titleCount.textContent = `${document.getElementById('naslov').value.length} / 120`;
+        bodyCount.textContent = `${document.getElementById('sadrzaj').value.length} znakova`;
       }
 
       function populateEditForm(item) {
@@ -1281,17 +1158,18 @@
 
           return `
             <article class="news-item">
-              <div class="news-item-head">
+              <div class="news-thumb">${image ? `<img src="${image}" alt="${title}" />` : '<span class="news-thumb-empty">✦</span>'}</div>
+              <div class="news-item-main">
+                <div class="news-item-head">
+                  <div><span class="status-badge ${isDraft(item) ? 'status-draft' : 'status-published'}">${isDraft(item) ? '🟡 Nacrt' : '🟢 Objavljeno'}</span>${isFeatured ? '<span class="status-badge status-featured">📌 Udarna</span>' : ''}</div>
+                  <span class="news-meta">${date ? new Date(date).toLocaleDateString('bs-BA') : ''} · 0 pregleda</span>
+                </div>
                 <span class="news-category">${getCategoryLabel(category)}</span>
-                <span class="news-meta">${date ? new Date(date).toLocaleDateString('bs-BA') : ''}</span>
+                <h4>${title}</h4>
+                <p>${text}</p>
+                ${tagsMarkup}
               </div>
-              ${isFeatured ? '<div class="featured-badge">Udarna vijest</div>' : ''}
-              <h4>${title}</h4>
-              <p>${text}</p>
-              ${tagsMarkup}
-              ${image ? `<img src="${image}" alt="${title}" />` : ''}
-              ${isDraft(item) ? '<div class="draft-status">Nacrt</div>' : ''}
-              <div class="action-row">
+              <div class="news-item-actions">
                 <button type="button" class="action-btn edit-btn" data-id="${item.id}">Uredi</button>
                 <button type="button" class="action-btn danger-btn delete-btn" data-id="${item.id}">Izbriši</button>
                 <button type="button" class="action-btn copy-link-btn" data-id="${item.id}">Kopiraj link</button>
@@ -1548,45 +1426,6 @@
         updateLivePreview();
       });
 
-      adminTabs.forEach((tab) => tab.addEventListener('click', () => setAdminTab(tab.dataset.adminTab)));
-      mediaPickButton.addEventListener('click', () => {
-        mediaPickerOpen = true;
-        setAdminTab('mediaTab');
-        mediaUploadZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-
-      async function uploadMediaFiles(files) {
-        const selectedFiles = [...files].filter((file) => file.type.startsWith('image/'));
-        if (!selectedFiles.length) return showToast('Odaberi najmanje jednu sliku.');
-        mediaUploadZone.classList.add('dragover');
-        let uploaded = 0;
-        for (const file of selectedFiles) {
-          const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
-          const path = `media/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${safeName}`;
-          const { error } = await supabaseClient.storage.from('slike-vijesti').upload(path, file, { upsert: false });
-          if (!error) uploaded += 1;
-        }
-        mediaUploadZone.classList.remove('dragover');
-        await loadMedia();
-        showToast(`${uploaded} slika je učitana u media biblioteku.`);
-      }
-
-      mediaUploadInput.addEventListener('change', () => uploadMediaFiles(mediaUploadInput.files));
-      ['dragenter', 'dragover'].forEach((eventName) => mediaUploadZone.addEventListener(eventName, (event) => {
-        event.preventDefault();
-        mediaUploadZone.classList.add('dragover');
-      }));
-      ['dragleave', 'drop'].forEach((eventName) => mediaUploadZone.addEventListener(eventName, (event) => {
-        event.preventDefault();
-        mediaUploadZone.classList.remove('dragover');
-      }));
-      mediaUploadZone.addEventListener('drop', (event) => uploadMediaFiles(event.dataTransfer.files));
-      mediaSearch.addEventListener('input', renderMedia);
-      mediaFilters.forEach((button) => button.addEventListener('click', () => {
-        selectedMediaFilter = button.dataset.mediaFilter;
-        mediaFilters.forEach((filterButton) => filterButton.classList.toggle('active', filterButton === button));
-        renderMedia();
-      }));
 
       draftButton.addEventListener('click', saveCurrentDraft);
 
