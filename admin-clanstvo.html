@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin članstvo | UB Zelene Beretke</title>
+    <link rel="icon" type="image/png" href="assets/logo.png" />
+    <style>
+      :root {
+        --bg: #050706;
+        --bg-2: #0c1210;
+        --panel: rgba(14, 19, 17, 0.96);
+        --panel-strong: rgba(17, 24, 22, 0.98);
+        --surface: rgba(255,255,255,0.03);
+        --surface-strong: rgba(255,255,255,0.05);
+        --primary: #2a5d34;
+        --primary-soft: rgba(42, 93, 52, 0.18);
+        --gold: #d6b067;
+        --gold-soft: rgba(214, 176, 103, 0.14);
+        --text: #edf5ee;
+        --muted: #a7b7ae;
+        --line: rgba(255,255,255,0.08);
+        --danger: #ff9e9e;
+        --shadow: 0 18px 42px rgba(0,0,0,0.4);
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; font-family: Inter, 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(180deg, #020302 0%, #08110d 100%); color: var(--text); }
+      body {
+        min-height: 100vh;
+        background:
+          radial-gradient(1200px 420px at 50% 0%, rgba(42,93,52,0.18), transparent 48%),
+          linear-gradient(180deg, #020302 0%, #08110d 100%);
+      }
+      a, button, input, textarea { font: inherit; }
+      .container { width: min(1220px, calc(100% - 32px)); margin: 0 auto; }
+      .topbar { position: sticky; top: 0; z-index: 50; background: rgba(3,7,6,0.8); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+      .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; }
+      .brand { display: flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; font-weight: 700; }
+      .brand img { width: 48px; height: 48px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+      .brand small { display: block; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; }
+      .brand strong { display: block; font-size: 1rem; }
+      .status-pill { display: inline-flex; align-items:center; gap: 8px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); font-size: 0.8rem; }
+      .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 16px rgba(214,176,103,0.8); }
+
+      .page { padding: 32px 0 56px; }
+      .hero { margin-bottom: 28px; }
+      .hero h1 { margin: 0 0 10px; font-size: clamp(2.1rem, 3vw, 3rem); }
+      .hero p { margin: 0; color: var(--muted); max-width: 780px; line-height: 1.7; }
+
+      .login-shell, .admin-shell { display: none; }
+      .login-shell.visible, .admin-shell.visible { display: block; }
+
+      .login-card, .panel { background: linear-gradient(180deg, rgba(18,25,23,0.98), rgba(8,11,10,0.96)); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+      .login-card { max-width: 470px; margin: 18px auto 0; padding: 28px 22px; }
+      .tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(214,176,103,0.08); border: 1px solid rgba(214,176,103,0.22); border-radius: 999px; color: var(--gold); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; }
+      .login-card h2 { margin: 18px 0 8px; font-size: clamp(2rem, 3vw, 2.3rem); }
+      .login-card p { color: var(--muted); margin: 0 0 18px; }
+      .field { display: grid; gap: 8px; margin-bottom: 18px; }
+      .field label { color: var(--muted); font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; }
+      .field input { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: var(--text); }
+      .field input:focus { outline: none; border-color: rgba(214,176,103,0.7); box-shadow: 0 0 0 4px rgba(214,176,103,0.08); }
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border: 1px solid transparent; border-radius: 12px; cursor: pointer; font-weight: 700; transition: transform .15s ease, filter .15s ease; }
+      .btn:hover { transform: translateY(-1px); }
+      .btn-primary { background: linear-gradient(180deg, var(--primary), #1f4b28); border-color: rgba(214,176,103,0.2); color: var(--text); }
+      .btn-secondary { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: var(--text); }
+      .btn-ghost { background: rgba(214,176,103,0.08); border-color: rgba(214,176,103,0.24); color: var(--gold); }
+      .btn-danger { background: rgba(255,124,124,0.08); border-color: rgba(255,124,124,0.22); color: var(--danger); }
+      .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .alert { margin-top: 14px; min-height: 22px; font-size: 0.92rem; }
+      .alert.error { color: var(--danger); }
+      .alert.success { color: #b9f0c1; }
+
+      .admin-grid { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 24px; }
+      .panel { padding: 20px; }
+      .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+      .panel-title { margin: 0; font-size: 1.12rem; }
+      .panel-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 0.9rem; }
+      .members-list { display: grid; gap: 14px; }
+      .member-card { display: grid; grid-template-columns: 112px 1fr; gap: 16px; padding: 14px; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
+      .member-thumb { width: 112px; height: 140px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); }
+      .member-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+      .member-body { display: grid; gap: 10px; }
+      .member-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .member-head h3 { margin: 0; font-size: 1.1rem; }
+      .status { display: inline-flex; align-items: center; padding: 6px 9px; border-radius: 999px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+      .status.na_cekanju { background: rgba(214,176,103,0.12); color: var(--gold); border: 1px solid rgba(214,176,103,0.2); }
+      .status.verifikovano { background: rgba(49,138,71,0.12); color: #b7f1bd; border: 1px solid rgba(49,138,71,0.25); }
+      .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 12px; color: var(--muted); font-size: 0.89rem; }
+      .meta-grid strong { color: var(--text); }
+      .member-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .member-actions .btn { padding: 10px 12px; }
+      .member-detail { padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); color: var(--muted); line-height: 1.7; }
+      .member-signature { margin-top: 8px; max-width: 180px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+      .empty-state { padding: 20px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.12); color: var(--muted); background: rgba(255,255,255,0.02); }
+
+      .member-card-compact { padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
+      .card-preview { display: grid; gap: 14px; }
+      .card-preview .card {
+        background: linear-gradient(135deg, rgba(18,28,25,0.96), rgba(10,15,13,0.96));
+        border: 1px solid rgba(214,176,103,0.16);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      }
+      .card-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+      .card-badge { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); }
+      .card-title { margin: 12px 0 6px; font-size: 1.4rem; }
+      .card-grid { display: grid; grid-template-columns: 90px 1fr; gap: 14px; align-items: center; }
+      .card-photo { width: 90px; height: 110px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+      .card-photo img { width: 100%; height: 100%; object-fit: cover; }
+      .card-text { color: var(--muted); line-height: 1.7; font-size: 0.88rem; }
+      .qr-box { display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 12px; padding: 10px; max-width: 118px; }
+      .qr-box img { width: 100%; display: block; }
+      .card-footer { display: flex; justify-content: space-between; gap: 10px; align-items: end; color: var(--muted); font-size: 0.78rem; }
+      .small-note { color: var(--muted); font-size: 0.82rem; }
+      .hidden { display: none !important; }
+
+      @media (max-width: 900px) {
+        .admin-grid { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 640px) {
+        .member-card { grid-template-columns: 1fr; }
+        .member-thumb { width: 100%; height: 180px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="/">
+          <img src="assets/logo.png" alt="Zelene Beretke" />
+          <div>
+            <small>UB "BOSNAE - ZELENE BERETKE"</small>
+            <strong>Admin članstvo</strong>
+          </div>
+        </a>
+        <div class="status-pill"><span class="dot"></span> Verifikacija članova</div>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="container">
+        <section class="hero">
+          <div class="tag">Digitalno članstvo</div>
+          <h1>Administracija pristupnica i verifikacija članova</h1>
+          <p>Prikaz svih pristiglih zahtjeva, detaljni podaci za provjeru, generisanje protokola i digitalnih članovih kartica sa QR kodom za verifikaciju.</p>
+        </section>
+
+        <section id="login-shell" class="login-shell visible">
+          <div class="login-card">
+            <div class="tag">Prijava</div>
+            <h2>Admin pristup</h2>
+            <p>Unesite lozinku za pristup evidenciji članova.</p>
+            <div class="field">
+              <label for="admin-password">Lozinka</label>
+              <input id="admin-password" type="password" placeholder="Unesite lozinku" />
+            </div>
+            <div class="btn-row">
+              <button id="login-admin-btn" class="btn btn-primary" type="button">Prijavi se</button>
+              <button id="return-home-btn" class="btn btn-secondary" type="button">Nazad na stranicu</button>
+            </div>
+            <div id="admin-login-alert" class="alert" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section id="admin-shell" class="admin-shell">
+          <div class="admin-grid">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title">Zahjevi za članstvo</h2>
+                  <p class="panel-subtitle">Lista svih pristiglih zahtjeva sa detaljima i statusom.</p>
+                </div>
+                <button id="logout-admin-btn" class="btn btn-secondary" type="button">Odjavi se</button>
+              </div>
+              <div id="members-list" class="members-list" aria-live="polite"></div>
+            </div>
+
+            <aside class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title">Digitalna kartica</h2>
+                  <p class="panel-subtitle">Pregled kartice nakon verifikacije člana.</p>
+                </div>
+              </div>
+              <div id="card-preview" class="card-preview">
+                <div class="empty-state">Izaberite člana sa liste da biste pregledali njegovu digitalnu člansku karticu i QR kod.</div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const loginShell = document.getElementById('login-shell');
+      const adminShell = document.getElementById('admin-shell');
+      const adminPasswordInput = document.getElementById('admin-password');
+      const loginAlert = document.getElementById('admin-login-alert');
+      const membersList = document.getElementById('members-list');
+      const cardPreview = document.getElementById('card-preview');
+
+      async function apiFetch(url, options = {}) {
+        const response = await fetch(url, {
+          credentials: 'same-origin',
+          ...options
+        });
+        return response;
+      }
+
+      function setAlert(text, type = '') {
+        loginAlert.textContent = text || '';
+        loginAlert.className = 'alert' + (type ? ` ${type}` : '');
+      }
+
+      async function checkAdminStatus() {
+        try {
+          const res = await apiFetch('/api/me');
+          const data = await res.json().catch(() => ({ is_admin: false }));
+          if (res.ok && data.is_admin) {
+            loginShell.classList.remove('visible');
+            adminShell.classList.add('visible');
+            loadMembers();
+          } else {
+            loginShell.classList.add('visible');
+            adminShell.classList.remove('visible');
+          }
+        } catch (error) {
+          console.error('Check admin status failed:', error);
+          loginShell.classList.add('visible');
+          adminShell.classList.remove('visible');
+        }
+      }
+
+      async function loginAdmin() {
+        const password = (adminPasswordInput.value || '').trim();
+        if (!password) {
+          setAlert('Unesite lozinku za prijavu.', 'error');
+          return;
+        }
+
+        try {
+          const form = new URLSearchParams();
+          form.set('password', password);
+          const res = await apiFetch('/api/login', { method: 'POST', body: form, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+          const data = await res.json().catch(() => ({ ok: false, error: 'Neuspješna prijava.' }));
+          if (res.ok && data.ok) {
+            setAlert('Prijava je uspješna.', 'success');
+            checkAdminStatus();
+            adminPasswordInput.value = '';
+          } else {
+            setAlert(data.error || 'Neispravna lozinka.', 'error');
+          }
+        } catch (error) {
+          console.error('Admin login failed:', error);
+          setAlert('Došlo je do greške pri prijavi.', 'error');
+        }
+      }
+
+      async function logoutAdmin() {
+        try {
+          await apiFetch('/api/logout', { method: 'POST' });
+          checkAdminStatus();
+        } catch (error) {
+          console.error('Admin logout failed:', error);
+          checkAdminStatus();
+        }
+      }
+
+      function formatStatus(value) {
+        return (value || 'na_cekanju').replace(/_/g, ' ');
+      }
+
+      function createMemberCard(member) {
+        const div = document.createElement('article');
+        div.className = 'member-card';
+        const photo = member.photo_url ? `<img src="${member.photo_url}" alt="${member.ime} ${member.prezime}" />` : '<div style="display:grid;place-items:center;height:100%;color:#d6b067;">Nema fotografije</div>';
+        const signature = member.signature_data ? `<img class="member-signature" src="${member.signature_data}" alt="Potpis člana" />` : '<div class="small-note">Nema potpisa</div>';
+        const statusText = member.status || 'na_cekanju';
+        div.innerHTML = `
+          <div class="member-thumb">${photo}</div>
+          <div class="member-body">
+            <div class="member-head">
+              <h3>${member.ime || ''} ${member.prezime || ''}</h3>
+              <span class="status ${statusText}">${formatStatus(statusText)}</span>
+            </div>
+            <div class="meta-grid">
+              <div><strong>JMBG:</strong> ${member.jmbg || '—'}</div>
+              <div><strong>Email:</strong> ${member.email || '—'}</div>
+              <div><strong>Grad:</strong> ${member.grad || '—'}</div>
+              <div><strong>Kontakt:</strong> ${member.kontakt_broj || '—'}</div>
+            </div>
+            <div class="member-detail">
+              <div><strong>Adresa:</strong> ${member.adresa || '—'}</div>
+              <div><strong>Biografija:</strong> ${member.biografija || '—'}</div>
+              <div>${signature}</div>
+            </div>
+            <div class="member-actions">
+              <button class="btn btn-primary verify-btn" data-id="${member.id}" type="button">Verifikuj i generiši protokol</button>
+              <button class="btn btn-secondary preview-btn" data-id="${member.id}" type="button">Prikaz kartice</button>
+            </div>
+          </div>
+        `;
+        return div;
+      }
+
+      function renderMembers(members) {
+        membersList.innerHTML = '';
+        if (!members.length) {
+          membersList.innerHTML = '<div class="empty-state">Nema pristiglih zahtjeva za članstvo.</div>';
+          return;
+        }
+        members.forEach((member) => {
+          membersList.appendChild(createMemberCard(member));
+        });
+
+        document.querySelectorAll('.verify-btn').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const memberId = button.dataset.id;
+            const form = new URLSearchParams();
+            form.set('password', adminPasswordInput.value || '');
+            button.disabled = true;
+            button.textContent = 'Generisanje...';
+            try {
+              const res = await apiFetch(`/api/members/${memberId}/protocol`, { method: 'POST', body: form, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+              const blob = await res.blob();
+              if (!res.ok) {
+                const text = await blob.text().catch(() => '');
+                const error = text ? JSON.parse(text).error || text : 'Neuspješno generisanje protokola.';
+                throw new Error(error);
+              }
+              const url = URL.createObjectURL(blob);
+              const anchor = document.createElement('a');
+              anchor.href = url;
+              anchor.download = 'protokol.pdf';
+              anchor.click();
+              URL.revokeObjectURL(url);
+              await loadMembers();
+            } catch (error) {
+              console.error('Protocol generation failed:', error);
+              alert(error.message || 'Greška pri generisanju protokola.');
+            } finally {
+              button.disabled = false;
+              button.textContent = 'Verifikuj i generiši protokol';
+            }
+          });
+        });
+
+        document.querySelectorAll('.preview-btn').forEach((button) => {
+          button.addEventListener('click', () => {
+            const member = members.find(item => String(item.id) === String(button.dataset.id));
+            if (member) renderCardPreview(member);
+          });
+        });
+      }
+
+      function renderCardPreview(member) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`UB-ZB-${member.protocol_number || member.id}`)}`;
+        const imageHtml = member.photo_url ? `<img src="${member.photo_url}" alt="${member.ime} ${member.prezime}" />` : '<div style="display:grid;place-items:center;height:100%;color:#d6b067;">Nema fotografije</div>';
+        cardPreview.innerHTML = `
+          <div class="card">
+            <div class="card-top">
+              <div class="card-badge">UB "BOSNAE - ZELENE BERETKE"</div>
+              <div class="card-badge">${member.protocol_number || 'PROTOKOL'}</div>
+            </div>
+            <h3 class="card-title">Članska kartica</h3>
+            <div class="card-grid">
+              <div class="card-photo">${imageHtml}</div>
+              <div class="card-text">
+                <div><strong>Član:</strong> ${member.ime || ''} ${member.prezime || ''}</div>
+                <div><strong>Ime oca:</strong> ${member.ime_oca || '—'}</div>
+                <div><strong>JMBG:</strong> ${member.jmbg || '—'}</div>
+                <div><strong>Email:</strong> ${member.email || '—'}</div>
+                <div><strong>Status:</strong> ${formatStatus(member.status || 'na_cekanju')}</div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div>
+                <div>Općina Stari Grad, Sarajevo</div>
+                <div>Verifikovano: ${member.verified_at ? new Date(member.verified_at).toLocaleDateString('bs-BA') : '—'}</div>
+              </div>
+              <div class="qr-box"><img src="${qrUrl}" alt="QR Code članice" /></div>
+            </div>
+          </div>
+        `;
+      }
+
+      async function loadMembers() {
+        try {
+          const res = await apiFetch(`/api/members?password=${encodeURIComponent(adminPasswordInput.value || '')}`);
+          const data = await res.json().catch(() => ({ ok: true, members: [] }));
+          if (!res.ok) {
+            throw new Error(data.error || 'Neuspješno učitavanje članova.');
+          }
+          renderMembers(data.members || []);
+        } catch (error) {
+          console.error('Load members error:', error);
+          membersList.innerHTML = '<div class="empty-state">Greška pri učitavanju članova.</div>';
+        }
+      }
+
+      document.getElementById('login-admin-btn').addEventListener('click', loginAdmin);
+      document.getElementById('return-home-btn').addEventListener('click', () => window.location.href = '/');
+      document.getElementById('logout-admin-btn').addEventListener('click', logoutAdmin);
+      adminPasswordInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') loginAdmin(); });
+      checkAdminStatus();
+    </script>
+  </body>
+</html>

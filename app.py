@@ -17,6 +17,7 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').stri
 SUPABASE_CLIENT_KEY = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY
 SUPABASE_TABLE = os.environ.get('SUPABASE_TABLE', 'messages').strip()
 NEWS_TABLE = os.environ.get('NEWS_TABLE', 'news').strip()
+MEMBERS_TABLE = os.environ.get('MEMBERS_TABLE', 'members').strip()
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'zeleneberetke2026').strip()
 NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', 'harunkapo@gmail.com').strip()
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '').strip()
@@ -356,6 +357,83 @@ def is_admin_authenticated(password_from_form=None):
     return False
 
 
+MEMBERS_FILE = DATA_DIR / 'members.json'
+PROTOCOLS_DIR = DATA_DIR / 'protocols'
+PROTOCOLS_DIR.mkdir(exist_ok=True)
+
+
+def load_members_local():
+    if not MEMBERS_FILE.exists():
+        return []
+    try:
+        data = json.loads(MEMBERS_FILE.read_text(encoding='utf-8'))
+    except Exception:
+        return []
+    if not isinstance(data, list):
+        return []
+    normalized = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        member = dict(item)
+        if not member.get('id'):
+            member['id'] = str(uuid.uuid4())
+        if not member.get('created_at'):
+            member['created_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
+        if not member.get('status'):
+            member['status'] = 'na_cekanju'
+        normalized.append(member)
+    if normalized != data:
+        MEMBERS_FILE.write_text(json.dumps(normalized, indent=2, ensure_ascii=False), encoding='utf-8')
+    return normalized
+
+
+def save_members_local(entries):
+    try:
+        MEMBERS_FILE.write_text(json.dumps(entries, indent=2, ensure_ascii=False), encoding='utf-8')
+        return True
+    except Exception as e:
+        print('Failed to save members:', e)
+        return False
+
+
+def save_member_to_supabase(entry):
+    if not supabase:
+        return False, 'Supabase client not configured'
+    try:
+        payload = {
+            'id': entry.get('id') or str(uuid.uuid4()),
+            'prezime': entry.get('prezime', ''),
+            'ime': entry.get('ime', ''),
+            'ime_oca': entry.get('ime_oca', ''),
+            'datum_rodjenja': entry.get('datum_rodjenja', ''),
+            'mjesto_rodjenja': entry.get('mjesto_rodjenja', ''),
+            'jmbg': entry.get('jmbg', ''),
+            'broj_licne_karte': entry.get('broj_licne_karte', ''),
+            'adresa': entry.get('adresa', ''),
+            'grad': entry.get('grad', ''),
+            'opcina': entry.get('opcina', ''),
+            'kontakt_broj': entry.get('kontakt_broj', ''),
+            'email': entry.get('email', ''),
+            'strucna_sprema': entry.get('strucna_sprema', ''),
+            'zanimanje': entry.get('zanimanje', ''),
+            'zaposlenost': entry.get('zaposlenost', 'NE'),
+            'biografija': entry.get('biografija', ''),
+            'photo_url': entry.get('photo_url', ''),
+            'signature_data': entry.get('signature_data', ''),
+            'status': entry.get('status', 'na_cekanju'),
+            'created_at': entry.get('created_at', datetime.datetime.utcnow().isoformat() + 'Z'),
+            'updated_at': entry.get('updated_at', datetime.datetime.utcnow().isoformat() + 'Z')
+        }
+        result = supabase.from_(MEMBERS_TABLE).upsert([payload], on_conflict='id').execute()
+        error = getattr(result, 'error', None)
+        if error:
+            return False, error
+        return True, None
+    except Exception as err:
+        return False, str(err)
+
+
 SUBSCRIBERS_FILE = DATA_DIR / 'subscribers.json'
 
 def load_subscribers():
@@ -679,6 +757,276 @@ def api_logout():
 @app.route('/api/me', methods=['GET'])
 def api_me():
     return jsonify({'is_admin': bool(session.get('is_admin', False))}), 200
+
+
+@app.route('/api/members', methods=['GET'])
+def api_list_members():
+    password = request.args.get('password', '').strip()
+    if not is_admin_authenticated(password):
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+
+    members = load_members_local()
+    if supabase and MEMBERS_TABLE:
+        try:
+            result = supabase.from_(MEMBERS_TABLE).select('*').order('created_at', desc=True).execute()
+            data = getattr(result, 'data', None) or []
+            if data:
+                return jsonify({'ok': True, 'members': data}), 200
+        except Exception as err:
+            print('Members fetch failed:', err)
+    return jsonify({'ok': True, 'members': members}), 200
+
+
+@app.route('/api/members', methods=['POST'])
+def api_submit_member():
+    form_data = request.form or {}
+    if not form_data and request.is_json:
+        form_data = request.get_json(silent=True) or {}
+
+    if not form_data and not request.files:
+        return jsonify({'ok': False, 'error': 'Nema podataka o članstvu.'}), 400
+
+    photo_file = request.files.get('photo')
+    photo_url = (form_data.get('photo_url') or '').strip()
+    if photo_file:
+        saved = save_uploaded_file(photo_file)
+        if saved:
+            photo_url = saved
+
+    required_fields = [
+        'prezime', 'ime', 'ime_oca', 'datum_rodjenja', 'mjesto_rodjenja', 'jmbg',
+        'broj_licne_karte', 'adresa', 'grad', 'opcina', 'kontakt_broj', 'email',
+        'strucna_sprema', 'zanimanje', 'zaposlenost', 'biografija'
+    ]
+    missing = [key for key in required_fields if not (form_data.get(key) or '').strip()]
+    if missing:
+        return jsonify({'ok': False, 'error': 'Nedostaju obavezna polja: ' + ', '.join(missing)}), 400
+    if not (form_data.get('saglasnost') or '').strip() and not (form_data.get('saglasnost') in ('true', '1', 'on')):
+        return jsonify({'ok': False, 'error': 'Potrebna je saglasnost za statut i rad udruženja.'}), 400
+
+    created_at = datetime.datetime.utcnow().isoformat() + 'Z'
+    entry = {
+        'id': str(uuid.uuid4()),
+        'prezime': (form_data.get('prezime') or '').strip(),
+        'ime': (form_data.get('ime') or '').strip(),
+        'ime_oca': (form_data.get('ime_oca') or '').strip(),
+        'datum_rodjenja': (form_data.get('datum_rodjenja') or '').strip(),
+        'mjesto_rodjenja': (form_data.get('mjesto_rodjenja') or '').strip(),
+        'jmbg': (form_data.get('jmbg') or '').strip(),
+        'broj_licne_karte': (form_data.get('broj_licne_karte') or '').strip(),
+        'adresa': (form_data.get('adresa') or '').strip(),
+        'grad': (form_data.get('grad') or '').strip(),
+        'opcina': (form_data.get('opcina') or '').strip(),
+        'kontakt_broj': (form_data.get('kontakt_broj') or '').strip(),
+        'email': (form_data.get('email') or '').strip(),
+        'strucna_sprema': (form_data.get('strucna_sprema') or '').strip(),
+        'zanimanje': (form_data.get('zanimanje') or '').strip(),
+        'zaposlenost': (form_data.get('zaposlenost') or 'NE').strip().upper(),
+        'biografija': (form_data.get('biografija') or '').strip(),
+        'status': 'na_cekanju',
+        'created_at': created_at,
+        'updated_at': created_at,
+        'photo_url': photo_url,
+        'signature_data': (form_data.get('signature_data') or '').strip(),
+        'saglasnost': 'da'
+    }
+
+    members = load_members_local()
+    members.append(entry)
+    save_members_local(members)
+
+    if SUPABASE_URL and SUPABASE_CLIENT_KEY:
+        save_member_to_supabase(entry)
+
+    return jsonify({'ok': True, 'message': 'Zahtjev je uspješno poslan na verificiranje.', 'member': entry}), 200
+
+
+@app.route('/api/members/<member_id>/verify', methods=['POST'])
+def api_verify_member(member_id):
+    password = request.form.get('password', '').strip()
+    if not is_admin_authenticated(password):
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+
+    members = load_members_local()
+    member = next((m for m in members if str(m.get('id')) == str(member_id)), None)
+    if not member:
+        return jsonify({'ok': False, 'error': 'Član nije pronađen.'}), 404
+
+    verify_number = len([m for m in members if m.get('status') == 'verifikovano']) + 1
+    protocol_number = f"UB-BZ-{datetime.datetime.utcnow().strftime('%Y%m%d')}-{verify_number:04d}"
+    member['status'] = 'verifikovano'
+    member['verified_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
+    member['protocol_number'] = protocol_number
+    member['updated_at'] = member['verified_at']
+    updated_members = [m if str(m.get('id')) != str(member_id) else member for m in members]
+    save_members_local(updated_members)
+
+    if SUPABASE_URL and SUPABASE_CLIENT_KEY:
+        save_member_to_supabase(member)
+
+    return jsonify({'ok': True, 'member': member, 'protocol_number': protocol_number}), 200
+
+
+@app.route('/api/members/<member_id>', methods=['GET'])
+def api_member_detail(member_id):
+    password = request.args.get('password', '').strip()
+    if not is_admin_authenticated(password):
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+    members = load_members_local()
+    member = next((m for m in members if str(m.get('id')) == str(member_id)), None)
+    if not member:
+        return jsonify({'ok': False, 'error': 'Član nije pronađen.'}), 404
+    return jsonify({'ok': True, 'member': member}), 200
+
+
+@app.route('/api/members/<member_id>/protocol', methods=['POST'])
+def api_member_protocol(member_id):
+    password = request.form.get('password', '').strip()
+    if not is_admin_authenticated(password):
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+
+    members = load_members_local()
+    member = next((m for m in members if str(m.get('id')) == str(member_id)), None)
+    if not member:
+        return jsonify({'ok': False, 'error': 'Član nije pronađen.'}), 404
+
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import mm
+        from PIL import Image
+        import base64
+        from io import BytesIO
+    except Exception as exc:
+        return jsonify({'ok': False, 'error': f'PDF biblioteka nije dostupna: {exc}'}), 500
+
+    protocol_number = member.get('protocol_number') or f"UB-BZ-{datetime.datetime.utcnow().strftime('%Y%m%d')}-{len([m for m in members if m.get('status') == 'verifikovano']) + 1:04d}"
+    member['status'] = 'verifikovano'
+    member['verified_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
+    member['protocol_number'] = protocol_number
+    member['updated_at'] = member['verified_at']
+    updated_members = [m if str(m.get('id')) != str(member_id) else member for m in members]
+    save_members_local(updated_members)
+
+    if SUPABASE_URL and SUPABASE_CLIENT_KEY:
+        save_member_to_supabase(member)
+
+    pdf_buffer = BytesIO()
+    pdf = canvas.Canvas(pdf_buffer, pagesize=A4)
+    width, height = A4
+    pdf.setTitle(f'Protokol {protocol_number}')
+    pdf.setAuthor('UB BO SNAE - Zelene Beretke')
+
+    pdf.setFillColorRGB(0.12, 0.18, 0.14)
+    pdf.rect(20, 20, width - 40, height - 40, stroke=1, fill=0)
+
+    pdf.setFillColorRGB(0.9, 0.82, 0.45)
+    pdf.setFont('Helvetica-Bold', 18)
+    pdf.drawString(45, height - 60, 'UB "BOSNAE - ZELENE BERETKE" OPĆINA STARI GRAD')
+    pdf.setFillColorRGB(0.88, 0.88, 0.88)
+    pdf.setFont('Helvetica', 9)
+    pdf.drawString(45, height - 82, 'Obala Kulina bana br. 24/1, 71000 Sarajevo | ID br. 4200343940002 | ASA BANKA d.d. 1340011130037272 | Rješenje br. 03-05-05-7060/06')
+
+    pdf.setFillColorRGB(0.95, 0.95, 0.95)
+    pdf.setFont('Helvetica-Bold', 15)
+    pdf.drawString(45, height - 120, f'PROTOKOL PRISTUPNICE / ČLANSKE KARTICE - {protocol_number}')
+    pdf.setFont('Helvetica', 11)
+    pdf.drawString(45, height - 150, f'Datum: {datetime.datetime.utcnow().strftime("%d.%m.%Y.")}')
+
+    image_area_x = 50
+    image_area_y = height - 360
+    image_area_w = 120
+    image_area_h = 150
+    pdf.rect(image_area_x, image_area_y, image_area_w, image_area_h, stroke=1, fill=0)
+    pdf.setFont('Helvetica-Bold', 9)
+    pdf.drawString(image_area_x + 5, image_area_y + image_area_h + 10, 'Mjesto za sliku')
+
+    photo_url = member.get('photo_url') or ''
+    if photo_url:
+        try:
+            if photo_url.startswith('data:image'):
+                _, encoded = photo_url.split(',', 1)
+                raw = base64.b64decode(encoded)
+                img = Image.open(BytesIO(raw))
+            else:
+                from urllib.request import urlopen
+                if photo_url.startswith('/'):
+                    full_url = f"{request.host_url.rstrip('/')}{photo_url}"
+                else:
+                    full_url = photo_url
+                raw = urlopen(full_url).read()
+                img = Image.open(BytesIO(raw))
+
+            img = img.convert('RGB')
+            img.thumbnail((image_area_w - 10, image_area_h - 10), Image.Resampling.LANCZOS)
+            buf = BytesIO()
+            img.save(buf, format='JPEG', quality=90)
+            buf.seek(0)
+            pdf.drawImage(buf, image_area_x + 5, image_area_y + 5, width=image_area_w - 10, height=image_area_h - 10, preserveAspectRatio=True)
+        except Exception as img_err:
+            print('PDF photo failed:', img_err)
+
+    pdf.setFont('Helvetica-Bold', 12)
+    pdf.drawString(210, height - 210, 'PODACI O ČLANU')
+    pdf.setFont('Helvetica', 10)
+    fields = [
+        ('Prezime', member.get('prezime', '')),
+        ('Ime', member.get('ime', '')),
+        ('Ime oca', member.get('ime_oca', '')),
+        ('Datum rođenja', member.get('datum_rodjenja', '')),
+        ('Mjesto rođenja', member.get('mjesto_rodjenja', '')),
+        ('JMBG', member.get('jmbg', '')),
+        ('Broj lične karte', member.get('broj_licne_karte', '')),
+        ('Adresa', member.get('adresa', '')),
+        ('Grad / općina', f"{member.get('grad', '')} / {member.get('opcina', '')}"),
+        ('Kontakt broj', member.get('kontakt_broj', '')),
+        ('E-mail', member.get('email', '')),
+        ('Stručna sprema', member.get('strucna_sprema', '')),
+        ('Zanimanje', member.get('zanimanje', '')),
+        ('Zaposlenost', member.get('zaposlenost', 'NE')),
+    ]
+
+    y = height - 240
+    line_height = 14
+    for label, value in fields:
+        pdf.drawString(210, y, f'{label}: {value}')
+        y -= line_height
+        if y < 120:
+            pdf.showPage()
+            y = height - 80
+
+    sig_data = member.get('signature_data') or ''
+    if sig_data.startswith('data:image'):
+        _, encoded = sig_data.split(',', 1)
+        sig_bytes = base64.b64decode(encoded)
+        try:
+            sig = Image.open(BytesIO(sig_bytes)).convert('RGB')
+            buf = BytesIO(); sig.save(buf, format='PNG'); buf.seek(0)
+            pdf.drawString(45, 115, 'POTPIS ČLANA')
+            pdf.drawImage(buf, 45, 40, width=180, height=60, preserveAspectRatio=True)
+        except Exception:
+            pdf.drawString(45, 90, 'POTPIS ČLANA')
+    else:
+        pdf.drawString(45, 90, 'POTPIS ČLANA')
+
+    pdf.setFont('Helvetica', 9)
+    pdf.drawString(45, 35, 'Potvrđeno i protokolirano od strane UB "BOSNAE - ZELENE BERETKE" OPĆINE STARI GRAD')
+    pdf.save()
+
+    pdf_bytes = pdf_buffer.getvalue()
+    filename = f"protocol_{protocol_number}.pdf"
+    protocol_path = PROTOCOLS_DIR / filename
+    protocol_path.write_bytes(pdf_bytes)
+
+    response = app.make_response(pdf_bytes)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
+
+
+@app.route('/admin-clanstvo.html')
+def admin_membership_html():
+    return app.send_static_file('admin-clanstvo.html')
 
 
 @app.route('/send-message', methods=['POST'])

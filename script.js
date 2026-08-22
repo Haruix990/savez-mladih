@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function(){
   initNavToggle();
   initSmoothLinks();
   initContactForm();
+  initMembershipPortal();
   initLocalSave();
   initContactCopyButtons();
   initAdminSecretAccess();
@@ -82,6 +83,217 @@ function initSmoothLinks(){
       }
     });
   });
+}
+
+/* Digital membership portal handling */
+function initMembershipPortal(){
+  const form = q('#membership-form');
+  if(!form) return;
+
+  const steps = qa('.membership-step');
+  const navDots = qa('.membership-step-indicator button');
+  const nextButtons = qa('[data-next-step]');
+  const prevButtons = qa('[data-prev-step]');
+  const formStatus = q('#membership-form-status');
+  const submitBtn = q('#membership-submit');
+  const fileInput = q('#member-photo');
+  const photoPreview = q('#member-photo-preview');
+  const photoName = q('#member-photo-name');
+  const canvas = q('#signature-pad');
+  const clearSignatureBtn = q('#clear-signature');
+  const signatureInput = q('#signature-data');
+  let currentStep = 0;
+  let signaturePad = null;
+
+  function showStep(index){
+    currentStep = Math.max(0, Math.min(index, steps.length - 1));
+    steps.forEach((step, stepIndex) => {
+      step.classList.toggle('is-active', stepIndex === currentStep);
+      step.hidden = stepIndex !== currentStep;
+    });
+    navDots.forEach((dot, dotIndex) => {
+      dot.classList.toggle('active', dotIndex === currentStep);
+    });
+    const progress = ((currentStep + 1) / steps.length) * 100;
+    const progressBar = q('#membership-progress-fill');
+    if(progressBar) progressBar.style.width = `${progress}%`;
+    const stepLabel = q('#membership-step-label');
+    if(stepLabel) stepLabel.textContent = `Korak ${currentStep + 1} od ${steps.length}`;
+
+    const prevAction = q('[data-prev-step]');
+    const nextAction = q('[data-next-step]');
+    if(prevAction) prevAction.style.display = currentStep === 0 ? 'none' : 'inline-flex';
+    if(nextAction) nextAction.classList.toggle('hidden', currentStep === steps.length - 1);
+    if(submitBtn) submitBtn.classList.toggle('hidden', currentStep !== steps.length - 1);
+  }
+
+  function setStatus(message, isError = false){
+    if(!formStatus) return;
+    formStatus.textContent = message || '';
+    formStatus.className = 'membership-form-status' + (isError ? ' error' : ' success');
+  }
+
+  function validateStep(stepIndex){
+    const currentFields = steps[stepIndex]?.querySelectorAll('input, textarea, select');
+    if(!currentFields) return true;
+    for(const field of currentFields){
+      if(field.required && !field.disabled){
+        if(field.type === 'checkbox') {
+          if(!field.checked) {
+            field.focus();
+            setStatus('Obavezno je prihvatiti saglasnost kako biste nastavili.', true);
+            return false;
+          }
+        } else if(!String(field.value || '').trim()) {
+          field.focus();
+          setStatus('Popunite sva obavezna polja u ovom koraku.', true);
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function setupSignaturePad(){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(320, Math.floor(rect.width * ratio));
+    canvas.height = Math.max(180, Math.floor(rect.height * ratio));
+    ctx.scale(ratio, ratio);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#ecf6ee';
+
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function getPoint(event){
+      const bounds = canvas.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) * (canvas.width / bounds.width) / ratio;
+      const y = (event.clientY - bounds.top) * (canvas.height / bounds.height) / ratio;
+      return { x, y };
+    }
+
+    const startDrawing = (event) => {
+      drawing = true;
+      const point = getPoint(event);
+      lastX = point.x;
+      lastY = point.y;
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+    };
+
+    const drawingMove = (event) => {
+      if(!drawing) return;
+      const point = getPoint(event);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+      lastX = point.x;
+      lastY = point.y;
+    };
+
+    const stopDrawing = () => {
+      drawing = false;
+      if(signatureInput) signatureInput.value = canvas.toDataURL('image/png');
+    };
+
+    canvas.addEventListener('pointerdown', startDrawing);
+    canvas.addEventListener('pointermove', drawingMove);
+    canvas.addEventListener('pointerup', stopDrawing);
+    canvas.addEventListener('pointerleave', stopDrawing);
+    if(clearSignatureBtn){
+      clearSignatureBtn.addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(signatureInput) signatureInput.value = '';
+      });
+    }
+    signaturePad = { ctx };
+  }
+
+  if(fileInput){
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if(!file) return;
+      if(photoName) photoName.textContent = file.name;
+      const url = URL.createObjectURL(file);
+      photoPreview.src = url;
+      photoPreview.style.display = 'block';
+    });
+  }
+
+  nextButtons.forEach((button) => button.addEventListener('click', () => {
+    if(!validateStep(currentStep)) return;
+    if(currentStep < steps.length - 1){
+      showStep(currentStep + 1);
+    }
+  }));
+
+  prevButtons.forEach((button) => button.addEventListener('click', () => {
+    if(currentStep > 0) showStep(currentStep - 1);
+  }));
+
+  navDots.forEach((dot, index) => dot.addEventListener('click', () => {
+    if(index <= currentStep || validateStep(currentStep)) showStep(index);
+  }));
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if(!validateStep(currentStep)) return;
+
+    const formData = new FormData(form);
+    const photoFile = fileInput && fileInput.files && fileInput.files[0];
+    if(photoFile) formData.append('photo', photoFile);
+    if(signatureInput && signatureInput.value) formData.set('signature_data', signatureInput.value);
+    if(!signatureInput || !signatureInput.value){
+      setStatus('Potpis je obavezan za završetak prijave.', true);
+      return;
+    }
+
+    if(submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Slanje...';
+    }
+    setStatus('');
+
+    try {
+      const response = await fetch('/api/members', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+      });
+      const payload = await response.json().catch(() => ({}));
+      if(response.ok && payload.ok){
+        setStatus(payload.message || 'Zahtjev je uspješno poslan na verifikaciju.', false);
+        form.reset();
+        if(photoPreview) { photoPreview.src = ''; photoPreview.style.display = 'none'; }
+        if(photoName) photoName.textContent = 'Nepodignuta fotografija';
+        if(signatureInput) signatureInput.value = '';
+        if(canvas && signaturePad && signaturePad.ctx) {
+          signaturePad.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        showStep(0);
+      } else {
+        setStatus(payload.error || 'Neuspješno slanje zahtjeva za članstvo.', true);
+      }
+    } catch (error) {
+      console.error('Membership form submission failed:', error);
+      setStatus('Došlo je do greške prilikom slanja zahtjeva.', true);
+    } finally {
+      if(submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Pošalji zahtjev';
+      }
+    }
+  });
+
+  showStep(0);
+  setupSignaturePad();
 }
 
 /* Contact form handling */

@@ -300,6 +300,150 @@
       </div>
     </section>
 
+    <section id="clanstvo" class="section membership-section">
+      <div class="container membership-shell">
+        <div class="membership-header">
+          <div>
+            <p class="section-kicker">Digitalno članstvo</p>
+            <h2>Pristupnica za članstvo u UB "BOSNAE - ZELENE BERETKE"</h2>
+          </div>
+          <span class="membership-status-badge">Status: u procesu</span>
+        </div>
+
+        <form id="membership-form" class="membership-form" novalidate>
+          <div class="membership-progress">
+            <div class="membership-progress-track">
+              <div id="membership-progress-fill" class="membership-progress-fill"></div>
+            </div>
+            <div class="membership-step-meta">
+              <span id="membership-step-label">Korak 1 od 3</span>
+            </div>
+          </div>
+
+          <div class="membership-step-indicator" aria-label="Napredak članstva">
+            <button type="button" class="active" aria-label="Korak 1">1</button>
+            <button type="button" aria-label="Korak 2">2</button>
+            <button type="button" aria-label="Korak 3">3</button>
+          </div>
+
+          <div class="membership-step is-active" data-step="0">
+            <div class="membership-grid">
+              <label class="field-group">
+                <span>Prezime</span>
+                <input name="prezime" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Ime</span>
+                <input name="ime" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Ime oca</span>
+                <input name="ime_oca" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Datum rođenja</span>
+                <input name="datum_rodjenja" type="date" required />
+              </label>
+              <label class="field-group">
+                <span>Mjesto rođenja</span>
+                <input name="mjesto_rodjenja" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>JMBG</span>
+                <input name="jmbg" type="text" inputmode="numeric" required />
+              </label>
+              <label class="field-group full-width">
+                <span>Broj lične karte</span>
+                <input name="broj_licne_karte" type="text" required />
+              </label>
+            </div>
+          </div>
+
+          <div class="membership-step" data-step="1" hidden>
+            <div class="membership-grid">
+              <label class="field-group full-width">
+                <span>Adresa</span>
+                <input name="adresa" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Grad</span>
+                <input name="grad" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Općina</span>
+                <input name="opcina" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Kontakt broj</span>
+                <input name="kontakt_broj" type="tel" required />
+              </label>
+              <label class="field-group">
+                <span>E-mail</span>
+                <input name="email" type="email" required />
+              </label>
+              <label class="field-group">
+                <span>Stručna sprema</span>
+                <input name="strucna_sprema" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Zanimanje</span>
+                <input name="zanimanje" type="text" required />
+              </label>
+              <label class="field-group">
+                <span>Zaposlenost</span>
+                <select name="zaposlenost" required>
+                  <option value="DA">DA</option>
+                  <option value="NE" selected>NE</option>
+                </select>
+              </label>
+              <label class="field-group full-width">
+                <span>Kratka biografija</span>
+                <textarea name="biografija" rows="5" required></textarea>
+              </label>
+            </div>
+          </div>
+
+          <div class="membership-step" data-step="2" hidden>
+            <div class="membership-upload-wrap">
+              <div class="photo-upload-box">
+                <div class="photo-upload-header">
+                  <h3>Fotografija člana</h3>
+                  <span id="member-photo-name">Nepodignuta fotografija</span>
+                </div>
+                <div class="photo-preview-row">
+                  <img id="member-photo-preview" alt="Preview fotografije člana" style="display:none;" />
+                  <label class="upload-label" for="member-photo">Odaberi fotografiju</label>
+                  <input id="member-photo" type="file" accept="image/*" />
+                </div>
+              </div>
+
+              <div class="signature-box">
+                <div class="signature-header">
+                  <h3>Digitalni potpis</h3>
+                  <button id="clear-signature" type="button" class="btn btn-ghost small-btn">Obriši</button>
+                </div>
+                <canvas id="signature-pad" width="700" height="220" aria-label="Digitalni potpis"></canvas>
+                <input id="signature-data" name="signature_data" type="hidden" />
+              </div>
+
+              <label class="consent-box">
+                <input name="saglasnost" type="checkbox" required />
+                <span>Slažem se sa statutom i radom Udruženja i potvrđujem da su podaci tačni.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="membership-actions">
+            <button type="button" class="btn btn-secondary" data-prev-step>Prethodni</button>
+            <button type="button" class="btn btn-primary" data-next-step>Sljedeći</button>
+            <button id="membership-submit" type="submit" class="btn btn-primary hidden">Pošalji zahtjev</button>
+          </div>
+
+          <div id="membership-form-status" class="membership-form-status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
     <!-- Dodatne sekcije: Misija, Tim, Događaji, Partneri, FAQ, Newsletter -->
     <section id="misija" class="section mission">
       <div class="container">
