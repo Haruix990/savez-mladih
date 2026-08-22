@@ -55,14 +55,50 @@
     <!-- News modal (hidden by default) -->
     <div id="news-modal" class="news-modal" aria-hidden="true" style="display:none;">
       <div class="news-modal-backdrop"></div>
-      <div class="news-modal-content" role="dialog" aria-modal="true">
-        <button id="news-modal-close" class="btn btn-outline" type="button">Zatvori</button>
-        <h3 id="news-modal-title">Naslov</h3>
-        <div class="news-modal-meta"><span id="news-modal-category"></span> <span id="news-modal-date" class="muted"></span></div>
-        <div id="news-modal-image-wrap" style="margin-top:8px;"></div>
-        <div id="news-modal-body" style="margin-top:12px;color:var(--muted)"></div>
-        <div id="news-modal-actions" style="margin-top:12px"></div>
-      </div>
+      <aside class="news-drawer" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
+        <div class="news-drawer-banner">
+          <button id="news-modal-close" class="news-drawer-close" type="button" aria-label="Zatvori vijest">✕</button>
+          <div id="news-modal-image-wrap" class="news-drawer-image-wrap"></div>
+        </div>
+
+        <div class="news-drawer-body">
+          <div class="news-drawer-meta">
+            <span id="news-modal-category" class="news-drawer-tag">Vijest</span>
+            <span id="news-modal-date" class="news-drawer-date">Datum</span>
+            <span class="news-drawer-readtime">⏱ 4 min</span>
+            <span class="news-drawer-views">👁️ 142</span>
+          </div>
+
+          <div class="news-drawer-head">
+            <h3 id="news-modal-title">Naslov</h3>
+            <div class="news-drawer-font-controls" aria-label="Veličina teksta">
+              <button type="button" id="news-font-minus" aria-label="Smanji tekst">A-</button>
+              <button type="button" id="news-font-plus" aria-label="Povećaj tekst">A+</button>
+            </div>
+          </div>
+
+          <div id="news-modal-body" class="news-drawer-copy"></div>
+
+          <div class="news-drawer-reactions" aria-label="Reakcije">
+            <button type="button" class="reaction-btn" data-reaction="like" data-count="142"><span>👍</span><strong class="count">142</strong></button>
+            <button type="button" class="reaction-btn" data-reaction="love" data-count="96"><span>❤️</span><strong class="count">96</strong></button>
+            <button type="button" class="reaction-btn" data-reaction="fire" data-count="58"><span>🔥</span><strong class="count">58</strong></button>
+          </div>
+
+          <div class="news-drawer-share" aria-label="Dijeljenje">
+            <button type="button" class="share-btn" data-share="facebook">Facebook</button>
+            <button type="button" class="share-btn" data-share="whatsapp">WhatsApp</button>
+            <button type="button" class="share-btn" data-share="copy">Kopiraj Link</button>
+          </div>
+
+          <div class="news-related">
+            <h4>Pročitajte i ovo</h4>
+            <div id="news-related-list" class="news-related-list"></div>
+          </div>
+
+          <div id="news-modal-actions" class="news-modal-actions"></div>
+        </div>
+      </aside>
     </div>
 
     <section id="o-nama" class="section about">

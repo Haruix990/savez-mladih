@@ -203,6 +203,142 @@ function initNewsManager(){
   let perPage = 6;
   let displayedCount = perPage;
 
+  function formatNewsBody(text = '') {
+    const cleaned = String(text).trim();
+    if (!cleaned) return '<p>Detaljan sadržaj vijesti uskoro će biti dostupan.</p>';
+    const paragraphs = cleaned
+      .replace(/\r\n/g, '\n')
+      .split(/\n{2,}/)
+      .map(part => part.trim())
+      .filter(Boolean)
+      .map(part => `<p>${escapeHtml(part).replace(/\n/g, '<br>')}</p>`);
+    return paragraphs.join('');
+  }
+
+  function applyDrawerTextScale(scale) {
+    const body = q('#news-modal-body');
+    if (!body) return;
+    body.style.fontSize = `${scale}rem`;
+  }
+
+  function renderRelatedNews(item) {
+    const list = q('#news-related-list');
+    if (!list) return;
+    const currentId = item && item.id ? String(item.id) : '';
+    const pool = allNews.filter(it => String(it.id) !== currentId);
+    const related = pool.slice(0, 2);
+    list.innerHTML = '';
+    if (!related.length) {
+      list.innerHTML = '<div class="news-related-empty">Nema srodnih vijesti za prikazivanje.</div>';
+      return;
+    }
+    related.forEach(relatedItem => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'news-related-card';
+      const imgHtml = relatedItem.image_url ? `<img src="${relatedItem.image_url}" alt="${escapeHtml(relatedItem.title || 'Vijest')}">` : '';
+      const label = relatedItem.category_label || (CATEGORY_LABELS[relatedItem.category] || relatedItem.category || 'Vijest');
+      const date = relatedItem.created_at || 'Nedavno';
+      card.innerHTML = `${imgHtml}<strong>${escapeHtml(relatedItem.title || 'Vijest')}</strong><span>${escapeHtml(label)} • ${escapeHtml(date)}</span>`;
+      card.addEventListener('click', function () {
+        openNewsModal(relatedItem);
+      });
+      list.appendChild(card);
+    });
+  }
+
+  async function openNewsModal(item){
+    const modal = q('#news-modal');
+    if(!modal) return;
+    const title = q('#news-modal-title');
+    const body = q('#news-modal-body');
+    const cat = q('#news-modal-category');
+    const date = q('#news-modal-date');
+    const imgWrap = q('#news-modal-image-wrap');
+    const actions = q('#news-modal-actions');
+    const fontMinus = q('#news-font-minus');
+    const fontPlus = q('#news-font-plus');
+    const currentScale = 1;
+
+    title.textContent = item.title || '';
+    body.innerHTML = formatNewsBody(item.body || '');
+    cat.textContent = item.category_label || (item.category || 'Vijest');
+    date.textContent = item.created_at || '';
+    imgWrap.innerHTML = '';
+    actions.innerHTML = '';
+    applyDrawerTextScale(currentScale);
+
+    if(item.image_url){
+      const img = document.createElement('img');
+      img.src = item.image_url; img.alt = item.title || '';
+      imgWrap.appendChild(img);
+    }
+
+    if(fontMinus && fontPlus){
+      fontMinus.onclick = function () {
+        const currentSize = Number.parseFloat(body.style.fontSize) || 1;
+        const next = Math.max(0.9, Number((currentSize - 0.1).toFixed(2)));
+        applyDrawerTextScale(next);
+      };
+      fontPlus.onclick = function () {
+        const currentSize = Number.parseFloat(body.style.fontSize) || 1;
+        const next = Math.min(1.5, Number((currentSize + 0.1).toFixed(2)));
+        applyDrawerTextScale(next);
+      };
+    }
+
+    renderRelatedNews(item);
+
+    try{
+      const res = await awaitFetchMeSync();
+      if(res && res.is_admin){
+        const editBtn = document.createElement('button'); editBtn.className='btn btn-primary'; editBtn.textContent='Uredi vijest';
+        editBtn.addEventListener('click', function(e){ e.stopPropagation(); setEditState(item); closeNewsModal(); });
+        const delBtn = document.createElement('button'); delBtn.className='btn btn-outline'; delBtn.textContent='Obriši vijest';
+        delBtn.addEventListener('click', function(e){ e.stopPropagation(); deleteNews(item.id); closeNewsModal(); });
+        actions.appendChild(editBtn); actions.appendChild(delBtn);
+      }
+    }catch(e){ /* ignore */ }
+
+    document.querySelectorAll('.reaction-btn').forEach(button => {
+      button.onclick = function () {
+        const isActive = button.classList.toggle('is-active');
+        const countNode = button.querySelector('.count');
+        const prev = Number(button.dataset.count || 0);
+        if (countNode) countNode.textContent = String(isActive ? prev + 1 : prev);
+      };
+    });
+
+    document.querySelectorAll('.share-btn').forEach(button => {
+      button.onclick = function () {
+        const platform = button.dataset.share;
+        const url = encodeURIComponent(window.location.href);
+        if (platform === 'facebook') {
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener');
+        } else if (platform === 'whatsapp') {
+          window.open(`https://wa.me/?text=${url}`, '_blank', 'noopener');
+        } else if (platform === 'copy') {
+          navigator.clipboard.writeText(window.location.href).then(() => {
+            const original = button.textContent;
+            button.textContent = 'Link kopiran';
+            setTimeout(() => { button.textContent = original; }, 1200);
+          }).catch(() => {
+            button.textContent = 'Nije uspjelo';
+            setTimeout(() => { button.textContent = 'Kopiraj Link'; }, 1200);
+          });
+        }
+      };
+    });
+
+    modal.style.display = 'block'; modal.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden';
+    const closeBtn = q('#news-modal-close'); if(closeBtn) closeBtn.focus();
+  }
+
+  function closeNewsModal(){
+    const modal = q('#news-modal'); if(!modal) return; modal.setAttribute('aria-hidden','true');
+    setTimeout(()=>{ try{ if(modal.getAttribute('aria-hidden')==='true'){ modal.style.display='none'; document.body.style.overflow=''; } }catch(e){} }, 360);
+  }
+
   // Drafts management
   const DRAFT_KEY = 'news_drafts_v1';
   function loadDrafts(){ try{ return JSON.parse(localStorage.getItem(DRAFT_KEY) || '[]'); }catch(e){ return []; } }
@@ -377,70 +513,6 @@ function initNewsManager(){
     if(total > displayedCount){ const more = document.createElement('div'); more.className='news-load-more'; more.id='news-load-more'; more.innerHTML = `<button class="btn btn-outline" id="load-more-btn">Učitaj više</button>`; list.appendChild(more); q('#load-more-btn').addEventListener('click', ()=>{ displayedCount += perPage; renderNews(itemsSorted); }); }
   }
 
-  // Modal helpers
-  async function openNewsModal(item){
-    const modal = q('#news-modal');
-    if(!modal) return;
-    const title = q('#news-modal-title');
-    const body = q('#news-modal-body');
-    const cat = q('#news-modal-category');
-    const date = q('#news-modal-date');
-    const imgWrap = q('#news-modal-image-wrap');
-    const actions = q('#news-modal-actions');
-    title.textContent = item.title || '';
-    body.textContent = item.body || '';
-    cat.textContent = item.category_label || (item.category || '');
-    date.textContent = item.created_at || '';
-    // ensure left column wrapper exists to keep layout clean
-    const content = q('.news-modal-content');
-    let textCol = content.querySelector('.news-modal-text');
-    if(!textCol){
-      textCol = document.createElement('div'); textCol.className = 'news-modal-text';
-      // move title, meta, body, actions into textCol
-      const titleEl = q('#news-modal-title');
-      const metaEl = q('.news-modal-meta');
-      const bodyEl = q('#news-modal-body');
-      const actionsEl = q('#news-modal-actions');
-      if(titleEl) textCol.appendChild(titleEl);
-      if(metaEl) textCol.appendChild(metaEl);
-      if(bodyEl) textCol.appendChild(bodyEl);
-      if(actionsEl) textCol.appendChild(actionsEl);
-      // insert textCol before image wrap
-      if(imgWrap && imgWrap.parentNode) imgWrap.parentNode.insertBefore(textCol, imgWrap);
-    }
-    imgWrap.innerHTML = '';
-    actions.innerHTML = '';
-    if(item.image_url){
-      const imgBox = document.createElement('div'); imgBox.className = 'news-modal-image';
-      const img = document.createElement('img'); img.src = item.image_url; img.alt = item.title || '';
-      imgBox.appendChild(img);
-      imgWrap.appendChild(imgBox);
-      imgWrap.style.display = '';
-    } else {
-      imgWrap.style.display = 'none';
-    }
-    // if admin, show edit/delete inside modal
-    try{
-      const res = await awaitFetchMeSync();
-      if(res && res.is_admin){
-        const editBtn = document.createElement('button'); editBtn.className='btn btn-primary'; editBtn.textContent='Uredi vijest';
-        editBtn.addEventListener('click', function(e){ e.stopPropagation(); setEditState(item); closeNewsModal(); });
-        const delBtn = document.createElement('button'); delBtn.className='btn btn-outline'; delBtn.textContent='Obriši vijest';
-        delBtn.addEventListener('click', function(e){ e.stopPropagation(); deleteNews(item.id); closeNewsModal(); });
-        actions.appendChild(editBtn); actions.appendChild(delBtn);
-      }
-    }catch(e){ /* ignore */ }
-    // show modal and disable background scroll; CSS animation triggers on aria-hidden
-    modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden';
-    // focus close button for accessibility
-    const closeBtn = q('#news-modal-close'); if(closeBtn) closeBtn.focus();
-  }
-
-  function closeNewsModal(){
-    const modal = q('#news-modal'); if(!modal) return; modal.setAttribute('aria-hidden','true');
-    // wait for CSS animation to finish before removing from flow
-    setTimeout(()=>{ try{ if(modal.getAttribute('aria-hidden')==='true'){ modal.style.display='none'; document.body.style.overflow=''; } }catch(e){} }, 360);
-  }
 
   // small helper to synchronously check /api/me cached state
   function awaitFetchMeSync(){
@@ -501,6 +573,8 @@ function initNewsManager(){
   const modalClose = q('#news-modal-close'); if(modalClose) modalClose.addEventListener('click', closeNewsModal);
   const modalBackdrop = q('.news-modal-backdrop'); if(modalBackdrop) modalBackdrop.addEventListener('click', closeNewsModal);
 
+  const previewBtn = q('#news-preview'); if(previewBtn){ previewBtn.addEventListener('click', function(){ const item = { title: q('#news-title').value, body: q('#news-body').value, image_url: q('#news-image-url').value || q('#news-image-preview-img').src || '', category: q('#news-category').value, created_at: (new Date()).toLocaleString() }; openNewsModal(item); }); }
+
   // loadNews: fetches all news and stores in allNews, renders current page
   async function loadNews(){
     try{
@@ -515,9 +589,6 @@ function initNewsManager(){
       renderNews([]);
     }
   }
-
-  // preview button (show modal with form data)
-  const previewBtn = q('#news-preview'); if(previewBtn){ previewBtn.addEventListener('click', function(){ const item = { title: q('#news-title').value, body: q('#news-body').value, image_url: q('#news-image-url').value || q('#news-image-preview-img').src || '', category: q('#news-category').value, created_at: (new Date()).toLocaleString() }; openNewsModal(item); }); }
 
   // save draft button
   const draftBtn = q('#news-save-draft'); if(draftBtn){ draftBtn.addEventListener('click', function(){ const obj = { title: q('#news-title').value, body: q('#news-body').value, category: q('#news-category').value, image_url: q('#news-image-url').value || q('#news-image-preview-img').src || '', created_at: (new Date()).toISOString() }; saveDraft(obj); showToast('Draft sačuvan lokalno.'); }); }
@@ -918,12 +989,17 @@ function initNewsManager(){
       exportBtn.addEventListener('click', async ()=>{
         try{
           // include dev password if no session admin
-          const me3 = await awaitFetchMeSync(); let url = '/api/subscribers/export'; if(!(me3 && me3.is_admin)){ const devpw = getDevPassword(); if(devpw) url += '?password=' + encodeURIComponent(devpw); }
-          const res = await apiFetch(url, {credentials:'same-origin'});
+          const me3 = await awaitFetchMeSync();
+          let exportUrl = '/api/subscribers/export';
+          if(!(me3 && me3.is_admin)){
+            const devpw = getDevPassword();
+            if(devpw) exportUrl += '?password=' + encodeURIComponent(devpw);
+          }
+          const res = await apiFetch(exportUrl, {credentials:'same-origin'});
           if(!res.ok){ const js = await res.json().catch(()=>({})); return showToast(js.error || 'Export failed'); }
           const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url; a.download = 'subscribers.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = blobUrl; a.download = 'subscribers.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(blobUrl);
         }catch(e){ console.error(e); showToast('Greška pri exportu'); }
       });
     }
