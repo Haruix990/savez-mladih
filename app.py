@@ -420,6 +420,7 @@ def save_member_to_supabase(entry):
             'zaposlenost': entry.get('zaposlenost', 'NE'),
             'biografija': entry.get('biografija', ''),
             'photo_url': entry.get('photo_url', ''),
+            'protocol_pdf_url': entry.get('protocol_pdf_url', ''),
             'signature_data': entry.get('signature_data', ''),
             'status': entry.get('status', 'na_cekanju'),
             'created_at': entry.get('created_at', datetime.datetime.utcnow().isoformat() + 'Z'),
@@ -793,6 +794,13 @@ def api_submit_member():
         if saved:
             photo_url = saved
 
+    protocol_file = request.files.get('protocol_pdf')
+    protocol_pdf_url = ''
+    if protocol_file:
+        saved_protocol = save_uploaded_file(protocol_file)
+        if saved_protocol:
+            protocol_pdf_url = saved_protocol
+
     required_fields = [
         'prezime', 'ime', 'ime_oca', 'datum_rodjenja', 'mjesto_rodjenja', 'jmbg',
         'broj_licne_karte', 'adresa', 'grad', 'opcina', 'kontakt_broj', 'email',
@@ -827,6 +835,7 @@ def api_submit_member():
         'created_at': created_at,
         'updated_at': created_at,
         'photo_url': photo_url,
+        'protocol_pdf_url': protocol_pdf_url,
         'signature_data': (form_data.get('signature_data') or '').strip(),
         'saglasnost': 'da'
     }
@@ -910,6 +919,17 @@ def api_member_protocol(member_id):
 
     if SUPABASE_URL and SUPABASE_CLIENT_KEY:
         save_member_to_supabase(member)
+
+    stored_pdf_url = member.get('protocol_pdf_url') or ''
+    if stored_pdf_url:
+        stored_pdf_path = Path(stored_pdf_url.lstrip('/'))
+        if stored_pdf_path.exists() and stored_pdf_path.is_file():
+            pdf_bytes = stored_pdf_path.read_bytes()
+            filename = f"protocol_{protocol_number}.pdf"
+            response = app.make_response(pdf_bytes)
+            response.headers['Content-Type'] = 'application/pdf'
+            response.headers['Content-Disposition'] = f'inline; filename="{filename}"'
+            return response
 
     pdf_buffer = BytesIO()
     pdf = canvas.Canvas(pdf_buffer, pagesize=A4)

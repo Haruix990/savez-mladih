@@ -26,6 +26,7 @@
           <li><a href="#historija">Historija</a></li>
           <li><a href="#galerija">Galerija</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
+          <li><button type="button" class="nav-membership-btn" id="open-membership-modal"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>UČLANI SE</span></button></li>
         </ul>
         <div class="nav-social" aria-label="Društvene mreže">
           <a href="https://www.instagram.com/smzeleneberetkesg/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
@@ -35,6 +36,56 @@
       </nav>
     </div>
   </header>
+
+  <div id="membership-modal" class="membership-modal" aria-hidden="true">
+    <div class="membership-modal-backdrop" data-close-membership></div>
+    <section class="membership-modal-panel" role="dialog" aria-modal="true" aria-labelledby="membership-modal-title">
+      <header class="membership-modal-header">
+        <div>
+          <p class="section-kicker">Digitalna pristupnica</p>
+          <h2 id="membership-modal-title">UČLANI SE</h2>
+        </div>
+        <button type="button" class="membership-modal-close" data-close-membership aria-label="Zatvori pristupnicu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </header>
+      <div class="membership-pdf-scroll">
+        <form id="pdf-membership-form" class="pdf-membership-form" novalidate>
+          <div class="pdf-page-wrap" id="membership-pdf-page">
+            <canvas id="membership-pdf-canvas" aria-label="Originalna PDF pristupnica"></canvas>
+            <div class="pdf-overlay" id="membership-pdf-overlay">
+              <input class="pdf-input input-prezime" name="prezime" placeholder="PREZIME" required>
+              <input class="pdf-input input-ime" name="ime" placeholder="IME" required>
+              <input class="pdf-input input-ime-oca" name="ime_oca" placeholder="IME OCA" required>
+              <input class="pdf-input input-datum" name="datum_rodjenja" type="date" required>
+              <input class="pdf-input input-mjesto" name="mjesto_rodjenja" placeholder="MJESTO" required>
+              <input class="pdf-input input-jmbg" name="jmbg" placeholder="MATIČNI BROJ" inputmode="numeric" required>
+              <input class="pdf-input input-licna" name="broj_licne_karte" placeholder="BR. LK" required>
+              <input class="pdf-input input-adresa" name="adresa" placeholder="ADRESA" required>
+              <input class="pdf-input input-grad" name="grad" placeholder="GRAD" required>
+              <input class="pdf-input input-opcina" name="opcina" placeholder="OPĆINA" required>
+              <input class="pdf-input input-kontakt" name="kontakt_broj" placeholder="KONTAKT BROJ" type="tel" required>
+              <input class="pdf-input input-email" name="email" placeholder="EMAIL" type="email" required>
+              <input class="pdf-input input-sprema" name="strucna_sprema" placeholder="STRUČNA SPREMA" required>
+              <input class="pdf-input input-zanimanje" name="zanimanje" placeholder="ZANIMANJE" required>
+              <select class="pdf-input input-zaposlen" name="zaposlenost" required aria-label="Zaposlen">
+                <option value="NE">NE</option><option value="DA">DA</option>
+              </select>
+              <textarea class="pdf-input input-biografija" name="biografija" placeholder="KRATKA BIOGRAFIJA" required></textarea>
+              <label class="pdf-photo-zone" for="pdf-member-photo"><span><i class="fa-solid fa-camera" aria-hidden="true"></i> Fotografija</span><img id="pdf-member-photo-preview" alt="Pregled fotografije" hidden></label>
+              <input id="pdf-member-photo" name="photo" type="file" accept="image/*" hidden>
+              <div class="pdf-signature-zone"><canvas id="pdf-signature-pad" aria-label="Potpis člana"></canvas><button type="button" id="pdf-clear-signature">Obriši potpis</button></div>
+              <input id="pdf-signature-data" name="signature_data" type="hidden">
+              <input name="saglasnost" type="checkbox" class="pdf-consent" required aria-label="Saglasnost">
+            </div>
+          </div>
+          <div class="membership-modal-actions">
+            <p id="pdf-membership-status" aria-live="polite"></p>
+            <button type="button" class="btn btn-ghost" data-close-membership>Odustani</button>
+            <button type="submit" class="btn btn-primary" id="pdf-membership-submit"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Pošalji Pristupnicu</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
 
   <main>
     <section id="hero" class="hero">
@@ -1105,6 +1156,8 @@
       .article-related-grid { grid-template-columns: 1fr; }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>

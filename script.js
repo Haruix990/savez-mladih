@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function(){
   initSmoothLinks();
   initContactForm();
   initMembershipPortal();
+  initPdfMembershipModal();
   initLocalSave();
   initContactCopyButtons();
   initAdminSecretAccess();
@@ -294,6 +295,215 @@ function initMembershipPortal(){
 
   showStep(0);
   setupSignaturePad();
+}
+
+/* Original PDF membership application modal */
+function initPdfMembershipModal(){
+  const modal = q('#membership-modal');
+  const openButton = q('#open-membership-modal');
+  const form = q('#pdf-membership-form');
+  const pageWrap = q('#membership-pdf-page');
+  const pdfCanvas = q('#membership-pdf-canvas');
+  const overlay = q('#membership-pdf-overlay');
+  const signatureCanvas = q('#pdf-signature-pad');
+  const signatureInput = q('#pdf-signature-data');
+  const status = q('#pdf-membership-status');
+  const submitButton = q('#pdf-membership-submit');
+  if(!modal || !openButton || !form || !pageWrap || !pdfCanvas || !overlay) return;
+
+  let pdfDocument = null;
+  let pdfPage = null;
+  let signatureContext = null;
+  let photoDataUrl = '';
+
+  function setStatus(message, type = ''){
+    if(!status) return;
+    status.textContent = message;
+    status.className = type;
+  }
+
+  function resizeSignature(){
+    if(!signatureCanvas) return;
+    const rect = signatureCanvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    signatureCanvas.width = Math.max(160, Math.floor(rect.width * ratio));
+    signatureCanvas.height = Math.max(60, Math.floor(rect.height * ratio));
+    signatureContext = signatureCanvas.getContext('2d');
+    signatureContext.scale(ratio, ratio);
+    signatureContext.lineWidth = 2;
+    signatureContext.lineCap = 'round';
+    signatureContext.strokeStyle = '#172318';
+  }
+
+  function setupSignature(){
+    if(!signatureCanvas) return;
+    resizeSignature();
+    let drawing = false;
+    let lastPoint = null;
+    const pointFromEvent = (event) => {
+      const bounds = signatureCanvas.getBoundingClientRect();
+      return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    };
+    signatureCanvas.addEventListener('pointerdown', (event) => {
+      drawing = true;
+      signatureCanvas.setPointerCapture(event.pointerId);
+      lastPoint = pointFromEvent(event);
+    });
+    signatureCanvas.addEventListener('pointermove', (event) => {
+      if(!drawing || !lastPoint || !signatureContext) return;
+      const nextPoint = pointFromEvent(event);
+      signatureContext.beginPath();
+      signatureContext.moveTo(lastPoint.x, lastPoint.y);
+      signatureContext.lineTo(nextPoint.x, nextPoint.y);
+      signatureContext.stroke();
+      lastPoint = nextPoint;
+    });
+    const finish = () => {
+      drawing = false;
+      lastPoint = null;
+      if(signatureInput) signatureInput.value = signatureCanvas.toDataURL('image/png');
+    };
+    signatureCanvas.addEventListener('pointerup', finish);
+    signatureCanvas.addEventListener('pointercancel', finish);
+    const clearButton = q('#pdf-clear-signature');
+    if(clearButton) clearButton.addEventListener('click', () => {
+      if(signatureContext) signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      if(signatureInput) signatureInput.value = '';
+    });
+  }
+
+  async function renderPdf(){
+    if(!window.pdfjsLib || !pdfPage) return;
+    const baseViewport = pdfPage.getViewport({scale: 1});
+    const scale = pageWrap.clientWidth / baseViewport.width;
+    const viewport = pdfPage.getViewport({scale});
+    const ratio = window.devicePixelRatio || 1;
+    pdfCanvas.width = Math.floor(viewport.width * ratio);
+    pdfCanvas.height = Math.floor(viewport.height * ratio);
+    pdfCanvas.style.width = `${viewport.width}px`;
+    pdfCanvas.style.height = `${viewport.height}px`;
+    await pdfPage.render({canvasContext: pdfCanvas.getContext('2d'), viewport, transform: ratio !== 1 ? [ratio, 0, 0, ratio, 0, 0] : null}).promise;
+    resizeSignature();
+  }
+
+  async function loadPdf(){
+    if(pdfPage) return;
+    if(!window.pdfjsLib){
+      setStatus('PDF preglednik nije učitan. Provjerite internet vezu.', 'error');
+      return;
+    }
+    try {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfDocument = await window.pdfjsLib.getDocument('assets/Pristupnica.pdf').promise;
+      pdfPage = await pdfDocument.getPage(1);
+      await renderPdf();
+    } catch(error){
+      console.error('Membership PDF render failed:', error);
+      setStatus('Originalna pristupnica se ne može prikazati.', 'error');
+    }
+  }
+
+  function openModal(){
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    loadPdf();
+    setTimeout(resizeSignature, 0);
+  }
+  function closeModal(){
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function drawPdfField(page, field, value, fontSize = 9){
+    if(!value) return;
+    const box = field.getBoundingClientRect();
+    const pageBox = pageWrap.getBoundingClientRect();
+    const x = ((box.left - pageBox.left) / pageBox.width) * page.getWidth();
+    const y = page.getHeight() - ((box.top - pageBox.top + box.height * .78) / pageBox.height) * page.getHeight();
+    page.drawText(String(value).slice(0, 90), {x, y, size: fontSize, color: PDFLib.rgb(.09,.14,.1)});
+  }
+
+  async function buildMergedPdf(){
+    if(!window.PDFLib) throw new Error('PDF generator nije učitan.');
+    const response = await fetch('assets/Pristupnica.pdf');
+    const sourceBytes = await response.arrayBuffer();
+    const document = await PDFLib.PDFDocument.load(sourceBytes);
+    const page = document.getPages()[0];
+    overlay.querySelectorAll('.pdf-input').forEach((field) => drawPdfField(page, field, field.value));
+    const biography = overlay.querySelector('[name="biografija"]');
+    if(biography && biography.value){
+      const box = biography.getBoundingClientRect();
+      const pageBox = pageWrap.getBoundingClientRect();
+      const x = ((box.left - pageBox.left) / pageBox.width) * page.getWidth();
+      const y = page.getHeight() - ((box.bottom - pageBox.top) / pageBox.height) * page.getHeight() + 8;
+      page.drawText(biography.value.slice(0, 260), {x, y, size: 8, maxWidth: page.getWidth() * .8, lineHeight: 10, color: PDFLib.rgb(.09,.14,.1)});
+    }
+    if(photoDataUrl){
+      const image = photoDataUrl.startsWith('data:image/png')
+        ? await document.embedPng(photoDataUrl)
+        : await document.embedJpg(photoDataUrl);
+      const zone = q('.pdf-photo-zone').getBoundingClientRect();
+      const pageBox = pageWrap.getBoundingClientRect();
+      page.drawImage(image, {x: ((zone.left-pageBox.left)/pageBox.width)*page.getWidth(), y: page.getHeight()-((zone.bottom-pageBox.top)/pageBox.height)*page.getHeight(), width:(zone.width/pageBox.width)*page.getWidth(), height:(zone.height/pageBox.height)*page.getHeight()});
+    }
+    if(signatureInput && signatureInput.value){
+      const image = await document.embedPng(signatureInput.value);
+      const zone = q('.pdf-signature-zone').getBoundingClientRect();
+      const pageBox = pageWrap.getBoundingClientRect();
+      page.drawImage(image, {x: ((zone.left-pageBox.left)/pageBox.width)*page.getWidth(), y: page.getHeight()-((zone.bottom-pageBox.top)/pageBox.height)*page.getHeight(), width:(zone.width/pageBox.width)*page.getWidth(), height:(zone.height/pageBox.height)*page.getHeight()});
+    }
+    return await document.save();
+  }
+
+  const photoInput = q('#pdf-member-photo');
+  if(photoInput) photoInput.addEventListener('change', () => {
+    const file = photoInput.files && photoInput.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      photoDataUrl = String(reader.result || '');
+      const preview = q('#pdf-member-photo-preview');
+      if(preview){ preview.src = photoDataUrl; preview.hidden = false; }
+    };
+    reader.readAsDataURL(file);
+  });
+  openButton.addEventListener('click', openModal);
+  qa('[data-close-membership]').forEach((button) => button.addEventListener('click', closeModal));
+  document.addEventListener('keydown', (event) => { if(event.key === 'Escape' && modal.classList.contains('is-open')) closeModal(); });
+  window.addEventListener('resize', () => { if(modal.classList.contains('is-open')) renderPdf(); });
+  setupSignature();
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if(!form.reportValidity() || !signatureInput?.value){
+      setStatus('Popunite sva obavezna polja i potpišite pristupnicu.', 'error');
+      return;
+    }
+    submitButton.disabled = true;
+    setStatus('Priprema službenog PDF-a...');
+    try {
+      const mergedPdf = await buildMergedPdf();
+      const data = new FormData(form);
+      data.set('protocol_pdf', new Blob([mergedPdf], {type:'application/pdf'}), 'Pristupnica-popunjena.pdf');
+      const response = await fetch('/api/members', {method:'POST', body:data, credentials:'same-origin'});
+      const payload = await response.json().catch(() => ({}));
+      if(!response.ok || !payload.ok) throw new Error(payload.error || 'Slanje nije uspjelo.');
+      setStatus('Pristupnica je zaprimljena i čeka verifikaciju.', 'success');
+      form.reset();
+      photoDataUrl = '';
+      const preview = q('#pdf-member-photo-preview');
+      if(preview) { preview.src = ''; preview.hidden = true; }
+      if(signatureContext) signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      if(signatureInput) signatureInput.value = '';
+    } catch(error){
+      console.error('Membership modal submission failed:', error);
+      setStatus(error.message || 'Slanje pristupnice nije uspjelo.', 'error');
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
 }
 
 /* Contact form handling */

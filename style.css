@@ -414,6 +414,37 @@ body.admin-page .news-shell{grid-template-columns:minmax(320px,420px) 1fr}
 .admin-secret-link{font-size:0.82rem;color:var(--muted);opacity:0.35;transition:opacity .2s ease,transform .2s ease;text-decoration:none}
 .admin-secret-link:hover,.admin-secret-link:focus{opacity:0.8;transform:translateY(-1px)}
 
+/* Membership CTA and original A4 application modal */
+.nav-membership-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid var(--gold-accent);border-radius:8px;background:linear-gradient(180deg,rgba(46,94,47,.35),rgba(0,0,0,.2));color:#f4d98e;font:inherit;font-size:.78rem;font-weight:800;letter-spacing:.06em;cursor:pointer;transition:transform .18s ease,background .18s ease,box-shadow .18s ease}
+.nav-membership-btn:hover,.nav-membership-btn:focus-visible{background:linear-gradient(180deg,rgba(46,94,47,.65),rgba(0,0,0,.25));box-shadow:0 0 18px rgba(197,160,89,.2);transform:translateY(-1px);outline:none}
+.membership-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(9px)}
+.membership-modal.is-open{display:flex}
+.membership-modal-backdrop{position:absolute;inset:0}
+.membership-modal-panel{position:relative;z-index:1;display:flex;flex-direction:column;width:min(1120px,100%);height:min(95vh,980px);overflow:hidden;border:1px solid var(--gold-border);border-radius:16px;background:#080c09;box-shadow:0 28px 90px rgba(0,0,0,.72)}
+.membership-modal-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;border-bottom:1px solid rgba(197,160,89,.2);background:linear-gradient(180deg,rgba(25,37,27,.96),rgba(8,12,9,.96))}
+.membership-modal-header h2{margin:2px 0 0;color:#f3db96;font-size:1.3rem;letter-spacing:.1em}
+.membership-modal-close{width:40px;height:40px;border:1px solid rgba(197,160,89,.4);border-radius:50%;background:rgba(0,0,0,.3);color:#f3db96;cursor:pointer;font-size:1rem}
+.membership-pdf-scroll{overflow:auto;padding:18px;background:radial-gradient(circle at 50% 0,rgba(46,94,47,.12),transparent 45%),#050705}
+.pdf-membership-form{display:grid;gap:14px;width:max-content;min-width:100%;margin:0 auto}
+.pdf-page-wrap{position:relative;width:min(794px,calc(100vw - 88px));aspect-ratio:210 / 297;margin:0 auto;background:#fff;box-shadow:0 12px 35px rgba(0,0,0,.45)}
+#membership-pdf-canvas{display:block;width:100%;height:100%}
+.pdf-overlay{position:absolute;inset:0;color:#151515;font-family:Arial,sans-serif}
+.pdf-input{position:absolute;z-index:2;min-width:0;padding:2px 4px;border:0;border-bottom:1px solid rgba(35,82,37,.42);border-radius:0;background:rgba(255,255,255,.16);color:#172318;font:600 clamp(8px,1.2vw,12px)/1.1 Arial,sans-serif;outline:none}
+.pdf-input:focus{background:rgba(236,247,235,.8);border-bottom-color:#235225;box-shadow:0 0 0 2px rgba(46,94,47,.18)}
+.pdf-input::placeholder{color:rgba(35,82,37,.7);font-size:.8em}
+.input-prezime{left:9%;top:14.3%;width:29%;height:2.8%}.input-ime{left:40%;top:14.3%;width:25%;height:2.8%}.input-ime-oca{left:67%;top:14.3%;width:25%;height:2.8%}
+.input-datum{left:9%;top:18.1%;width:24%;height:2.8%}.input-mjesto{left:35%;top:18.1%;width:31%;height:2.8%}.input-jmbg{left:68%;top:18.1%;width:24%;height:2.8%}.input-licna{left:9%;top:22%;width:25%;height:2.8%}
+.input-adresa{left:9%;top:27.7%;width:56%;height:2.8%}.input-grad{left:68%;top:27.7%;width:24%;height:2.8%}.input-opcina{left:9%;top:31.6%;width:31%;height:2.8%}.input-kontakt{left:43%;top:31.6%;width:23%;height:2.8%}.input-email{left:68%;top:31.6%;width:24%;height:2.8%}
+.input-sprema{left:9%;top:35.5%;width:31%;height:2.8%}.input-zanimanje{left:43%;top:35.5%;width:23%;height:2.8%}.input-zaposlen{left:68%;top:35.5%;width:24%;height:2.8%;padding-left:3px}
+.input-biografija{left:9%;top:40.5%;width:83%;height:9%;resize:none;background:rgba(255,255,255,.13)}
+.pdf-photo-zone{position:absolute;z-index:3;left:69%;top:52%;width:22%;height:14%;display:grid;place-items:center;overflow:hidden;border:1px dashed rgba(35,82,37,.72);background:rgba(236,247,235,.22);color:#235225;font-size:clamp(8px,1.1vw,12px);font-weight:700;text-align:center;cursor:pointer}.pdf-photo-zone span{position:relative;z-index:1}.pdf-photo-zone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pdf-signature-zone{position:absolute;z-index:3;left:9%;top:67%;width:48%;height:8%;border-bottom:1px solid rgba(35,82,37,.55)}
+#pdf-signature-pad{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}.pdf-signature-zone button{position:absolute;right:0;bottom:-23px;border:0;background:transparent;color:#235225;font-size:9px;cursor:pointer}
+.pdf-consent{position:absolute;left:9%;top:77%;z-index:3;width:15px;height:15px;accent-color:#235225}
+.membership-modal-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;max-width:794px;width:min(100%,calc(100vw - 88px));margin:0 auto}.membership-modal-actions p{flex:1;min-height:22px;margin-right:auto;color:var(--muted);font-size:.86rem}.membership-modal-actions p.error{color:#e5a7a7}.membership-modal-actions p.success{color:#b7f1bd}
+@media (max-width:900px){.nav-list{gap:8px}.nav-membership-btn span{display:none}.nav-membership-btn{padding:9px 10px}.pdf-page-wrap,.membership-modal-actions{width:min(794px,calc(100vw - 48px))}}
+@media (max-width:700px){.membership-modal{padding:8px}.membership-modal-panel{height:98vh;border-radius:12px}.membership-modal-header{padding:12px 14px}.membership-pdf-scroll{padding:10px}.pdf-page-wrap,.membership-modal-actions{width:calc(100vw - 36px)}.membership-modal-actions{justify-content:stretch}.membership-modal-actions .btn{flex:1}.membership-modal-actions p{flex-basis:100%;order:-1}}
+
 /* Responsive adjustments */
 @media (max-width:900px){
   .grid-3{grid-template-columns:1fr}
