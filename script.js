@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function(){
   initNavToggle();
   initSmoothLinks();
   initContactForm();
-  initMembershipPortal();
   initPdfMembershipModal();
   initLocalSave();
   initContactCopyButtons();
@@ -303,13 +302,11 @@ function initPdfMembershipModal(){
   const openButton = q('#open-membership-modal');
   const form = q('#pdf-membership-form');
   const pageWrap = q('#membership-pdf-page');
-  const pdfCanvas = q('#membership-pdf-canvas');
-  const overlay = q('#membership-pdf-overlay');
   const signatureCanvas = q('#pdf-signature-pad');
   const signatureInput = q('#pdf-signature-data');
   const status = q('#pdf-membership-status');
   const submitButton = q('#pdf-membership-submit');
-  if(!modal || !openButton || !form || !pageWrap || !pdfCanvas || !overlay) return;
+  if(!modal || !openButton || !form || !pageWrap) return;
 
   let pdfDocument = null;
   let pdfPage = null;
@@ -407,7 +404,6 @@ function initPdfMembershipModal(){
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    loadPdf();
     setTimeout(resizeSignature, 0);
   }
   function closeModal(){
@@ -484,9 +480,7 @@ function initPdfMembershipModal(){
     submitButton.disabled = true;
     setStatus('Priprema službenog PDF-a...');
     try {
-      const mergedPdf = await buildMergedPdf();
       const data = new FormData(form);
-      data.set('protocol_pdf', new Blob([mergedPdf], {type:'application/pdf'}), 'Pristupnica-popunjena.pdf');
       const response = await fetch('/api/members', {method:'POST', body:data, credentials:'same-origin'});
       const payload = await response.json().catch(() => ({}));
       if(!response.ok || !payload.ok) throw new Error(payload.error || 'Slanje nije uspjelo.');

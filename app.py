@@ -903,6 +903,7 @@ def api_member_protocol(member_id):
         from reportlab.pdfgen import canvas
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.units import mm
+        from reportlab.lib.utils import ImageReader
         from PIL import Image
         import base64
         from io import BytesIO
@@ -940,16 +941,33 @@ def api_member_protocol(member_id):
     pdf.setFillColorRGB(0.12, 0.18, 0.14)
     pdf.rect(20, 20, width - 40, height - 40, stroke=1, fill=0)
 
+    crest_left = Path('assets') / 'img' / 'grb-udruzenja.png'
+    crest_right = Path('assets') / 'img' / 'grb-zelene-beretke.png'
+    for crest_path, crest_x in ((crest_left, 42), (crest_right, width - 102)):
+        if crest_path.exists():
+            try:
+                pdf.drawImage(ImageReader(str(crest_path)), crest_x, height - 105, width=60, height=70, preserveAspectRatio=True, mask='auto')
+            except Exception as crest_err:
+                print('PDF crest failed:', crest_err)
+
     pdf.setFillColorRGB(0.9, 0.82, 0.45)
     pdf.setFont('Helvetica-Bold', 18)
-    pdf.drawString(45, height - 60, 'UB "BOSNAE - ZELENE BERETKE" OPĆINA STARI GRAD')
+    pdf.setFont('Helvetica-Bold', 12)
+    pdf.drawCentredString(width / 2, height - 52, 'UB "BOSNAE - ZELENE BERETKE" OPĆINE STARI GRAD')
     pdf.setFillColorRGB(0.88, 0.88, 0.88)
-    pdf.setFont('Helvetica', 9)
-    pdf.drawString(45, height - 82, 'Obala Kulina bana br. 24/1, 71000 Sarajevo | ID br. 4200343940002 | ASA BANKA d.d. 1340011130037272 | Rješenje br. 03-05-05-7060/06')
+    pdf.setFont('Helvetica', 7)
+    header_lines = [
+        'OBALA KULINA BANA BR. 24/1, 71000 SARAJEVO',
+        'Tel/Fax: 033/205-689 | ID br. 4200343940002',
+        'ASA BANKA d.d. 1340011130037272',
+        'Ministarstvo pravde i uprave Kantona Sarajevo (Rješenje br. 03-05-05-7060/06)'
+    ]
+    for header_index, header_line in enumerate(header_lines):
+        pdf.drawCentredString(width / 2, height - 67 - (header_index * 11), header_line)
 
     pdf.setFillColorRGB(0.95, 0.95, 0.95)
     pdf.setFont('Helvetica-Bold', 15)
-    pdf.drawString(45, height - 120, f'PROTOKOL PRISTUPNICE / ČLANSKE KARTICE - {protocol_number}')
+    pdf.drawCentredString(width / 2, height - 130, f'PROTOKOL PRISTUPNICE / ČLANSKE KARTICE - {protocol_number}')
     pdf.setFont('Helvetica', 11)
     pdf.drawString(45, height - 150, f'Datum: {datetime.datetime.utcnow().strftime("%d.%m.%Y.")}')
 
