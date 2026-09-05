@@ -142,6 +142,7 @@ section.extra-section{display:none !important}
 
 .contact-link{color:var(--tactical-green);font-weight:700;text-decoration:none;border-bottom:1px dashed rgba(46,94,47,0.12);padding-bottom:2px;transition:color .2s}
 .contact-link:hover{text-decoration:underline;color:#6ee7b7}
+.contact-link[href^="mailto:"]{display:inline-block;max-width:100%;font-size:.88rem;word-break:break-all;overflow-wrap:anywhere}
 
 .copy-btn{display:inline-block;margin-top:8px;margin-left:0;padding:6px 12px;border-radius:10px;background:rgba(185,143,59,0.1);border:1px solid rgba(185,143,59,0.3);color:var(--accent-gold);cursor:pointer;font-size:0.85rem;font-weight:600;transition:background .2s,border-color .2s}
 .copy-btn:hover{background:rgba(185,143,59,0.2);border-color:rgba(185,143,59,0.5)}
