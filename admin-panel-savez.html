@@ -706,10 +706,29 @@
       .delete-dialog .button-row { padding: 0 18px; justify-content: flex-end; }
       .delete-dialog .danger-btn { border-color: rgba(197,160,89,0.4); }
 
+      .admin-tabs { display:flex; gap:10px; margin-bottom:18px; border-bottom:1px solid var(--soft-line); }
+      .admin-tab { padding:11px 16px; border:1px solid transparent; border-bottom:0; border-radius:10px 10px 0 0; background:transparent; color:var(--muted); font:inherit; font-weight:700; cursor:pointer; }
+      .admin-tab.active { color:var(--text); background:rgba(46,94,47,.18); border-color:var(--gold-border); box-shadow:inset 0 -2px 0 var(--gold); }
+      .admin-tabs > .logout-btn { margin-left:auto; align-self:center; }
+      .admin-grid[hidden], .social-media-panel[hidden] { display:none !important; }
+      .social-media-panel { display:grid; grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr); gap:22px; }
+      .social-post-form { display:grid; gap:16px; }
+      .social-post-form select { width:100%; padding:.85rem .9rem; border:1px solid var(--soft-line); border-radius:10px; background:#0b1210; color:var(--text); font:inherit; }
+      .social-post-list { display:grid; align-content:start; gap:12px; }
+      .social-post-card { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:16px; border:1px solid var(--gold-border); border-radius:12px; background:rgba(255,255,255,.025); }
+      .social-post-card h3 { margin:8px 0 5px; font-size:1rem; }
+      .social-post-card p { margin:0 0 8px; color:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; }
+      .social-post-card a { color:#bceec7; overflow-wrap:anywhere; }
+      .social-platform-badge { display:inline-flex; padding:4px 9px; border:1px solid var(--gold-border); border-radius:999px; color:var(--gold); font-size:.75rem; font-weight:700; }
+      .social-delete-btn { flex:0 0 auto; padding:8px 11px; border:1px solid rgba(255,141,141,.32); border-radius:9px; background:rgba(255,141,141,.08); color:var(--danger); font:inherit; cursor:pointer; }
+      .social-empty-state { padding:22px; border:1px dashed var(--gold-border); border-radius:12px; color:var(--muted); text-align:center; }
+
       @media (max-width: 900px) {
         .admin-grid {
           grid-template-columns: 1fr;
         }
+
+        .social-media-panel { grid-template-columns:1fr; }
 
         .button-row {
           flex-direction: column;
@@ -717,6 +736,9 @@
       }
 
       @media (max-width: 560px) {
+        .admin-tab { flex:1; padding:10px 8px; font-size:.88rem; }
+        .social-post-card { flex-direction:column; }
+        .social-delete-btn { align-self:flex-end; }
         .news-card { gap: 10px; }
         .news-thumb { width: 64px; height: 64px; }
         .card-header { flex-direction: column; gap: 5px; }
@@ -753,13 +775,18 @@
       </div>
 
       <main id="admin-content" class="hidden">
-        <div class="admin-grid">
+        <div class="admin-tabs" role="tablist" aria-label="Administracija sadržaja">
+          <button type="button" class="admin-tab active" id="news-tab" role="tab" aria-selected="true" aria-controls="news-tab-panel">Vijesti</button>
+          <button type="button" class="admin-tab" id="social-tab" role="tab" aria-selected="false" aria-controls="social-tab-panel">Mreže / Social Media</button>
+          <button id="logoutButton" type="button" class="logout-btn">Odjavi se</button>
+        </div>
+
+        <div class="admin-grid" id="news-tab-panel" role="tabpanel" aria-labelledby="news-tab">
           <section class="panel">
             <div class="panel-header">
               <div class="panel-label">ADMIN PANEL</div>
               <div class="header-actions">
                 <span class="panel-badge">Brzo i sigurno</span>
-                <button id="logoutButton" type="button" class="logout-btn">Odjavi se</button>
               </div>
             </div>
 
@@ -870,6 +897,47 @@
             <div id="newsList" class="news-list"></div>
           </section>
         </div>
+
+        <section class="social-media-panel" id="social-tab-panel" role="tabpanel" aria-labelledby="social-tab" hidden>
+          <section class="panel">
+            <div class="panel-header">
+              <div class="panel-label">NOVA SOCIAL MEDIA OBJAVA</div>
+              <span class="panel-badge">TikTok / Instagram</span>
+            </div>
+            <form id="socialPostForm" class="social-post-form">
+              <div class="field-group">
+                <label for="socialPlatform">Mreža</label>
+                <select id="socialPlatform" name="platform" required>
+                  <option value="Instagram">Instagram</option>
+                  <option value="TikTok">TikTok</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="socialPostUrl">URL objave / videa</label>
+                <input id="socialPostUrl" name="post_url" type="url" placeholder="https://www.instagram.com/..." required />
+              </div>
+              <div class="field-group">
+                <label for="socialPostTitle">Naslov</label>
+                <input id="socialPostTitle" name="title" type="text" maxlength="160" placeholder="Naslov objave" required />
+              </div>
+              <div class="field-group">
+                <label for="socialPostDescription">Opis</label>
+                <textarea id="socialPostDescription" name="description" placeholder="Kratki opis objave (opciono)" rows="4"></textarea>
+              </div>
+              <button id="socialPostSubmit" class="publish-btn" type="submit">Dodaj objavu</button>
+              <div id="socialPostStatus" class="form-status" aria-live="polite"></div>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-header">
+              <div class="panel-label">SAČUVANE OBJAVE</div>
+              <button type="button" class="secondary-btn" id="refreshSocialPosts">Osvježi</button>
+            </div>
+            <div id="socialPostList" class="social-post-list" aria-live="polite">
+              <div class="social-empty-state">Učitavanje objava…</div>
+            </div>
+          </section>
+        </section>
       </main>
     </div>
 
@@ -966,12 +1034,22 @@
       const confirmDeleteButton = document.getElementById('confirmDeleteButton');
       const closeDeleteButton = document.getElementById('closeDeleteButton');
       const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+      const newsTabButton = document.getElementById('news-tab');
+      const socialTabButton = document.getElementById('social-tab');
+      const newsTabPanel = document.getElementById('news-tab-panel');
+      const socialTabPanel = document.getElementById('social-tab-panel');
+      const socialPostForm = document.getElementById('socialPostForm');
+      const socialPostStatus = document.getElementById('socialPostStatus');
+      const socialPostSubmit = document.getElementById('socialPostSubmit');
+      const socialPostList = document.getElementById('socialPostList');
+      const refreshSocialPostsButton = document.getElementById('refreshSocialPosts');
 
       let selectedCategory = 'obavjestenje';
       let selectedFilter = 'sve';
       let selectedStatusFilter = 'sve';
       let searchText = '';
       let newsData = [];
+      let socialPosts = [];
       let editingId = null;
       let pendingDeleteId = null;
       function normalizeTags(rawValue) {
@@ -1010,6 +1088,156 @@
         toast.classList.add('show');
         clearTimeout(showToast.timer);
         showToast.timer = setTimeout(() => toast.classList.remove('show'), 3000);
+      }
+
+      function setAdminTab(tabName) {
+        const showSocial = tabName === 'social';
+        newsTabPanel.hidden = showSocial;
+        socialTabPanel.hidden = !showSocial;
+        newsTabButton.classList.toggle('active', !showSocial);
+        socialTabButton.classList.toggle('active', showSocial);
+        newsTabButton.setAttribute('aria-selected', String(!showSocial));
+        socialTabButton.setAttribute('aria-selected', String(showSocial));
+        if (showSocial) fetchSocialPosts();
+      }
+
+      function renderSocialPosts() {
+        socialPostList.replaceChildren();
+        if (!socialPosts.length) {
+          const empty = document.createElement('div');
+          empty.className = 'social-empty-state';
+          empty.textContent = 'Još nema sačuvanih objava. Dodajte prvu objavu sa forme.';
+          socialPostList.appendChild(empty);
+          return;
+        }
+
+        socialPosts.forEach((post) => {
+          const card = document.createElement('article');
+          card.className = 'social-post-card';
+          const content = document.createElement('div');
+          const platform = document.createElement('span');
+          platform.className = 'social-platform-badge';
+          platform.textContent = post.platform || 'Društvena mreža';
+          const title = document.createElement('h3');
+          title.textContent = post.title || 'Objava bez naslova';
+          content.append(platform, title);
+
+          if (post.description) {
+            const description = document.createElement('p');
+            description.textContent = post.description;
+            content.appendChild(description);
+          }
+
+          const postUrl = document.createElement('a');
+          postUrl.textContent = post.post_url || '';
+          postUrl.target = '_blank';
+          postUrl.rel = 'noopener noreferrer';
+          try {
+            const parsedUrl = new URL(post.post_url);
+            if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
+              postUrl.href = parsedUrl.href;
+            } else {
+              postUrl.removeAttribute('target');
+            }
+          } catch (error) {
+            postUrl.removeAttribute('target');
+          }
+          content.appendChild(postUrl);
+
+          if (post.created_at) {
+            const date = document.createElement('small');
+            const parsedDate = new Date(post.created_at);
+            date.textContent = Number.isNaN(parsedDate.getTime()) ? '' : parsedDate.toLocaleString('bs-BA');
+            content.appendChild(date);
+          }
+
+          const deleteButton = document.createElement('button');
+          deleteButton.type = 'button';
+          deleteButton.className = 'social-delete-btn';
+          deleteButton.textContent = 'Izbriši';
+          deleteButton.setAttribute('aria-label', `Izbriši objavu: ${post.title || post.platform || ''}`);
+          deleteButton.addEventListener('click', () => deleteSocialPost(post.id));
+          card.append(content, deleteButton);
+          socialPostList.appendChild(card);
+        });
+      }
+
+      async function fetchSocialPosts() {
+        socialPostList.replaceChildren();
+        const loading = document.createElement('div');
+        loading.className = 'social-empty-state';
+        loading.textContent = 'Učitavanje objava…';
+        socialPostList.appendChild(loading);
+        try {
+          const { data, error } = await supabaseClient
+            .from('social_posts')
+            .select('id, platform, post_url, title, description, created_at')
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          socialPosts = data || [];
+          renderSocialPosts();
+        } catch (error) {
+          console.error('Social media posts load failed:', error);
+          socialPostList.replaceChildren();
+          const message = document.createElement('div');
+          message.className = 'social-empty-state';
+          message.textContent = error?.message || 'Objave se trenutno ne mogu učitati.';
+          socialPostList.appendChild(message);
+        }
+      }
+
+      async function deleteSocialPost(postId) {
+        if (!postId || !window.confirm('Da li sigurno želite izbrisati ovu social media objavu?')) return;
+        try {
+          const { error } = await supabaseClient.from('social_posts').delete().eq('id', postId);
+          if (error) throw error;
+          socialPosts = socialPosts.filter((post) => String(post.id) !== String(postId));
+          renderSocialPosts();
+          showToast('Social media objava je izbrisana.');
+        } catch (error) {
+          console.error('Social media post delete failed:', error);
+          setStatus(socialPostStatus, error?.message || 'Brisanje objave nije uspjelo.', 'error');
+        }
+      }
+
+      async function handleSocialPostSubmit(event) {
+        event.preventDefault();
+        if (!socialPostForm.reportValidity()) return;
+
+        const platform = document.getElementById('socialPlatform').value;
+        const postUrl = document.getElementById('socialPostUrl').value.trim();
+        const title = document.getElementById('socialPostTitle').value.trim();
+        const description = document.getElementById('socialPostDescription').value.trim();
+        let parsedUrl;
+        try {
+          parsedUrl = new URL(postUrl);
+          if (!['https:', 'http:'].includes(parsedUrl.protocol)) throw new Error('Neispravan URL.');
+        } catch (error) {
+          setStatus(socialPostStatus, 'Unesite važeći URL objave ili videa.', 'error');
+          return;
+        }
+
+        socialPostSubmit.disabled = true;
+        setStatus(socialPostStatus, 'Spremanje objave…', '');
+        try {
+          const { error } = await supabaseClient.from('social_posts').insert([{
+            platform,
+            post_url: parsedUrl.href,
+            title,
+            description,
+            created_at: new Date().toISOString()
+          }]);
+          if (error) throw error;
+          socialPostForm.reset();
+          setStatus(socialPostStatus, 'Objava je uspješno sačuvana.', 'success');
+          showToast('Social media objava je dodana.');
+          await fetchSocialPosts();
+        } catch (error) {
+          console.error('Social media post save failed:', error);
+          setStatus(socialPostStatus, error?.message || 'Spremanje objave nije uspjelo.', 'error');
+        } finally {
+          socialPostSubmit.disabled = false;
+        }
       }
 
       function setLoginVisibility(isLoggedIn) {
@@ -1321,6 +1549,7 @@
             setStatus(loginStatus, 'Uspješno ste prijavljeni.', 'success');
             setLoginVisibility(true);
             await fetchNews();
+            await fetchSocialPosts();
           }
         } catch (error) {
           setStatus(loginStatus, error?.message || 'Prijava nije uspjela.', 'error');
@@ -1480,6 +1709,10 @@
       });
 
       previewButton.addEventListener('click', openPreviewModal);
+      newsTabButton.addEventListener('click', () => setAdminTab('news'));
+      socialTabButton.addEventListener('click', () => setAdminTab('social'));
+      socialPostForm.addEventListener('submit', handleSocialPostSubmit);
+      refreshSocialPostsButton.addEventListener('click', fetchSocialPosts);
       closePreviewButton.addEventListener('click', closePreviewModal);
       previewModal.addEventListener('click', (event) => {
         if (event.target === previewModal) closePreviewModal();
@@ -1508,6 +1741,7 @@
           setLoginVisibility(Boolean(session?.user));
           if (session?.user) {
             await fetchNews();
+            await fetchSocialPosts();
           }
         } catch (error) {
           console.error(error);
@@ -1520,6 +1754,7 @@
         setLoginVisibility(isLoggedIn);
         if (isLoggedIn) {
           fetchNews();
+          fetchSocialPosts();
         }
       });
 
