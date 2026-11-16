@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="assets/logo.png">
   <title>Savez Mladih - Zelene Beretke — Stari Grad</title>
-  <meta name="description" content="Zvanična prezentacija Saveza Mladih Zelene Beretke - Stari Grad. Takticka zelena, grb Bosne sa ljiljanima kao logo.">
+  <meta name="description" content="Savez mladih Zelene beretke Stari Grad Sarajevo okuplja mlade kroz edukaciju, očuvanje kulture sjećanja, terenske aktivnosti i humanitarni rad.">
+  <meta name="theme-color" content="#060605">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="bs_BA">
+  <meta property="og:title" content="Savez mladih Zelene beretke — Stari Grad Sarajevo">
+  <meta property="og:description" content="Edukacija, očuvanje kulture sjećanja, terenske aktivnosti i humanitarni rad mladih u Starom Gradu.">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <!-- Logo postavi kao assets/logo.png koristeći priloženu sliku sa grbom saveza -->
@@ -26,7 +31,6 @@
           <li><a href="#historija">Historija</a></li>
           <li><a href="#galerija">Galerija</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
-          <li><button type="button" class="nav-membership-btn" id="open-membership-modal"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>UČLANI SE</span></button></li>
         </ul>
         <div class="nav-social" aria-label="Društvene mreže">
           <a href="https://www.instagram.com/smzeleneberetkesg/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
@@ -37,59 +41,6 @@
     </div>
   </header>
 
-  <div id="membership-modal" class="membership-modal" aria-hidden="true">
-    <div class="membership-modal-backdrop" data-close-membership></div>
-    <section class="membership-modal-panel" role="dialog" aria-modal="true" aria-labelledby="membership-modal-title">
-      <header class="membership-modal-header">
-        <div>
-          <p class="section-kicker">Digitalna pristupnica</p>
-          <h2 id="membership-modal-title">UČLANI SE</h2>
-        </div>
-        <button type="button" class="membership-modal-close" data-close-membership aria-label="Zatvori pristupnicu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-      </header>
-      <div class="membership-pdf-scroll">
-        <form id="pdf-membership-form" class="pdf-membership-form" novalidate>
-          <div class="official-a4" id="membership-pdf-page">
-            <header class="official-letterhead">
-              <img src="assets/img/grb-udruzenja.png" alt="Grb udruženja">
-              <div class="official-header-copy">
-                <strong>UB "BOSNAE - ZELENE BERETKE" OPĆINE STARI GRAD</strong>
-                <span>OBALA KULINA BANA BR. 24/1, 71000 SARAJEVO</span>
-                <span>Tel/Fax: 033/205-689 | ID br. 4200343940002</span>
-                <span>ASA BANKA d.d. 1340011130037272</span>
-                <span>Ministarstvo pravde i uprave Kantona Sarajevo (Rješenje br. 03-05-05-7060/06)</span>
-              </div>
-              <img src="assets/img/grb-zelene-beretke.png" alt="Grb Zelenih beretki">
-            </header>
-            <h1>PRISTUPNICA</h1>
-            <p class="official-subtitle">SEKCIJA "ZELENE BERETKE" SAVEZ MLADIH STARI GRAD</p>
-            <div class="official-form-body">
-              <div class="official-photo-block"><span>MJESTO ZA SLIKU</span><label for="pdf-member-photo">Učitaj fotografiju</label><img id="pdf-member-photo-preview" alt="Pregled fotografije" hidden></div>
-              <input id="pdf-member-photo" name="photo" type="file" accept="image/*" hidden>
-              <div class="official-fields">
-                <div class="official-row three"><label>PREZIME<input name="prezime" required></label><label>IME<input name="ime" required></label><label>IME OCA<input name="ime_oca" required></label></div>
-                <div class="official-row three"><label>DATUM ROĐENJA<input name="datum_rodjenja" type="date" required></label><label>MJESTO ROĐENJA<input name="mjesto_rodjenja" required></label><label>MATIČNI BROJ (JMBG)<input name="jmbg" inputmode="numeric" required></label></div>
-                <div class="official-row three"><label>BR. LK<input name="broj_licne_karte" required></label><label>ADRESA<input name="adresa" required></label><label>GRAD<input name="grad" required></label></div>
-                <div class="official-row three"><label>OPĆINA<input name="opcina" required></label><label>KONTAKT BROJ<input name="kontakt_broj" type="tel" required></label><label>EMAIL<input name="email" type="email" required></label></div>
-                <div class="official-row three"><label>STRUČNA SPREMA<input name="strucna_sprema" required></label><label>ZANIMANJE<input name="zanimanje" required></label><label>ZAPOSLEN (DA/NE)<select name="zaposlenost" required><option value="NE">NE</option><option value="DA">DA</option></select></label></div>
-                <label class="official-bio">KRATKA BIOGRAFIJA<textarea name="biografija" rows="5" required></textarea></label>
-              </div>
-            </div>
-            <p class="official-declaration">Izjavljujem da su navedeni podaci tačni i da prihvatam Statut, ciljeve i pravila rada Udruženja „Bosnae - Zelene beretke“ Općine Stari Grad.</p>
-            <div class="official-signature-row"><div class="pdf-signature-zone"><canvas id="pdf-signature-pad" aria-label="Potpis člana"></canvas><button type="button" id="pdf-clear-signature">Obriši potpis</button></div><span>POTPIS ČLANA</span></div>
-            <input id="pdf-signature-data" name="signature_data" type="hidden">
-            <label class="official-consent"><input name="saglasnost" type="checkbox" required> Saglasan/na sam sa navedenom izjavom i obradom podataka za potrebe članstva.</label>
-          </div>
-          <div class="membership-modal-actions">
-            <p id="pdf-membership-status" aria-live="polite"></p>
-            <button type="button" class="btn btn-ghost" data-close-membership>Odustani</button>
-            <button type="submit" class="btn btn-primary" id="pdf-membership-submit"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Pošalji Pristupnicu</button>
-          </div>
-        </form>
-      </div>
-    </section>
-  </div>
-
   <main>
     <section id="hero" class="hero">
       <div class="hero-overlay"></div>
@@ -98,10 +49,8 @@
           <img src="assets/logo.png" alt="Grb Bosne - ljiljani" class="hero-logo" onerror="setLogoFallback(this)">
         </div>
         <h1 class="hero-title">Savez Mladih<br><span class="accent">Zelene Beretke</span></h1>
-        <p class="hero-sub">Osnivač: Husnija Kapo</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="#o-nama">Saznaj više</a>
-          <a class="btn btn-outline" href="#kontakt">Pridruži se</a>
         </div>
       </div>
     </section>
@@ -180,31 +129,30 @@
     <section id="tim" class="section team">
       <div class="container">
         <h2>Naš tim</h2>
-        <p class="lead">Naš tim čine ljudi koje povezuje odgovornost, tradicija i želja da budu aktivan dio zajednice. U njemu su i osnivači saveza, ali i mladi koji svakodnevno nose ovaj projekt naprijed.</p>
+        <p class="lead">Naš tim čine ljudi koje povezuje odgovornost, tradicija i želja da aktivno doprinose zajednici. Zajedno rade na očuvanju vrijednosti saveza i realizaciji njegovih aktivnosti.</p>
         <div class="team-grid">
           <article class="team-card">
             <div class="team-avatar">
-              <img src="assets/husnija-kapo.png" alt="Husnija Kapo">
+              <img class="team-photo--husnija" src="assets/husnija-kapo.png" alt="Husnija Kapo">
             </div>
             <h4>Husnija Kapo</h4>
-            <p class="role">Komandant</p>
-            <p class="bio">Domadant saveza, vodi tim i strategiju u svim aktivnostima.</p>
+            <p class="role">Predsjednik i komandant</p>
+            <p class="bio">Komadant saveza, vodi tim i strategiju u svim aktivnostima.</p>
           </article>
           <article class="team-card">
             <div class="team-avatar">
-              <img src="assets/nidal-behlulovic.png" alt="Nidal Behlulovic">
+              <img class="team-photo--nidal" src="assets/Nidal.jpg" alt="Nidal Behlulovic" loading="lazy">
             </div>
             <h4>Nidal Behlulovic</h4>
-            <p class="role">Zamjenik Komandanta</p>
-            <p class="role">Načelnik za sport, teretanu i vanjske sportske aktivnosti</p>
+            <p class="role">Načelnik za sport</p>
             <p class="bio">Student fakulteta DIF za sport. Pomaže u vođenju tim aktivnosti i predstavlja savez u važnim inicijativama. Odgovoran je za organizaciju sportskih aktivnosti i upravljanje teretanom.</p>
           </article>
           <article class="team-card">
             <div class="team-avatar">
-              <img src="assets/haris-nokto.jpg" alt="Haris Nokto">
+              <img class="team-photo--haris" src="assets/Haris.jpg" alt="Haris Nokto">
             </div>
             <h4>Haris Nokto</h4>
-            <p class="role">Sekretar</p>
+            <p class="role">Zamjenik predsjednika i sekretar</p>
             <p class="bio">Održava komunikaciju, organizuje dokumentaciju i pomaže u svakodnevnom funkcionisanju saveza.</p>
           </article>
         </div>
@@ -218,39 +166,85 @@
             <p class="section-kicker">Vizuelna priča</p>
             <h2>Galerija</h2>
           </div>
-          <p class="lead">Fotografije i kolaži — spoj tradicije, angažmana i taktične estetike u slikama.</p>
+          <p class="lead">Zabilježeni trenuci druženja, učenja, obuke i zajedničkog rada.</p>
         </div>
-        <div class="gallery-grid">
-          <!-- Slike iz događaja -->
-          <figure class="gallery-item gallery-item-tall">
-            <img src="https://scontent.fsjj1-1.fna.fbcdn.net/v/t39.30808-6/747450740_122118944145346600_978365799913688161_n.jpg?stp=dst-jpg_tt6&cstp=mx738x1600&ctp=s738x1600&_nc_cat=107&ccb=1-7&_nc_sid=833d8c&_nc_ohc=0kh92J5BXqEQ7kNvwHxVMMb&_nc_oc=AdpueebJ8ioE46z-D3Ohw4Ru8momoxAiG7g3cAxRzDoRgarWjH2kPsaOm4VlN1uPWmM&_nc_zt=23&_nc_ht=scontent.fsjj1-1.fna&_nc_gid=4yxaBF1nDo6XQJte2C2y_w&_nc_ss=7b2a8&oh=00_AQG8Cab2Jip0XW4bOkKtYSuwlYgNfPWVDmRie6fta7721w&oe=6A83B34D" alt="Predstavljanje istorijskih mapa">
-            <figcaption>
-              <strong>Predstavljanje mapa</strong>
-              <span>Edukacija o istorijskom naslijeđu</span>
-            </figcaption>
+        <div class="gallery-grid" id="gallery-grid">
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-11-09_13-25-11-090.jpg" alt="Članovi saveza na terenskoj obuci" fetchpriority="high">
+            <figcaption><strong>Terenska obuka</strong><span>Praktične aktivnosti na terenu</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="https://scontent.fsjj1-1.fna.fbcdn.net/v/t39.30808-6/744738615_122118943353346600_8101507048361634049_n.jpg?stp=dst-jpg_tt6&cstp=mx1205x1600&ctp=s1205x1600&_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=GzxeXVerKO8Q7kNvwHHR47S&_nc_oc=AdoyYBmOL8MlXPSM5BDGwpu1zmtzvJBxSdEMXQuvbtj8t-Svhu14IS6uGXnpqaYhRgM&_nc_zt=23&_nc_ht=scontent.fsjj1-1.fna&_nc_gid=hYF-sfmV-dNHKQEkyPCZjg&_nc_ss=7b2a8&oh=00_AQGNN1YLAP6RO8PKPWM07SQd18v6WvXiMwLxFIuSkEMW_A&oe=6A83AD40" alt="Группа учасников">
-            <figcaption>
-              <strong>Timski rad</strong>
-              <span>Članovi Sekcije i partneri zajedno</span>
-            </figcaption>
+            <img src="assets/galerija/viber_slika_2026-09-20_17-34-55-410.jpg" alt="Torta sa obilježjima Saveza mladih Zelene beretke" loading="lazy">
+            <figcaption><strong>Torta saveza</strong><span>Zajednički trenuci i obilježavanje</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="https://scontent.fsjj1-1.fna.fbcdn.net/v/t39.30808-6/744598093_122118944265346600_2564065458862131287_n.jpg?stp=dst-jpg_tt6&cstp=mx1200x1600&ctp=s1200x1600&_nc_cat=111&ccb=1-7&_nc_sid=833d8c&_nc_ohc=eYS8j_Rk_6AQ7kNvwEoOPRm&_nc_oc=AdrchRCPwzS2sBU4eUNbM6ZR66peYBd6MaVwjK7EOrkpUmfuWhg5hKTLctpnFsSv4LI&_nc_zt=23&_nc_ht=scontent.fsjj1-1.fna&_nc_gid=IxWIZbPtlfPOIbJKKiQ2-w&_nc_ss=7b2a8&oh=00_AQHacNzn-JqdVXhDEV_FVxngLv9Jx6SHFglp6R-RMN9j5w&oe=6A83B94A" alt="Aktivnost članova">
-            <figcaption>
-              <strong>Aktivnost članova</strong>
-              <span>Zajedničko angažovanje u akcijama</span>
-            </figcaption>
+            <img src="assets/galerija/viber_slika_2026-09-20_17-34-56-335.jpg" alt="Radni sastanak članova saveza" loading="lazy">
+            <figcaption><strong>Radni sastanak</strong><span>Razgovor i planiranje aktivnosti</span></figcaption>
           </figure>
-          <figure class="gallery-item gallery-item-wide">
-            <img src="https://scontent.fsjj1-1.fna.fbcdn.net/v/t39.30808-6/744738747_122118945705346600_1100551685188112369_n.jpg?stp=dst-jpg_tt6&cstp=mx1600x1200&ctp=s1600x1200&_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=sQl1hUrDoAEQ7kNvwGqz6ay&_nc_oc=AdpxcxPPpX2qRtxavBFkSTNEnjsHkpRdrOvO_yuPdDwLbP9AGIiGIyQOZ8LNqA0ZqTI&_nc_zt=23&_nc_ht=scontent.fsjj1-1.fna&_nc_gid=uVtUqS4uzZ6T8S4VQzpeYQ&_nc_ss=7b2a8&oh=00_AQHhJpeCqtTphQg9mMQdTxFScl21pilGwgxyq7-LKVwkaw&oe=6A83AE60" alt="Potočari">
-            <figcaption>
-              <strong>Potočari</strong>
-              <span>Sjećanje i odavanje počasti žrtvama</span>
-            </figcaption>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-189.jpg" alt="Članovi na zajedničkom sastanku" loading="lazy">
+            <figcaption><strong>Radni sastanak</strong><span>Zajedničko planiranje i druženje</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-230.jpg" alt="Članovi saveza tokom sastanka" loading="lazy">
+            <figcaption><strong>Razgovor članova</strong><span>Razmjena ideja i iskustava</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-261.jpg" alt="Članovi saveza na zajedničkom druženju" loading="lazy">
+            <figcaption><strong>Druženje članova</strong><span>Susret članova u prijateljskoj atmosferi</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-18_12-57-18-919.jpg" alt="Članovi tokom terenske aktivnosti" loading="lazy">
+            <figcaption><strong>Aktivnosti na terenu</strong><span>Obuka i zajedničko djelovanje</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-18_12-57-19-017.jpg" alt="Posjeta muzejskoj postavci" loading="lazy">
+            <figcaption><strong>Posjeta muzeju</strong><span>Upoznavanje s historijskim naslijeđem</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-435.jpg" alt="Članovi u muzejskoj postavci" loading="lazy">
+            <figcaption><strong>Posjeta muzeju</strong><span>Učenje kroz historijske postavke</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-493.jpg" alt="Zajednička posjeta muzeju" loading="lazy">
+            <figcaption><strong>Muzejska postavka</strong><span>Čuvanje sjećanja i naslijeđa</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-820.jpg" alt="Članovi razgledaju muzejsku izložbu" loading="lazy">
+            <figcaption><strong>Historijska izložba</strong><span>Edukativna posjeta muzeju</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-22_15-29-23-270.jpg" alt="Historijski grb u muzejskoj postavci" loading="lazy">
+            <figcaption><strong>Muzejsko naslijeđe</strong><span>Detalj iz historijske postavke</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-22_15-29-28-570.jpg" alt="Obilježavanje sjećanja na mezarju" loading="lazy">
+            <figcaption><strong>Odavanje počasti</strong><span>Sjećanje i poštovanje</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-26_10-55-19-071.jpg" alt="Članovi saveza na zajedničkoj aktivnosti" loading="lazy">
+            <figcaption><strong>Zajednička aktivnost</strong><span>Angažman članova na terenu</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-10-26_10-55-19-580.jpg" alt="Članovi predstavljaju obilježje saveza" loading="lazy">
+            <figcaption><strong>Obilježja saveza</strong><span>Ponos i zajedništvo</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-11-08_12-42-51-891.jpg" alt="Večernje druženje članova uz vatru" loading="lazy">
+            <figcaption><strong>Druženje na terenu</strong><span>Večernji predah nakon aktivnosti</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-11-09_13-25-10-406.jpg" alt="Ekipa tokom praktične obuke" loading="lazy">
+            <figcaption><strong>Praktična obuka</strong><span>Vježba i timska saradnja</span></figcaption>
+          </figure>
+          <figure class="gallery-item">
+            <img src="assets/galerija/viber_slika_2026-11-09_13-25-10-689.jpg" alt="Članovi saveza nakon terenske obuke" loading="lazy">
+            <figcaption><strong>Timski rad</strong><span>Zajedništvo i podrška</span></figcaption>
           </figure>
         </div>
+        <button class="gallery-more" type="button" aria-expanded="false" aria-controls="gallery-grid" hidden>
+          Pogledaj sve fotografije
+        </button>
       </div>
     </section>
 
@@ -304,7 +298,7 @@
         <div class="contact-form-wrapper">
           <div class="contact-form-info">
             <h3>Direktna poruka</h3>
-            <p>Brzo odgovaramo na upite vezane za članstvo, akcije i program. Ako želiš, u poruci napiši i kad ti najviše odgovara da te kontaktiramo.</p>
+            <p>Brzo odgovaramo na upite vezane za naše aktivnosti i program. U poruci napiši i kada ti najviše odgovara da te kontaktiramo.</p>
           </div>
 
 <form id="contact-form" class="contact-form" action="/send-message" method="post" aria-label="Kontakt forma">
@@ -330,31 +324,7 @@
       </div>
     </section>
 
-    <section id="pridruzi-se" class="section join">
-      <div class="container join-grid">
-        <article class="join-card">
-          <h3>Pridruži se</h3>
-          <p>Želiš da pomogneš, učestvuješ u akcijama ili postaneš dio tima? Pošalji nam poruku i mi ćemo ti odgovoriti.</p>
-          <ul>
-            <li>Volonterske akcije</li>
-            <li>Radionice i edukacija</li>
-            <li>Podrška lokalnoj zajednici</li>
-          </ul>
-        </article>
-        <article class="join-card support-card">
-          <h3>Podrška i pitanja</h3>
-          <p>Najčešća pitanja koja dobivamo:</p>
-          <ul>
-            <li>Kako se prijaviti za akcije?</li>
-            <li>Da li su aktivnosti besplatne?</li>
-            <li>Kako mogu pomoći kao volonter?</li>
-          </ul>
-          <a class="btn btn-outline" href="#kontakt">Postavi pitanje</a>
-        </article>
-      </div>
-    </section>
-
-    <!-- Dodatne sekcije: Misija, Tim, Događaji, Partneri, FAQ, Newsletter -->
+    <!-- Dodatne sekcije: Misija, Tim, Događaji, FAQ, Newsletter -->
     <section id="misija" class="section mission">
       <div class="container">
         <h2>Naša misija</h2>
@@ -377,8 +347,6 @@
       </div>
     </section>
 
-    
-
     <section id="dogadjaji" class="section events">
       <div class="container">
         <div class="section-heading">
@@ -399,47 +367,6 @@
               <h3>Obilježavanje godišnjice genocida u Srebrenici</h3>
               <p>Učešće članova Sekcije u komemoraciji i odavanju počasti žrtvama genocida u Srebrenici (11. juli).</p>
             </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="partneri" class="section partners">
-      <div class="container">
-        <div class="section-heading partners-heading">
-          <div>
-            <p class="section-kicker">Podrška zajednice</p>
-            <h2>Partneri</h2>
-          </div>
-          <p class="lead">Zahvaljujemo institucijama i organizacijama koje podržavaju naše projekte, akcije i edukaciju mladih.</p>
-        </div>
-        <div class="partners-grid">
-          <article class="partner-card">
-            <span class="partner-badge">Partner</span>
-            <div class="partner-logo-wrap">
-              <img src="assets/partner-1.png" alt="Partner 1">
-            </div>
-            <h3>Općina Stari Grad</h3>
-            <p>Podržava lokalne inicijative i angažman mladih u zajednici.</p>
-            <span class="partner-tag">Lokalna zajednica</span>
-          </article>
-          <article class="partner-card">
-            <span class="partner-badge">Partner</span>
-            <div class="partner-logo-wrap">
-              <img src="assets/partner-2.png" alt="Partner 2">
-            </div>
-            <h3>Centar za mlade</h3>
-            <p>Sudjeluje u organizaciji edukativnih programa i aktivnosti za mlade.</p>
-            <span class="partner-tag">Edukacija</span>
-          </article>
-          <article class="partner-card">
-            <span class="partner-badge">Partner</span>
-            <div class="partner-logo-wrap">
-              <img src="assets/partner-3.png" alt="Partner 3">
-            </div>
-            <h3>Humanitarna organizacija</h3>
-            <p>Pomaga u humanitarnim akcijama i jačanju solidarnosti u zajednici.</p>
-            <span class="partner-tag">Solidarnost</span>
           </article>
         </div>
       </div>
@@ -477,7 +404,8 @@
               </div>
             </div>
 
-            <div class="news-filter" id="news-category-filters">
+            <p class="news-filter-label">Kategorije vijesti</p>
+            <div class="news-filter" id="news-category-filters" role="group" aria-label="Filtriraj vijesti po kategoriji">
               <button type="button" class="filter-pill selected" data-filter="all">Sve</button>
               <button type="button" class="filter-pill" data-filter="obavjestenje">📌 Obavještenje</button>
               <button type="button" class="filter-pill" data-filter="humanitarna">🤝 Humanitarna akcija</button>
@@ -494,7 +422,7 @@
     <section id="historija" class="section history-section">
       <div class="container">
         <h2>Historija i sjećanje</h2>
-        <p class="lead">Naš rad se oslanja na historijsko sjećanje, ali i na budućnost. U srcu naše priče je ratno naslijeđe, odbrambena tradicija i odgovornost prema zajednici.</p>
+        <p class="lead">Rat u Bosni i Hercegovini najčešće se datira od 1992. do 1995. godine. Godina 1991. označava širi raspad Jugoslavije i kontekst u kojem su događaji uslijedili. Sjećanje na prošlost čuvamo uz poštovanje prema svim žrtvama i odgovornost prema budućnosti.</p>
         <div class="history-grid">
           <article class="history-card">
             <h3>Ratno naslijeđe</h3>
@@ -510,11 +438,16 @@
           </article>
         </div>
         <div class="timeline-card">
-          <h3>Hronologija</h3>
+          <h3>Hronologija: od rata do danas</h3>
           <ul class="timeline-list">
-            <li><strong>1941–1945</strong> — odbrambeno-oslobodilački rat i formiranje tradicije otpora.</li>
-            <li><strong>Poslije rata</strong> — obnova sjećanja, kulture i zajedničke memorije.</li>
-            <li><strong>Danas</strong> — omladinska inicijativa, edukacija, humanitarne akcije i društvena odgovornost.</li>
+            <li><strong>1991.</strong><span>Produbljuje se kriza i raspad Socijalističke Federativne Republike Jugoslavije. Slovenija i Hrvatska proglašavaju nezavisnost 25. juna. Ovo je širi kontekst; rat u BiH uglavnom se datira od 1992. do 1995. godine. <a href="https://www.icty.org/en/about/what-former-yugoslavia/conflicts" target="_blank" rel="noopener noreferrer">ICTY: sukobi na području bivše Jugoslavije</a>.</span></li>
+            <li><strong>1992.</strong><span>Na referendumu 29. februara i 1. marta većina birača koji su glasali podržala je nezavisnost BiH. Evropska zajednica priznala je BiH 6. aprila, a Sjedinjene Američke Države 7. aprila. U aprilu počinje rat; 22. maja BiH postaje članica Ujedinjenih nacija. <a href="https://www.icty.org/en/about/what-former-yugoslavia/conflicts" target="_blank" rel="noopener noreferrer">ICTY</a> · <a href="https://history.state.gov/countries/bosnia-herzegovina" target="_blank" rel="noopener noreferrer">State Department SAD-a</a> · <a href="https://docs.un.org/en/A/RES/46/237" target="_blank" rel="noopener noreferrer">Ujedinjene nacije</a>.</span></li>
+            <li><strong>april 1992.</strong><span>Počinje opsada Sarajeva. Završava se u februaru 1996. godine; civili grada godinama su bili izloženi granatiranju i snajperskoj vatri. <a href="https://www.irmct.org/en/cases/mict-13-55" target="_blank" rel="noopener noreferrer">IRMCT: predmet Karadžić</a>.</span></li>
+            <li><strong>18. mart 1994.</strong><span>Potpisan je Vašingtonski sporazum, kojim je okončan bošnjačko-hrvatski sukob i uspostavljena Federacija Bosne i Hercegovine. <a href="https://www.icty.org/x/cases/prlic/tjug/en/130529-1.pdf" target="_blank" rel="noopener noreferrer">ICTY: presuda u predmetu Prlić i drugi</a>.</span></li>
+            <li><strong>juli 1995.</strong><span>Nakon pada zaštićene zone UN-a Srebrenice, ubijeno je više od 8.000 bošnjačkih muškaraca i dječaka. Međunarodni sudovi utvrdili su da zločini počinjeni u Srebrenici predstavljaju genocid. <a href="https://www.irmct.org/en/cases/mict-13-56" target="_blank" rel="noopener noreferrer">IRMCT: predmet Mladić</a> · <a href="https://docs.un.org/en/A/RES/78/282" target="_blank" rel="noopener noreferrer">Rezolucija Generalne skupštine UN-a</a>.</span></li>
+            <li><strong>1995.</strong><span>Opći okvirni sporazum za mir parafiran je u Daytonu 21. novembra, a potpisan u Parizu 14. decembra. Sporazum je zaustavio rat i uspostavio ustavni okvir poslijeratne Bosne i Hercegovine. <a href="https://www.ohr.int/dayton-peace-agreement/" target="_blank" rel="noopener noreferrer">Tekst Dejtonskog mirovnog sporazuma</a>.</span></li>
+            <li><strong>Nakon rata.</strong><span>Dejtonski sporazum garantuje pravo izbjeglica i raseljenih osoba na povratak u domove. Obnova i oporavak zajednica ostali su dugotrajan proces. <a href="https://www.ohr.int/dayton-peace-agreement/annex-7/" target="_blank" rel="noopener noreferrer">Dejtonski sporazum, Aneks 7</a>.</span></li>
+            <li><strong>Danas.</strong><span>BiH nastavlja graditi mir i jačati institucije. Ustavni okvir predviđa dva entiteta; Brčko distrikt uspostavljen je nakon arbitražnog postupka. BiH ima status kandidatkinje za članstvo u Evropskoj uniji, a Evropsko vijeće je u martu 2024. odlučilo otvoriti pristupne pregovore. Važno je njegovati kulturu sjećanja, obrazovanje i solidarnost. <a href="https://www.ohr.int/dayton-peace-agreement/annex-4/" target="_blank" rel="noopener noreferrer">Ustav BiH, Aneks 4</a> · <a href="https://www.ohr.int/ohr_archive/brcko-final-award/" target="_blank" rel="noopener noreferrer">OHR: arbitražna odluka za Brčko</a> · <a href="https://enlargement.ec.europa.eu/countries/bosnia-and-herzegovina_en" target="_blank" rel="noopener noreferrer">Evropska komisija: BiH i EU</a>.</span></li>
           </ul>
         </div>
       </div>
@@ -525,7 +458,6 @@
         <h2>Često postavljana pitanja</h2>
         <p class="lead">Ako imaš dodatnih pitanja, pošalji nam poruku preko forme.</p>
         <div class="faq-list">
-          <details class="faq-item"><summary>Kako se mogu pridružiti?</summary><div class="faq-body"><p>Popuni kontakt formu ili dođi na Dan otvorenih vrata. Pridruživanje je otvoreno za sve od 15 do 35 godina.</p></div></details>
           <details class="faq-item"><summary>Da li su aktivnosti besplatne?</summary><div class="faq-body"><p>Većina naših aktivnosti je besplatna za učesnike. Neke specijalizirane radionice mogu imati simboličnu kotizaciju.</p></div></details>
           <details class="faq-item"><summary>Kako mogu donirati opremu?</summary><div class="faq-body"><p>Kontaktiraj nas putem forme ili direktno na email naveden u kontakt sekciji.</p></div></details>
         </div>
@@ -1208,10 +1140,11 @@
       buttons.forEach((button) => {
         const filter = button.getAttribute('data-filter');
         if (filter === 'all') {
-          button.textContent = `Sve (${items.length})`;
+          button.textContent = items.length ? `Sve (${items.length})` : 'Sve';
           return;
         }
-        button.textContent = `${categoryLabelFor(filter)} (${counts[filter] || 0})`;
+        const count = counts[filter] || 0;
+        button.textContent = count ? `${categoryLabelFor(filter)} (${count})` : categoryLabelFor(filter);
       });
     }
 

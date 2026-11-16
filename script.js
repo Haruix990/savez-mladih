@@ -32,13 +32,11 @@ document.addEventListener('DOMContentLoaded', function(){
   initNavToggle();
   initSmoothLinks();
   initContactForm();
-  initPdfMembershipModal();
   initLocalSave();
   initContactCopyButtons();
   initAdminSecretAccess();
-  initNewsManager();
   initHeroEffects();
-  initGallery();
+  initNewsManager();
   progressiveEnhancements();
   // Restore subtle entrance animation for hero elements
   try{
@@ -63,11 +61,25 @@ function initNavToggle(){
   const btn = q('.nav-toggle');
   const nav = q('#nav-list');
   if(!btn||!nav) return;
+  const closeMenu = () => {
+    btn.setAttribute('aria-expanded', 'false');
+    nav.classList.remove('is-open');
+  };
   btn.addEventListener('click', function(){
     const expanded = btn.getAttribute('aria-expanded') === 'true';
     btn.setAttribute('aria-expanded', String(!expanded));
-    nav.style.display = expanded? 'none':'flex';
+    nav.classList.toggle('is-open', !expanded);
   });
+  nav.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+  document.addEventListener('keydown', event => {
+    if(event.key === 'Escape') closeMenu();
+  });
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initGallery, {once:true});
+}else{
+  initGallery();
 }
 
 /* Smooth scrolling for internal links */
@@ -82,421 +94,6 @@ function initSmoothLinks(){
         target.scrollIntoView({behavior:'smooth',block:'start'});
       }
     });
-  });
-}
-
-/* Digital membership portal handling */
-function initMembershipPortal(){
-  const form = q('#membership-form');
-  if(!form) return;
-
-  const steps = qa('.membership-step');
-  const navDots = qa('.membership-step-indicator button');
-  const nextButtons = qa('[data-next-step]');
-  const prevButtons = qa('[data-prev-step]');
-  const formStatus = q('#membership-form-status');
-  const submitBtn = q('#membership-submit');
-  const fileInput = q('#member-photo');
-  const photoPreview = q('#member-photo-preview');
-  const photoName = q('#member-photo-name');
-  const canvas = q('#signature-pad');
-  const clearSignatureBtn = q('#clear-signature');
-  const signatureInput = q('#signature-data');
-  let currentStep = 0;
-  let signaturePad = null;
-
-  function showStep(index){
-    currentStep = Math.max(0, Math.min(index, steps.length - 1));
-    steps.forEach((step, stepIndex) => {
-      step.classList.toggle('is-active', stepIndex === currentStep);
-      step.hidden = stepIndex !== currentStep;
-    });
-    navDots.forEach((dot, dotIndex) => {
-      dot.classList.toggle('active', dotIndex === currentStep);
-    });
-    const progress = ((currentStep + 1) / steps.length) * 100;
-    const progressBar = q('#membership-progress-fill');
-    if(progressBar) progressBar.style.width = `${progress}%`;
-    const stepLabel = q('#membership-step-label');
-    if(stepLabel) stepLabel.textContent = `Korak ${currentStep + 1} od ${steps.length}`;
-
-    const prevAction = q('[data-prev-step]');
-    const nextAction = q('[data-next-step]');
-    if(prevAction) prevAction.style.display = currentStep === 0 ? 'none' : 'inline-flex';
-    if(nextAction) nextAction.classList.toggle('hidden', currentStep === steps.length - 1);
-    if(submitBtn) submitBtn.classList.toggle('hidden', currentStep !== steps.length - 1);
-  }
-
-  function setStatus(message, isError = false){
-    if(!formStatus) return;
-    formStatus.textContent = message || '';
-    formStatus.className = 'membership-form-status' + (isError ? ' error' : ' success');
-  }
-
-  function validateStep(stepIndex){
-    const currentFields = steps[stepIndex]?.querySelectorAll('input, textarea, select');
-    if(!currentFields) return true;
-    for(const field of currentFields){
-      if(field.required && !field.disabled){
-        if(field.type === 'checkbox') {
-          if(!field.checked) {
-            field.focus();
-            setStatus('Obavezno je prihvatiti saglasnost kako biste nastavili.', true);
-            return false;
-          }
-        } else if(!String(field.value || '').trim()) {
-          field.focus();
-          setStatus('Popunite sva obavezna polja u ovom koraku.', true);
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  function setupSignaturePad(){
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-    canvas.width = Math.max(320, Math.floor(rect.width * ratio));
-    canvas.height = Math.max(180, Math.floor(rect.height * ratio));
-    ctx.scale(ratio, ratio);
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#ecf6ee';
-
-    let drawing = false;
-    let lastX = 0;
-    let lastY = 0;
-
-    function getPoint(event){
-      const bounds = canvas.getBoundingClientRect();
-      const x = (event.clientX - bounds.left) * (canvas.width / bounds.width) / ratio;
-      const y = (event.clientY - bounds.top) * (canvas.height / bounds.height) / ratio;
-      return { x, y };
-    }
-
-    const startDrawing = (event) => {
-      drawing = true;
-      const point = getPoint(event);
-      lastX = point.x;
-      lastY = point.y;
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-    };
-
-    const drawingMove = (event) => {
-      if(!drawing) return;
-      const point = getPoint(event);
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      ctx.lineTo(point.x, point.y);
-      ctx.stroke();
-      lastX = point.x;
-      lastY = point.y;
-    };
-
-    const stopDrawing = () => {
-      drawing = false;
-      if(signatureInput) signatureInput.value = canvas.toDataURL('image/png');
-    };
-
-    canvas.addEventListener('pointerdown', startDrawing);
-    canvas.addEventListener('pointermove', drawingMove);
-    canvas.addEventListener('pointerup', stopDrawing);
-    canvas.addEventListener('pointerleave', stopDrawing);
-    if(clearSignatureBtn){
-      clearSignatureBtn.addEventListener('click', () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if(signatureInput) signatureInput.value = '';
-      });
-    }
-    signaturePad = { ctx };
-  }
-
-  if(fileInput){
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files && fileInput.files[0];
-      if(!file) return;
-      if(photoName) photoName.textContent = file.name;
-      const url = URL.createObjectURL(file);
-      photoPreview.src = url;
-      photoPreview.style.display = 'block';
-    });
-  }
-
-  nextButtons.forEach((button) => button.addEventListener('click', () => {
-    if(!validateStep(currentStep)) return;
-    if(currentStep < steps.length - 1){
-      showStep(currentStep + 1);
-    }
-  }));
-
-  prevButtons.forEach((button) => button.addEventListener('click', () => {
-    if(currentStep > 0) showStep(currentStep - 1);
-  }));
-
-  navDots.forEach((dot, index) => dot.addEventListener('click', () => {
-    if(index <= currentStep || validateStep(currentStep)) showStep(index);
-  }));
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if(!validateStep(currentStep)) return;
-
-    const formData = new FormData(form);
-    const photoFile = fileInput && fileInput.files && fileInput.files[0];
-    if(photoFile) formData.append('photo', photoFile);
-    if(signatureInput && signatureInput.value) formData.set('signature_data', signatureInput.value);
-    if(!signatureInput || !signatureInput.value){
-      setStatus('Potpis je obavezan za završetak prijave.', true);
-      return;
-    }
-
-    if(submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Slanje...';
-    }
-    setStatus('');
-
-    try {
-      const response = await fetch('/api/members', {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin'
-      });
-      const payload = await response.json().catch(() => ({}));
-      if(response.ok && payload.ok){
-        setStatus(payload.message || 'Zahtjev je uspješno poslan na verifikaciju.', false);
-        form.reset();
-        if(photoPreview) { photoPreview.src = ''; photoPreview.style.display = 'none'; }
-        if(photoName) photoName.textContent = 'Nepodignuta fotografija';
-        if(signatureInput) signatureInput.value = '';
-        if(canvas && signaturePad && signaturePad.ctx) {
-          signaturePad.ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-        showStep(0);
-      } else {
-        setStatus(payload.error || 'Neuspješno slanje zahtjeva za članstvo.', true);
-      }
-    } catch (error) {
-      console.error('Membership form submission failed:', error);
-      setStatus('Došlo je do greške prilikom slanja zahtjeva.', true);
-    } finally {
-      if(submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Pošalji zahtjev';
-      }
-    }
-  });
-
-  showStep(0);
-  setupSignaturePad();
-}
-
-/* Original PDF membership application modal */
-function initPdfMembershipModal(){
-  const modal = q('#membership-modal');
-  const openButton = q('#open-membership-modal');
-  const form = q('#pdf-membership-form');
-  const pageWrap = q('#membership-pdf-page');
-  const signatureCanvas = q('#pdf-signature-pad');
-  const signatureInput = q('#pdf-signature-data');
-  const status = q('#pdf-membership-status');
-  const submitButton = q('#pdf-membership-submit');
-  if(!modal || !openButton || !form || !pageWrap) return;
-
-  let pdfDocument = null;
-  let pdfPage = null;
-  let signatureContext = null;
-  let photoDataUrl = '';
-
-  function setStatus(message, type = ''){
-    if(!status) return;
-    status.textContent = message;
-    status.className = type;
-  }
-
-  function resizeSignature(){
-    if(!signatureCanvas) return;
-    const rect = signatureCanvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-    signatureCanvas.width = Math.max(160, Math.floor(rect.width * ratio));
-    signatureCanvas.height = Math.max(60, Math.floor(rect.height * ratio));
-    signatureContext = signatureCanvas.getContext('2d');
-    signatureContext.scale(ratio, ratio);
-    signatureContext.lineWidth = 2;
-    signatureContext.lineCap = 'round';
-    signatureContext.strokeStyle = '#172318';
-  }
-
-  function setupSignature(){
-    if(!signatureCanvas) return;
-    resizeSignature();
-    let drawing = false;
-    let lastPoint = null;
-    const pointFromEvent = (event) => {
-      const bounds = signatureCanvas.getBoundingClientRect();
-      return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
-    };
-    signatureCanvas.addEventListener('pointerdown', (event) => {
-      drawing = true;
-      signatureCanvas.setPointerCapture(event.pointerId);
-      lastPoint = pointFromEvent(event);
-    });
-    signatureCanvas.addEventListener('pointermove', (event) => {
-      if(!drawing || !lastPoint || !signatureContext) return;
-      const nextPoint = pointFromEvent(event);
-      signatureContext.beginPath();
-      signatureContext.moveTo(lastPoint.x, lastPoint.y);
-      signatureContext.lineTo(nextPoint.x, nextPoint.y);
-      signatureContext.stroke();
-      lastPoint = nextPoint;
-    });
-    const finish = () => {
-      drawing = false;
-      lastPoint = null;
-      if(signatureInput) signatureInput.value = signatureCanvas.toDataURL('image/png');
-    };
-    signatureCanvas.addEventListener('pointerup', finish);
-    signatureCanvas.addEventListener('pointercancel', finish);
-    const clearButton = q('#pdf-clear-signature');
-    if(clearButton) clearButton.addEventListener('click', () => {
-      if(signatureContext) signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-      if(signatureInput) signatureInput.value = '';
-    });
-  }
-
-  async function renderPdf(){
-    if(!window.pdfjsLib || !pdfPage) return;
-    const baseViewport = pdfPage.getViewport({scale: 1});
-    const scale = pageWrap.clientWidth / baseViewport.width;
-    const viewport = pdfPage.getViewport({scale});
-    const ratio = window.devicePixelRatio || 1;
-    pdfCanvas.width = Math.floor(viewport.width * ratio);
-    pdfCanvas.height = Math.floor(viewport.height * ratio);
-    pdfCanvas.style.width = `${viewport.width}px`;
-    pdfCanvas.style.height = `${viewport.height}px`;
-    await pdfPage.render({canvasContext: pdfCanvas.getContext('2d'), viewport, transform: ratio !== 1 ? [ratio, 0, 0, ratio, 0, 0] : null}).promise;
-    resizeSignature();
-  }
-
-  async function loadPdf(){
-    if(pdfPage) return;
-    if(!window.pdfjsLib){
-      setStatus('PDF preglednik nije učitan. Provjerite internet vezu.', 'error');
-      return;
-    }
-    try {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      pdfDocument = await window.pdfjsLib.getDocument('assets/Pristupnica.pdf').promise;
-      pdfPage = await pdfDocument.getPage(1);
-      await renderPdf();
-    } catch(error){
-      console.error('Membership PDF render failed:', error);
-      setStatus('Originalna pristupnica se ne može prikazati.', 'error');
-    }
-  }
-
-  function openModal(){
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    setTimeout(resizeSignature, 0);
-  }
-  function closeModal(){
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-
-  function drawPdfField(page, field, value, fontSize = 9){
-    if(!value) return;
-    const box = field.getBoundingClientRect();
-    const pageBox = pageWrap.getBoundingClientRect();
-    const x = ((box.left - pageBox.left) / pageBox.width) * page.getWidth();
-    const y = page.getHeight() - ((box.top - pageBox.top + box.height * .78) / pageBox.height) * page.getHeight();
-    page.drawText(String(value).slice(0, 90), {x, y, size: fontSize, color: PDFLib.rgb(.09,.14,.1)});
-  }
-
-  async function buildMergedPdf(){
-    if(!window.PDFLib) throw new Error('PDF generator nije učitan.');
-    const response = await fetch('assets/Pristupnica.pdf');
-    const sourceBytes = await response.arrayBuffer();
-    const document = await PDFLib.PDFDocument.load(sourceBytes);
-    const page = document.getPages()[0];
-    overlay.querySelectorAll('.pdf-input').forEach((field) => drawPdfField(page, field, field.value));
-    const biography = overlay.querySelector('[name="biografija"]');
-    if(biography && biography.value){
-      const box = biography.getBoundingClientRect();
-      const pageBox = pageWrap.getBoundingClientRect();
-      const x = ((box.left - pageBox.left) / pageBox.width) * page.getWidth();
-      const y = page.getHeight() - ((box.bottom - pageBox.top) / pageBox.height) * page.getHeight() + 8;
-      page.drawText(biography.value.slice(0, 260), {x, y, size: 8, maxWidth: page.getWidth() * .8, lineHeight: 10, color: PDFLib.rgb(.09,.14,.1)});
-    }
-    if(photoDataUrl){
-      const image = photoDataUrl.startsWith('data:image/png')
-        ? await document.embedPng(photoDataUrl)
-        : await document.embedJpg(photoDataUrl);
-      const zone = q('.pdf-photo-zone').getBoundingClientRect();
-      const pageBox = pageWrap.getBoundingClientRect();
-      page.drawImage(image, {x: ((zone.left-pageBox.left)/pageBox.width)*page.getWidth(), y: page.getHeight()-((zone.bottom-pageBox.top)/pageBox.height)*page.getHeight(), width:(zone.width/pageBox.width)*page.getWidth(), height:(zone.height/pageBox.height)*page.getHeight()});
-    }
-    if(signatureInput && signatureInput.value){
-      const image = await document.embedPng(signatureInput.value);
-      const zone = q('.pdf-signature-zone').getBoundingClientRect();
-      const pageBox = pageWrap.getBoundingClientRect();
-      page.drawImage(image, {x: ((zone.left-pageBox.left)/pageBox.width)*page.getWidth(), y: page.getHeight()-((zone.bottom-pageBox.top)/pageBox.height)*page.getHeight(), width:(zone.width/pageBox.width)*page.getWidth(), height:(zone.height/pageBox.height)*page.getHeight()});
-    }
-    return await document.save();
-  }
-
-  const photoInput = q('#pdf-member-photo');
-  if(photoInput) photoInput.addEventListener('change', () => {
-    const file = photoInput.files && photoInput.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      photoDataUrl = String(reader.result || '');
-      const preview = q('#pdf-member-photo-preview');
-      if(preview){ preview.src = photoDataUrl; preview.hidden = false; }
-    };
-    reader.readAsDataURL(file);
-  });
-  openButton.addEventListener('click', openModal);
-  qa('[data-close-membership]').forEach((button) => button.addEventListener('click', closeModal));
-  document.addEventListener('keydown', (event) => { if(event.key === 'Escape' && modal.classList.contains('is-open')) closeModal(); });
-  window.addEventListener('resize', () => { if(modal.classList.contains('is-open')) renderPdf(); });
-  setupSignature();
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if(!form.reportValidity() || !signatureInput?.value){
-      setStatus('Popunite sva obavezna polja i potpišite pristupnicu.', 'error');
-      return;
-    }
-    submitButton.disabled = true;
-    setStatus('Priprema službenog PDF-a...');
-    try {
-      const data = new FormData(form);
-      const response = await fetch('/api/members', {method:'POST', body:data, credentials:'same-origin'});
-      const payload = await response.json().catch(() => ({}));
-      if(!response.ok || !payload.ok) throw new Error(payload.error || 'Slanje nije uspjelo.');
-      setStatus('Pristupnica je zaprimljena i čeka verifikaciju.', 'success');
-      form.reset();
-      photoDataUrl = '';
-      const preview = q('#pdf-member-photo-preview');
-      if(preview) { preview.src = ''; preview.hidden = true; }
-      if(signatureContext) signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-      if(signatureInput) signatureInput.value = '';
-    } catch(error){
-      console.error('Membership modal submission failed:', error);
-      setStatus(error.message || 'Slanje pristupnice nije uspjelo.', 'error');
-    } finally {
-      submitButton.disabled = false;
-    }
   });
 }
 
@@ -1508,12 +1105,11 @@ function initAdminSecretAccess(){
   });
 }
 
-/* Canvas particles - unobtrusive, decorative */
+/* Subtle falling particles, clipped to the hero */
 function setupCanvasParticles(){
-  // create canvas overlay in hero (guard if already created)
   const hero = q('.hero');
   if(!hero) return;
-  if(hero.querySelector('canvas.particles')) return; // avoid duplicates
+  if(hero.querySelector('canvas.particles')) return;
   const canvas = document.createElement('canvas');
   canvas.className = 'particles';
   canvas.style.position='absolute';
@@ -1522,32 +1118,30 @@ function setupCanvasParticles(){
   canvas.style.height='100%';
   canvas.style.pointerEvents='none';
   canvas.style.zIndex='1';
-  hero.appendChild(canvas);
   const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+  hero.appendChild(canvas);
   let W=0,H=0,particles=[];
   function resize(){
-    // set canvas size in device pixels and set CSS size
     const DPR = window.devicePixelRatio || 1;
     const cw = hero.clientWidth;
     const ch = hero.clientHeight;
     canvas.width = Math.max(1, Math.floor(cw * DPR));
     canvas.height = Math.max(1, Math.floor(ch * DPR));
-    canvas.style.width = cw + 'px';
-    canvas.style.height = ch + 'px';
-    // reset transform and set scale for DPR
     ctx.setTransform(DPR,0,0,DPR,0,0);
     W = cw; H = ch;
   }
-  function initParticles(n=36){
+  function initParticles(n){
     particles = [];
     for(let i=0;i<n;i++){
       particles.push({
         x: Math.random()*W,
         y: Math.random()*H,
-        r: 1+Math.random()*2,
-        a: 0.05+Math.random()*0.3,
-        vx:(Math.random()-0.5)*0.2,
-        vy:(Math.random()-0.5)*0.2
+        r: 0.65+Math.random()*0.35,
+        a: 0.24+Math.random()*0.16,
+        color: ['#00A86B','#D4AF37','#FFFFFF'][Math.floor(Math.random()*3)],
+        vx:(Math.random()-0.5)*0.12,
+        vy:0.22+Math.random()*0.24
       });
     }
   }
@@ -1555,23 +1149,30 @@ function setupCanvasParticles(){
     ctx.clearRect(0,0,W,H);
     for(const p of particles){
       p.x += p.vx; p.y += p.vy;
-      if(p.x < -10) p.x = W + 10;
-      if(p.x > W + 10) p.x = -10;
-      if(p.y < -10) p.y = H + 10;
-      if(p.y > H + 10) p.y = -10;
+      if(p.x < 0) p.x = W;
+      if(p.x > W) p.x = 0;
+      if(p.y > H + p.r) {
+        p.y = -p.r;
+        p.x = Math.random()*W;
+      }
       ctx.beginPath();
-      ctx.fillStyle = `rgba(46,94,47, ${p.a})`;
+      ctx.globalAlpha = p.a;
+      ctx.fillStyle = p.color;
       ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
       ctx.fill();
     }
+    ctx.globalAlpha = 1;
     requestAnimationFrame(tick);
   }
   function start(){
     resize();
-    initParticles(Math.max(20, Math.floor((W/200)*6)));
+    initParticles(Math.max(14, Math.floor(W/42)));
     tick();
   }
   window.addEventListener('resize', resize);
+  if('ResizeObserver' in window){
+    new ResizeObserver(resize).observe(hero);
+  }
   start();
 }
 
@@ -1585,6 +1186,34 @@ function initGallery(){
       openLightbox(img.src, img.alt||'Galerija');
     });
   });
+
+  const grid = q('#gallery-grid');
+  const moreButton = q('.gallery-more');
+  if(!grid||!moreButton) return;
+
+  const mobileViewport = window.matchMedia('(max-width: 700px)');
+  let expanded = false;
+  const updateGalleryVisibility = () => {
+    if(!mobileViewport.matches){
+      expanded = false;
+      grid.classList.remove('is-collapsed');
+      moreButton.hidden = true;
+      moreButton.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    moreButton.hidden = grid.querySelectorAll('.gallery-item').length <= 4;
+    grid.classList.toggle('is-collapsed', !expanded);
+    moreButton.setAttribute('aria-expanded', String(expanded));
+    moreButton.textContent = expanded ? 'Prikaži manje' : 'Pogledaj sve fotografije';
+  };
+
+  moreButton.addEventListener('click', () => {
+    expanded = !expanded;
+    updateGalleryVisibility();
+  });
+  window.addEventListener('resize', updateGalleryVisibility);
+  updateGalleryVisibility();
 }
 
 function openLightbox(src, alt){
@@ -1727,7 +1356,13 @@ function initLazyImages(){
       img.src = img.dataset.src;
       img.removeAttribute('data-src');
     }
-    img.addEventListener('error', ()=>{img.src='assets/placeholder-1.jpg'});
+    const hideUnavailableImage = () => {
+      const wrapper = img.closest('.news-thumb, .news-highlight-thumb');
+      if(wrapper) wrapper.hidden = true;
+      else img.hidden = true;
+    };
+    img.addEventListener('error', hideUnavailableImage, {once:true});
+    if(img.complete && !img.naturalWidth) hideUnavailableImage();
   });
 }
 
