@@ -1118,6 +1118,8 @@ function setupCanvasParticles(){
   canvas.style.height='100%';
   canvas.style.pointerEvents='none';
   canvas.style.zIndex='1';
+  canvas.style.opacity='0.92';
+  canvas.style.mixBlendMode='screen';
   const ctx = canvas.getContext('2d');
   if(!ctx) return;
   hero.appendChild(canvas);
@@ -1134,14 +1136,17 @@ function setupCanvasParticles(){
   function initParticles(n){
     particles = [];
     for(let i=0;i<n;i++){
+      const palette = ['#00A86B','#D4AF37','#FFFFFF'];
+      const color = palette[Math.floor(Math.random()*palette.length)];
       particles.push({
         x: Math.random()*W,
         y: Math.random()*H,
-        r: 0.65+Math.random()*0.35,
-        a: 0.24+Math.random()*0.16,
-        color: ['#00A86B','#D4AF37','#FFFFFF'][Math.floor(Math.random()*3)],
-        vx:(Math.random()-0.5)*0.12,
-        vy:0.22+Math.random()*0.24
+        r: 0.9 + Math.random()*0.45,
+        a: color === '#D4AF37' ? 0.58 + Math.random()*0.18 : 0.42 + Math.random()*0.16,
+        color,
+        glow: color === '#D4AF37' ? 1.2 : 0.75,
+        vx:(Math.random()-0.5)*0.14,
+        vy:0.12 + Math.random()*0.16
       });
     }
   }
@@ -1149,24 +1154,28 @@ function setupCanvasParticles(){
     ctx.clearRect(0,0,W,H);
     for(const p of particles){
       p.x += p.vx; p.y += p.vy;
-      if(p.x < 0) p.x = W;
-      if(p.x > W) p.x = 0;
+      if(p.x < -p.r) p.x = W + p.r;
+      if(p.x > W + p.r) p.x = -p.r;
       if(p.y > H + p.r) {
         p.y = -p.r;
         p.x = Math.random()*W;
       }
       ctx.beginPath();
+      const isGold = p.color === '#D4AF37';
       ctx.globalAlpha = p.a;
-      ctx.fillStyle = p.color;
+      ctx.shadowBlur = isGold ? 8 + p.r * 3 : 5 + p.r * 2;
+      ctx.shadowColor = isGold ? '#F4D97F' : p.color;
+      ctx.fillStyle = isGold ? '#F4D97F' : p.color;
       ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     }
     ctx.globalAlpha = 1;
     requestAnimationFrame(tick);
   }
   function start(){
     resize();
-    initParticles(Math.max(14, Math.floor(W/42)));
+    initParticles(Math.max(18, Math.floor(W/28)));
     tick();
   }
   window.addEventListener('resize', resize);
