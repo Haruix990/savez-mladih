@@ -657,16 +657,16 @@ textarea{min-height:120px}
 }
 
 @media (max-width:560px){
-  .header-inner{padding-top:8px;padding-bottom:8px;flex-wrap:wrap;justify-content:center}
-  .brand{gap:8px;width:100%;justify-content:center;margin-bottom:2px}
-  .logo{width:42px;height:42px}
-  .brand-text{font-size:.72rem;letter-spacing:0.02em;max-width:170px}
-  .main-nav{gap:6px;width:100%;justify-content:center;flex-wrap:wrap}
-  .nav-list{gap:2px;flex-wrap:wrap;justify-content:center}
-  .nav-list a{font-size:.66rem;padding:7px 4px}
-  .nav-social{gap:3px;padding-left:4px;border-left:none;margin-left:0}
-  .nav-social a{width:24px;height:24px}
-  .nav-social i{font-size:.78rem}
+  .header-inner{padding-top:8px;padding-bottom:8px;gap:6px}
+  .brand{gap:6px;min-width:0;flex-shrink:0}
+  .logo{width:34px;height:34px;flex-shrink:0}
+  .brand-text{font-size:.62rem;letter-spacing:0.02em;max-width:118px;white-space:nowrap;overflow:hidden;display:block}
+  .main-nav{gap:4px;flex:1;min-width:0;justify-content:flex-end}
+  .nav-list{display:none}
+  .nav-toggle{display:inline-block;min-width:42px;padding:6px 8px}
+  .nav-social{gap:3px;padding-left:4px;border-left:none;margin-left:0;flex-shrink:0}
+  .nav-social a{width:20px;height:20px}
+  .nav-social i{font-size:.7rem}
   .hero{min-height:64vh}
   .hero-inner{padding-top:28px;padding-bottom:28px}
   .hero-title{font-size:clamp(2.1rem,9vw,3rem)}
