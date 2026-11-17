@@ -175,20 +175,21 @@ function initLocalSave(){
   });
 }
 
-/* Copy-to-clipboard for contact email */
+/* Copy-to-clipboard for contact items */
 function initContactCopyButtons(){
-  const buttons = qa('.copy-btn');
+  const buttons = qa('.copy-btn, .copy-number');
   if(!buttons.length) return;
   buttons.forEach(btn=>{
     btn.addEventListener('click', function(){
       const text = btn.getAttribute('data-clipboard-text') || btn.dataset.clipboardText || '';
-      if(!text) return showToast('Nema adrese za kopiranje');
+      if(!text) return showToast('Nema sadržaja za kopiranje');
+      const label = btn.classList.contains('copy-number') ? 'Broj kopiran u clipboard' : 'Email kopiran u clipboard';
       navigator.clipboard?.writeText(text).then(()=>{
-        showToast('Email kopiran u clipboard');
+        showToast(label);
       }).catch(()=>{
         // fallback: select and copy
         const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); showToast('Email kopiran u clipboard'); }catch(e){ showToast('Kopiranje nije uspjelo'); }
+        try{ document.execCommand('copy'); showToast(label); }catch(e){ showToast('Kopiranje nije uspjelo'); }
         ta.remove();
       });
     });
