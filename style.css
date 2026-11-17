@@ -657,14 +657,14 @@ textarea{min-height:120px}
 }
 
 @media (max-width:560px){
-  .header-inner{padding-top:8px;padding-bottom:8px}
-  .brand{gap:8px}
+  .header-inner{padding-top:8px;padding-bottom:8px;flex-wrap:wrap;justify-content:center}
+  .brand{gap:8px;width:100%;justify-content:center;margin-bottom:2px}
   .logo{width:42px;height:42px}
-  .brand-text{font-size:.72rem;letter-spacing:0.02em;max-width:150px}
-  .main-nav{gap:6px}
-  .nav-list{gap:2px}
+  .brand-text{font-size:.72rem;letter-spacing:0.02em;max-width:170px}
+  .main-nav{gap:6px;width:100%;justify-content:center;flex-wrap:wrap}
+  .nav-list{gap:2px;flex-wrap:wrap;justify-content:center}
   .nav-list a{font-size:.66rem;padding:7px 4px}
-  .nav-social{gap:3px;padding-left:4px}
+  .nav-social{gap:3px;padding-left:4px;border-left:none;margin-left:0}
   .nav-social a{width:24px;height:24px}
   .nav-social i{font-size:.78rem}
   .hero{min-height:64vh}
