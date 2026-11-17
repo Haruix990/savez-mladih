@@ -650,6 +650,26 @@ textarea{min-height:120px}
 @media (max-width:900px){
   .admin-newsletter-grid{grid-template-columns:1fr}
   .container{padding:18px}
+  .header-inner{gap:8px}
+  .brand-text{font-size:clamp(.7rem,2.3vw,1rem)}
+  .nav-list a{font-size:.74rem;padding:8px 6px}
+  .nav-social a{width:28px;height:28px}
+}
+
+@media (max-width:560px){
+  .header-inner{padding-top:8px;padding-bottom:8px}
+  .brand{gap:8px}
+  .logo{width:42px;height:42px}
+  .brand-text{font-size:.72rem;letter-spacing:0.02em;max-width:150px}
+  .main-nav{gap:6px}
+  .nav-list{gap:2px}
+  .nav-list a{font-size:.66rem;padding:7px 4px}
+  .nav-social{gap:3px;padding-left:4px}
+  .nav-social a{width:24px;height:24px}
+  .nav-social i{font-size:.78rem}
+  .hero{min-height:64vh}
+  .hero-inner{padding-top:28px;padding-bottom:28px}
+  .hero-title{font-size:clamp(2.1rem,9vw,3rem)}
 }
 
 /* Print rules */
