@@ -321,7 +321,6 @@
           button.addEventListener('click', async () => {
             const memberId = button.dataset.id;
             const form = new URLSearchParams();
-            form.set('password', adminPasswordInput.value || '');
             button.disabled = true;
             button.textContent = 'Generisanje...';
             try {
@@ -390,7 +389,7 @@
 
       async function loadMembers() {
         try {
-          const res = await apiFetch(`/api/members?password=${encodeURIComponent(adminPasswordInput.value || '')}`);
+          const res = await apiFetch('/api/members');
           const data = await res.json().catch(() => ({ ok: true, members: [] }));
           if (!res.ok) {
             throw new Error(data.error || 'Neuspješno učitavanje članova.');

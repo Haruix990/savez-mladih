@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function(){
   initNavToggle();
   initSmoothLinks();
   initContactForm();
+  initPartnershipCtas();
+  initPublicCalendar();
   initLocalSave();
   initContactCopyButtons();
   initAdminSecretAccess();
@@ -104,12 +106,46 @@ function initContactForm(){
 
   const submitBtn = form.querySelector('button[type="submit"]');
   const messageEl = q('#contact-form-message');
+  const topicInput = form.querySelector('#contact-topic');
+  const collaborationFields = form.querySelector('#collaboration-fields');
+  const collaborationKind = form.querySelector('#collaboration-kind');
+  const organizationInput = form.querySelector('#organization');
+  const activityDateInput = form.querySelector('#activity-date');
+  const messageInput = form.querySelector('#message');
+  const messageCount = form.querySelector('#contact-message-count');
+  const consentInput = form.querySelector('#contact-consent');
+  const websiteInput = form.querySelector('#website');
+
+  function updateCollaborationFields(){
+    const isCollaboration = topicInput && topicInput.value === 'collaboration';
+    if(collaborationFields) collaborationFields.hidden = !isCollaboration;
+    [collaborationKind, organizationInput, activityDateInput].forEach(input => {
+      if(input) input.disabled = !isCollaboration;
+    });
+    if(!isCollaboration){
+      if(collaborationKind) collaborationKind.value = '';
+      if(organizationInput) organizationInput.value = '';
+      if(activityDateInput) activityDateInput.value = '';
+    }
+  }
+
+  function updateMessageCount(){
+    if(messageCount && messageInput){
+      messageCount.textContent = `${messageInput.value.length} / ${messageInput.maxLength}`;
+    }
+  }
 
   function setContactMessage(text, isError = false){
     if(!messageEl) return;
     messageEl.textContent = text;
-    messageEl.className = 'contact-form-message' + (isError ? ' error' : ' success');
+    messageEl.className = 'contact-form-message';
+    if(text) messageEl.classList.add(isError ? 'error' : 'success');
   }
+
+  if(topicInput) topicInput.addEventListener('change', updateCollaborationFields);
+  if(messageInput) messageInput.addEventListener('input', updateMessageCount);
+  updateCollaborationFields();
+  updateMessageCount();
 
   form.addEventListener('submit', async function(ev){
     ev.preventDefault();
@@ -117,17 +153,20 @@ function initContactForm(){
       submitBtn.disabled = true;
       submitBtn.textContent = 'Šaljem...';
     }
+    form.setAttribute('aria-busy', 'true');
     setContactMessage('');
 
-    // Prikupi podatke iz forme
-    const name = form.querySelector('#name')?.value || '';
-    const email = form.querySelector('#email')?.value || '';
-    const message = form.querySelector('#message')?.value || '';
-
     const jsonData = {
-      name: name.trim(),
-      email: email.trim(),
-      message: message.trim()
+      name: form.querySelector('#name')?.value.trim() || '',
+      email: form.querySelector('#email')?.value.trim() || '',
+      phone: form.querySelector('#phone')?.value.trim() || '',
+      message: messageInput?.value.trim() || '',
+      topic: topicInput?.value || 'general',
+      organization: organizationInput?.value.trim() || '',
+      collaboration_kind: collaborationKind?.value || '',
+      activity_date: activityDateInput?.value || '',
+      consent: !!consentInput?.checked,
+      website: websiteInput?.value.trim() || ''
     };
 
     const action = form.getAttribute('action') || '/send-message';
@@ -135,6 +174,7 @@ function initContactForm(){
     try {
       const response = await fetch(action, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -145,6 +185,8 @@ function initContactForm(){
       if(response.ok && payload.success){
         setContactMessage(payload.message || 'Poruka je uspješno poslata!', false);
         form.reset();
+        updateCollaborationFields();
+        updateMessageCount();
       } else {
         const errorMessage = payload.message || payload.error || 'Greška pri slanju. Pokušaj ponovo.';
         setContactMessage(errorMessage, true);
@@ -153,12 +195,185 @@ function initContactForm(){
       console.error('Contact submit error:', err);
       setContactMessage('Greška pri slanju. Provjeri vezu.', true);
     } finally {
+      form.removeAttribute('aria-busy');
       if(submitBtn){
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Pošalji';
+        submitBtn.textContent = 'Pošalji poruku';
       }
     }
   });
+}
+
+function initPartnershipCtas(){
+  const topicInput = q('#contact-topic');
+  if(!topicInput) return;
+  qa('[data-contact-topic]').forEach(link => {
+    link.addEventListener('click', function(){
+      topicInput.value = link.dataset.contactTopic;
+      topicInput.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+  });
+}
+
+function initPublicCalendar(){
+  const calendar = q('#public-event-calendar');
+  const grid = q('#event-calendar-grid');
+  const monthLabel = q('#event-month-label');
+  const agendaTitle = q('#event-agenda-title');
+  const agendaList = q('#event-agenda-list');
+  const status = q('#event-calendar-status');
+  if(!calendar || !grid || !monthLabel || !agendaTitle || !agendaList) return;
+
+  const today = new Date();
+  const monthNames = ['januar', 'februar', 'mart', 'april', 'maj', 'juni', 'juli', 'august', 'septembar', 'oktobar', 'novembar', 'decembar'];
+  const weekdayNames = ['nedjelja', 'ponedjeljak', 'utorak', 'srijeda', 'četvrtak', 'petak', 'subota'];
+  let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  let selectedDate = dateKey(today);
+  let events = [];
+
+  function dateKey(date){
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  function addAgendaEmptyState(text){
+    const empty = document.createElement('p');
+    empty.className = 'event-agenda-empty';
+    empty.textContent = text;
+    agendaList.appendChild(empty);
+  }
+
+  function startRegistration(eventItem){
+    const contactForm = q('#contact-form');
+    const messageInput = q('#message');
+    if(!contactForm || !messageInput) return;
+    if(messageInput.value.trim() && !window.confirm('Zamijeniti postojeći tekst poruke prijavom na ovu aktivnost?')) return;
+    const topic = q('#contact-topic');
+    if(topic){
+      topic.value = 'general';
+      topic.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+    messageInput.value = `Želim se prijaviti za aktivnost: ${eventItem.title}`;
+    messageInput.dispatchEvent(new Event('input', {bubbles:true}));
+    q('#kontakt').scrollIntoView({behavior:'smooth', block:'start'});
+    messageInput.focus({preventScroll:true});
+  }
+
+  function renderAgenda(){
+    const selected = new Date(`${selectedDate}T12:00:00`);
+    agendaTitle.textContent = `${weekdayNames[selected.getDay()]}, ${selected.getDate()}. ${monthNames[selected.getMonth()]}`;
+    agendaList.replaceChildren();
+
+    const dayEvents = events.filter(eventItem => eventItem.date === selectedDate);
+    if(!dayEvents.length){
+      addAgendaEmptyState('Za odabrani datum trenutno nema planiranih aktivnosti.');
+      return;
+    }
+
+    dayEvents.forEach(eventItem => {
+      const card = document.createElement('article');
+      card.className = 'event-agenda-card';
+      const title = document.createElement('h4');
+      title.textContent = eventItem.title;
+      card.appendChild(title);
+
+      const meta = document.createElement('div');
+      meta.className = 'event-agenda-meta';
+      if(eventItem.time){
+        const time = document.createElement('span');
+        time.textContent = `◷ ${eventItem.time}`;
+        meta.appendChild(time);
+      }
+      if(eventItem.location){
+        const location = document.createElement('span');
+        location.textContent = `⌖ ${eventItem.location}`;
+        meta.appendChild(location);
+      }
+      if(meta.childElementCount) card.appendChild(meta);
+
+      if(eventItem.description){
+        const description = document.createElement('p');
+        description.textContent = eventItem.description;
+        card.appendChild(description);
+      }
+
+      const register = document.createElement('a');
+      register.className = 'event-register-link';
+      register.href = '#kontakt';
+      register.textContent = 'Prijavi se putem forme';
+      register.addEventListener('click', event => {
+        event.preventDefault();
+        startRegistration(eventItem);
+      });
+      card.appendChild(register);
+      agendaList.appendChild(card);
+    });
+  }
+
+  function renderCalendar(){
+    const monthName = monthNames[visibleMonth.getMonth()];
+    monthLabel.textContent = `${monthName.charAt(0).toLocaleUpperCase('bs-BA') + monthName.slice(1)} ${visibleMonth.getFullYear()}`;
+    grid.replaceChildren();
+
+    const year = visibleMonth.getFullYear();
+    const month = visibleMonth.getMonth();
+    const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+    const numberOfDays = new Date(year, month + 1, 0).getDate();
+    for(let index = 0; index < firstWeekday; index++){
+      const empty = document.createElement('span');
+      empty.className = 'calendar-day-empty';
+      empty.setAttribute('aria-hidden', 'true');
+      grid.appendChild(empty);
+    }
+
+    for(let day = 1; day <= numberOfDays; day++){
+      const date = new Date(year, month, day);
+      const key = dateKey(date);
+      const dayEvents = events.filter(eventItem => eventItem.date === key);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'calendar-day-button';
+      button.textContent = String(day);
+      button.setAttribute('aria-label', `${day}. ${monthName} ${year}${dayEvents.length ? `, aktivnosti: ${dayEvents.length}` : ''}`);
+      button.setAttribute('aria-pressed', String(key === selectedDate));
+      if(key === selectedDate) button.classList.add('is-selected');
+      if(key === dateKey(today)) button.classList.add('is-today');
+      if(dayEvents.length) button.classList.add('has-events');
+      button.addEventListener('click', () => {
+        selectedDate = key;
+        renderCalendar();
+        renderAgenda();
+      });
+      grid.appendChild(button);
+    }
+    renderAgenda();
+  }
+
+  q('#event-month-prev')?.addEventListener('click', () => {
+    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+    selectedDate = dateKey(visibleMonth);
+    renderCalendar();
+  });
+  q('#event-month-next')?.addEventListener('click', () => {
+    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+    selectedDate = dateKey(visibleMonth);
+    renderCalendar();
+  });
+
+  fetch('/api/events', {headers:{Accept:'application/json'}, credentials:'same-origin'})
+    .then(async response => {
+      if(!response.ok) throw new Error(`Kalendar nije dostupan (${response.status}).`);
+      const payload = await response.json();
+      if(!payload.ok || !Array.isArray(payload.events)) throw new Error('Odgovor kalendara nije ispravan.');
+      events = payload.events.filter(eventItem => eventItem && /^\d{4}-\d{2}-\d{2}$/.test(eventItem.date));
+      renderCalendar();
+      if(status) status.textContent = events.length ? `${events.length} objavljenih aktivnosti.` : '';
+    })
+    .catch(error => {
+      console.error('Event calendar load failed:', error);
+      if(status) status.textContent = 'Kalendar trenutno nije dostupan. Pokušaj ponovo kasnije.';
+      agendaList.replaceChildren();
+      addAgendaEmptyState('Aktivnosti trenutno nisu dostupne.');
+    });
 }
 
 /* Local save button */
@@ -220,13 +435,28 @@ function initNewsManager(){
   function formatNewsBody(text = '') {
     const cleaned = String(text).trim();
     if (!cleaned) return '<p>Detaljan sadržaj vijesti uskoro će biti dostupan.</p>';
-    const paragraphs = cleaned
+    const formatLine = line => escapeHtml(line)
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    return cleaned
       .replace(/\r\n/g, '\n')
       .split(/\n{2,}/)
-      .map(part => part.trim())
-      .filter(Boolean)
-      .map(part => `<p>${escapeHtml(part).replace(/\n/g, '<br>')}</p>`);
-    return paragraphs.join('');
+      .map(part => {
+        const lines = part.trim().split('\n');
+        if (lines.every(line => line.startsWith('- '))) {
+          return `<ul>${lines.map(line => `<li>${formatLine(line.slice(2))}</li>`).join('')}</ul>`;
+        }
+        if (lines.every(line => line.startsWith('> '))) {
+          return `<blockquote>${lines.map(line => formatLine(line.slice(2))).join('<br>')}</blockquote>`;
+        }
+        if (lines.length === 1 && lines[0].startsWith('## ')) {
+          return `<h2>${formatLine(lines[0].slice(3))}</h2>`;
+        }
+        return `<p>${lines.map(formatLine).join('<br>')}</p>`;
+      })
+      .join('');
   }
 
   function applyDrawerTextScale(scale) {
@@ -273,11 +503,14 @@ function initNewsManager(){
     const fontMinus = q('#news-font-minus');
     const fontPlus = q('#news-font-plus');
     const currentScale = 1;
+    const readTime = q('#news-modal-readtime');
+    const wordCount = String(item.body || '').trim().split(/\s+/).filter(Boolean).length;
 
     title.textContent = item.title || '';
     body.innerHTML = formatNewsBody(item.body || '');
     cat.textContent = item.category_label || (item.category || 'Vijest');
     date.textContent = item.created_at || '';
+    if(readTime) readTime.textContent = `⏱ ${Math.max(1, Math.ceil(wordCount / 200))} min čitanja`;
     imgWrap.innerHTML = '';
     actions.innerHTML = '';
     applyDrawerTextScale(currentScale);
@@ -313,15 +546,6 @@ function initNewsManager(){
         actions.appendChild(editBtn); actions.appendChild(delBtn);
       }
     }catch(e){ /* ignore */ }
-
-    document.querySelectorAll('.reaction-btn').forEach(button => {
-      button.onclick = function () {
-        const isActive = button.classList.toggle('is-active');
-        const countNode = button.querySelector('.count');
-        const prev = Number(button.dataset.count || 0);
-        if (countNode) countNode.textContent = String(isActive ? prev + 1 : prev);
-      };
-    });
 
     document.querySelectorAll('.share-btn').forEach(button => {
       button.onclick = function () {
@@ -575,13 +799,25 @@ function initNewsManager(){
   }
 
   // development/local login helpers (for Live Server / cross-origin dev)
+  let devAdminPassword = '';
   function getDevPassword(){
-    try{ return localStorage.getItem('dev_admin_pw') || ''; }catch(e){return '';}
+    if(devAdminPassword) return devAdminPassword;
+    try{ localStorage.removeItem('dev_admin_pw'); }catch(e){}
+    try{ return sessionStorage.getItem('dev_admin_pw') || ''; }catch(e){return '';}
   }
-  function setDevPassword(pw, remember=true){
-    try{ if(remember) localStorage.setItem('dev_admin_pw', pw); }catch(e){}
+  function setDevPassword(pw, remember=false){
+    devAdminPassword = pw;
+    try{ localStorage.removeItem('dev_admin_pw'); }catch(e){}
+    try{
+      if(remember) sessionStorage.setItem('dev_admin_pw', pw);
+      else sessionStorage.removeItem('dev_admin_pw');
+    }catch(e){}
   }
-  function clearDevPassword(){ try{ localStorage.removeItem('dev_admin_pw'); }catch(e){} }
+  function clearDevPassword(){
+    devAdminPassword = '';
+    try{ localStorage.removeItem('dev_admin_pw'); }catch(e){}
+    try{ sessionStorage.removeItem('dev_admin_pw'); }catch(e){}
+  }
 
   // modal close handlers
   const modalClose = q('#news-modal-close'); if(modalClose) modalClose.addEventListener('click', closeNewsModal);
@@ -694,7 +930,7 @@ function initNewsManager(){
     });
   }
 
-  form.addEventListener('submit', async function(ev){
+  if(form) form.addEventListener('submit', async function(ev){
     ev.preventDefault();
     const editId = editIdInput ? editIdInput.value.trim() : '';
     const endpoint = editId ? '/api/news/update' : '/api/news';
@@ -852,7 +1088,7 @@ function initNewsManager(){
                     <p><strong>Admin pristup</strong> — prijavi se da bi uređivao vijesti.</p>
                     <div class="admin-login-row">
                       <input id="admin-login-password" type="password" placeholder="Lozinka" />
-                      <label class="admin-login-remember"><input id="admin-login-remember" type="checkbox" checked/> Zapamti</label>
+                      <label class="admin-login-remember"><input id="admin-login-remember" type="checkbox"/> Zapamti do zatvaranja taba</label>
                     </div>
                     <div class="admin-login-actions">
                       <button id="admin-login-btn" class="btn btn-primary">Prijavi se</button>
@@ -870,6 +1106,7 @@ function initNewsManager(){
                     const p = await r.json().catch(()=>({ok:false}));
                     if(r.ok && p.ok){
                       showToast('Uspješna prijava.');
+                      clearDevPassword();
                       checkAdmin();
                     } else {
                       showToast(p.error || 'Neuspješna prijava.');
@@ -906,12 +1143,12 @@ function initNewsManager(){
       try{
         // include dev password when server session is not admin
         const me = await awaitFetchMeSync();
-        let url = '/api/subscribers';
+        const headers = {};
         if(!(me && me.is_admin)){
           const devpw = getDevPassword();
-          if(devpw) url += '?password=' + encodeURIComponent(devpw);
+          if(devpw) headers['X-Admin-Password'] = devpw;
         }
-        const res = await apiFetch(url, {credentials:'same-origin'});
+        const res = await apiFetch('/api/subscribers', {credentials:'same-origin', headers});
         const js = await res.json().catch(()=>({ok:false}));
         if(res.ok && js.ok){
           const subs = js.subscribers || [];
@@ -1004,12 +1241,12 @@ function initNewsManager(){
         try{
           // include dev password if no session admin
           const me3 = await awaitFetchMeSync();
-          let exportUrl = '/api/subscribers/export';
+          const headers = {};
           if(!(me3 && me3.is_admin)){
             const devpw = getDevPassword();
-            if(devpw) exportUrl += '?password=' + encodeURIComponent(devpw);
+            if(devpw) headers['X-Admin-Password'] = devpw;
           }
-          const res = await apiFetch(exportUrl, {credentials:'same-origin'});
+          const res = await apiFetch('/api/subscribers/export', {credentials:'same-origin', headers});
           if(!res.ok){ const js = await res.json().catch(()=>({})); return showToast(js.error || 'Export failed'); }
           const blob = await res.blob();
           const blobUrl = URL.createObjectURL(blob);
@@ -1084,7 +1321,7 @@ function initHeroEffects(){
 
 document.addEventListener('keydown', function(event){
   if(event.ctrlKey && event.shiftKey && event.key && event.key.toLowerCase() === 'a'){
-    window.open('admin.html', '_blank');
+    window.open('/admin-clanstvo.html', '_blank');
     showToast('Admin panel se otvara u novom tabu.');
   }
 });
@@ -1094,15 +1331,7 @@ function initAdminSecretAccess(){
   if(!adminLink) return;
   adminLink.addEventListener('click', function(event){
     event.preventDefault();
-    const password = prompt('Unesi lozinku za admin panel:');
-    if(password === 'Savez2026'){
-      window.open('admin.html', '_blank');
-      showToast('Lozinka je tačna. Otvaram admin panel...');
-    } else if(password === null){
-      showToast('Pristup otkazan.');
-    } else {
-      showToast('Pogrešna lozinka.');
-    }
+    window.open('/admin-clanstvo.html', '_blank');
   });
 }
 

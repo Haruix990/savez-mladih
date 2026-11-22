@@ -7,33 +7,49 @@
     <title>Vijesti i aktivnosti</title>
     <style>
       :root {
-        --bg: #030606;
-        --bg-2: #0a1110;
-        --panel: #0f1715;
-        --panel-strong: #121d1a;
-        --panel-soft: rgba(255,255,255,0.03);
-        --primary: #2e5e2f;
-        --primary-soft: rgba(46,94,47,0.18);
-        --gold: #C5A059;
-        --gold-border: rgba(197, 160, 89, 0.25);
-        --gold-glow: rgba(197, 160, 89, 0.15);
-        --text: #edf3ee;
-        --muted: #a8b5ad;
-        --soft-line: rgba(255,255,255,0.08);
-        --green: #40b96a;
-        --green-soft: rgba(64,185,106,0.18);
+        --bg: #07110E;
+        --bg-2: #091812;
+        --panel: #0D1F19;
+        --panel-strong: #12291F;
+        --panel-soft: rgba(237,232,218,.035);
+        --primary: #059669;
+        --primary-soft: rgba(16,185,129,.18);
+        --gold: #D4AF37;
+        --gold-border: rgba(212,175,55,.28);
+        --gold-glow: rgba(212,175,55,.12);
+        --text: #EDE8DA;
+        --muted: #9DB5A9;
+        --soft-line: rgba(16,185,129,.18);
+        --green: #10B981;
+        --green-soft: rgba(16,185,129,.18);
         --danger: #ff8d8d;
-        --toast-bg: rgba(0,0,0,0.85);
-        --shadow: 0 20px 50px rgba(0,0,0,0.42);
+        --toast-bg: rgba(7,17,14,.96);
+        --shadow: 0 20px 50px rgba(0,0,0,.32);
+        --radius-sm: 10px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --space-1: 8px;
+        --space-2: 16px;
+        --space-3: 24px;
+        --emerald: #10B981;
+        --emerald-dark: #059669;
+        --gold-light: #E6C65C;
+        --border: rgba(16,185,129,.18);
+        --success: #B7E4CE;
+        --switch-track: #87988F;
+        --label-text: #C6D9CE;
+        --status-green: #A7E6C8;
+        --warning: #E6C65C;
       }
 
       * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
 
       html, body {
         margin: 0;
         min-height: 100%;
         font-family: Inter, "Segoe UI", Tahoma, sans-serif;
-        background: #040606;
+        background: var(--bg);
         color: var(--text);
       }
 
@@ -42,7 +58,7 @@
         padding: 34px 18px 52px;
         background:
           radial-gradient(1200px 400px at 50% 0%, rgba(42, 75, 49, 0.18), transparent 50%),
-          linear-gradient(180deg, #020303 0%, #050807 100%);
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
       }
 
       .page {
@@ -167,7 +183,7 @@
       }
 
       .form-status.success {
-        color: #bceec7;
+        color: var(--success);
       }
 
       #admin-content {
@@ -280,7 +296,7 @@
         border-radius: 999px;
         border: 1px solid rgba(255,255,255,0.08);
         background: rgba(255,255,255,0.04);
-        color: #d8d8d0;
+        color: var(--text);
         font-size: 0.72rem;
         line-height: 1;
         letter-spacing: 0.02em;
@@ -299,21 +315,21 @@
         border-radius: 12px;
         border: 1px solid rgba(185,143,59,0.28);
         background: linear-gradient(180deg, rgba(185,143,59,0.08), rgba(185,143,59,0.02));
-        color: #f1d99d;
+        color: var(--gold-light);
         font-weight: 700;
       }
 
       .toggle-control { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
       .toggle-control input { position: absolute; opacity: 0; pointer-events: none; }
       .toggle-switch { position: relative; width: 46px; height: 26px; flex: 0 0 auto; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(0,0,0,.35); cursor: pointer; transition: background .2s ease, border-color .2s ease, box-shadow .2s ease; }
-      .toggle-switch::after { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; content: ''; border-radius: 50%; background: #8b978d; transition: transform .2s ease, background .2s ease; }
+      .toggle-switch::after { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; content: ''; border-radius: 50%; background: var(--switch-track); transition: transform .2s ease, background .2s ease; }
       .toggle-control input:checked + .toggle-switch { border-color: var(--gold); background: rgba(197,160,89,.18); box-shadow: 0 0 16px var(--gold-glow); }
       .toggle-control input:checked + .toggle-switch::after { transform: translateX(20px); background: var(--gold); }
 
       .featured-toggle input {
         width: 18px;
         height: 18px;
-        accent-color: #d7a33b;
+        accent-color: var(--emerald);
         margin: 0;
       }
 
@@ -410,12 +426,12 @@
 
       .publish-btn {
         flex: 1;
-        background: linear-gradient(180deg, #2ca75a, #2a8d52);
-        color: #dffbe9;
+        background: linear-gradient(180deg, var(--emerald), var(--emerald-dark));
+        color: var(--text);
         border: 1px solid var(--gold);
         box-shadow: 0 6px 18px rgba(64,185,106,0.18), 0 0 0 1px var(--gold-glow);
       }
-      .publish-btn:hover { transform: translateY(-2px); border-color: #f0d28c; box-shadow: 0 10px 26px rgba(64,185,106,0.22), 0 0 18px var(--gold-glow); }
+      .publish-btn:hover { transform: translateY(-2px); border-color: var(--gold-light); box-shadow: 0 10px 26px var(--green-soft), 0 0 18px var(--gold-glow); }
       .draft-btn { background: rgba(197,160,89,0.08); border: 1px solid var(--gold-border); color: var(--gold); }
 
       .preview-btn {
@@ -441,7 +457,7 @@
       .danger-btn {
         background: rgba(255,141,141,0.08);
         border: 1px solid rgba(255,141,141,0.2);
-        color: #ffd4d4;
+        color: var(--danger);
       }
 
       .action-row {
@@ -466,7 +482,7 @@
         align-items: center;
         gap: 6px;
         background: linear-gradient(180deg, rgba(185,143,59,0.18), rgba(185,143,59,0.1));
-        color: #f7d67a;
+        color: var(--gold-light);
         border: 1px solid rgba(185,143,59,0.35);
         border-radius: 999px;
         padding: 6px 10px;
@@ -557,9 +573,9 @@
       .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
       .card-actions .action-btn { padding: 5px 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; background: rgba(255,255,255,0.05); font-size: 12px; }
       .status-badge { display: inline-flex; align-items: center; margin-right: 6px; padding: 4px 7px; border-radius: 999px; font-size: .66rem; font-weight: 800; }
-      .status-published { color: #9ce7ae; background: rgba(64,185,106,.12); }
-      .status-draft { color: #f0d28c; background: rgba(197,160,89,.12); }
-      .status-featured { color: #f0d28c; background: rgba(197,160,89,.12); }
+      .status-published { color: var(--status-green); background: var(--green-soft); }
+      .status-draft { color: var(--gold-light); background: var(--gold-glow); }
+      .status-featured { color: var(--gold-light); background: var(--gold-glow); }
 
       .news-item-head {
         display: flex;
@@ -609,7 +625,7 @@
         border-radius: 10px;
         background: var(--toast-bg);
         border: 1px solid rgba(255,255,255,0.08);
-        color: #ffdada;
+        color: var(--danger);
         box-shadow: var(--shadow);
         opacity: 0;
         pointer-events: none;
@@ -622,6 +638,9 @@
         opacity: 1;
         transform: translateY(0);
       }
+      .toast[data-state="success"] { color:var(--success); border-color:var(--emerald); }
+      .toast[data-state="error"] { color:var(--danger); border-color:var(--danger); }
+      .toast[data-state="warning"] { color:var(--gold-light); border-color:var(--gold-border); }
 
       .preview-modal {
         position: fixed;
@@ -706,22 +725,153 @@
       .delete-dialog .button-row { padding: 0 18px; justify-content: flex-end; }
       .delete-dialog .danger-btn { border-color: rgba(197,160,89,0.4); }
 
-      .admin-tabs { display:flex; gap:10px; margin-bottom:18px; border-bottom:1px solid var(--soft-line); }
+      .admin-tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; border-bottom:1px solid var(--soft-line); }
       .admin-tab { padding:11px 16px; border:1px solid transparent; border-bottom:0; border-radius:10px 10px 0 0; background:transparent; color:var(--muted); font:inherit; font-weight:700; cursor:pointer; }
       .admin-tab.active { color:var(--text); background:rgba(46,94,47,.18); border-color:var(--gold-border); box-shadow:inset 0 -2px 0 var(--gold); }
       .admin-tabs > .logout-btn { margin-left:auto; align-self:center; }
       .admin-grid[hidden], .social-media-panel[hidden] { display:none !important; }
       .social-media-panel { display:grid; grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr); gap:22px; }
       .social-post-form { display:grid; gap:16px; }
-      .social-post-form select { width:100%; padding:.85rem .9rem; border:1px solid var(--soft-line); border-radius:10px; background:#0b1210; color:var(--text); font:inherit; }
+      .social-post-form select { width:100%; padding:.85rem .9rem; border:1px solid var(--soft-line); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; }
       .social-post-list { display:grid; align-content:start; gap:12px; }
       .social-post-card { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:16px; border:1px solid var(--gold-border); border-radius:12px; background:rgba(255,255,255,.025); }
       .social-post-card h3 { margin:8px 0 5px; font-size:1rem; }
       .social-post-card p { margin:0 0 8px; color:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; }
-      .social-post-card a { color:#bceec7; overflow-wrap:anywhere; }
+      .social-post-card a { color:var(--success); overflow-wrap:anywhere; }
       .social-platform-badge { display:inline-flex; padding:4px 9px; border:1px solid var(--gold-border); border-radius:999px; color:var(--gold); font-size:.75rem; font-weight:700; }
       .social-delete-btn { flex:0 0 auto; padding:8px 11px; border:1px solid rgba(255,141,141,.32); border-radius:9px; background:rgba(255,141,141,.08); color:var(--danger); font:inherit; cursor:pointer; }
       .social-empty-state { padding:22px; border:1px dashed var(--gold-border); border-radius:12px; color:var(--muted); text-align:center; }
+
+      .page { max-width: 1540px; }
+      .admin-grid { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+      .panel { border-color: rgba(255,255,255,.065); background: linear-gradient(145deg, rgba(20,29,25,.98), rgba(8,13,11,.98)); }
+      .panel-label { color: var(--text); font-size: .86rem; letter-spacing: .1em; }
+      .panel-label::before { content: "✦"; color: var(--green); margin-right: 9px; }
+      .field-group { gap: 10px; margin-bottom: 4px; }
+      .field-group label { font-size: .82rem; color: var(--label-text); }
+      .publish-btn { background: linear-gradient(135deg, var(--emerald), var(--emerald-dark)); border-color: var(--gold-border); }
+      .draft-btn { background: rgba(255,255,255,.035); border-color: rgba(255,255,255,.12); color: var(--text); }
+      .preview-btn { background: transparent; border-color: rgba(255,255,255,.1); color: var(--muted); }
+      button, input, textarea, select { transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease, transform .18s ease; }
+      button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid rgba(64,185,106,.52); outline-offset: 2px; }
+      .admin-tabs { align-items: center; }
+      .toolbar-extra { min-width: 44px; min-height: 40px; }
+      .character-count { font-size: .8rem; }
+      .character-count.near-limit { color: var(--gold-light); }
+      .character-count.over-limit { color: var(--danger); }
+      .editor-stats { display:flex; flex-wrap:wrap; gap:8px 16px; color:var(--muted); font-size:.8rem; }
+      .editor-stats strong { color:var(--text); font-weight:700; }
+      .field-hint { color:var(--muted); font-size:.8rem; line-height:1.45; }
+      .image-preview-wrap { display:none; position:relative; margin-top:10px; }
+      .image-preview-wrap.visible { display:block; }
+      .image-preview-wrap img { display:block; width:100%; max-height:220px; object-fit:cover; border-radius:10px; border:1px solid var(--soft-line); }
+      .image-remove { position:absolute; top:8px; right:8px; min-height:40px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:7px 12px; cursor:pointer; }
+      .live-preview-content .tag-badges { margin-top:4px; }
+      .preview-switch { display:flex; gap:6px; justify-content:flex-end; padding:8px 12px; }
+      .preview-switch button, .theme-toggle { min-height:40px; border:1px solid var(--soft-line); border-radius:9px; padding:7px 11px; background:var(--panel-soft); color:var(--text); cursor:pointer; }
+      .live-preview.mobile-preview { width:min(390px,100%); margin-left:auto; margin-right:auto; }
+      .live-preview-mobile-frame { transition:width .2s ease; }
+      .stats-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:0 0 18px; }
+      .stat-card { padding:14px 16px; border:1px solid var(--soft-line); border-radius:12px; background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012)); }
+      .stat-card span { display:block; color:var(--muted); font-size:.8rem; }
+      .stat-card strong { display:block; margin-top:5px; font-size:1.45rem; color:var(--gold-light); }
+      .stat-trend { display:block; width:90px; height:22px; margin-top:6px; fill:none; stroke:var(--emerald); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.72; }
+      .list-controls { display:grid; gap:8px; margin-bottom:10px; }
+      .search-input { min-height:44px; }
+      .tag-badge[data-filter-tag] { cursor:pointer; min-height:28px; }
+      .tag-badge[data-filter-tag]:hover { border-color:var(--green); }
+      .skeleton { min-height:98px; border-radius:12px; background:linear-gradient(90deg,rgba(255,255,255,.025) 25%,rgba(255,255,255,.075) 50%,rgba(255,255,255,.025) 75%); background-size:200% 100%; animation:skeleton-shimmer 1.4s ease infinite; }
+      @keyframes skeleton-shimmer { to { background-position:-200% 0; } }
+      .theme-toggle { margin-left:auto; }
+      @media (max-width:900px) { .admin-grid { grid-template-columns:1fr; } }
+      @media (max-width:560px) {
+        body { padding:18px 12px 36px; }
+        .stats-grid { grid-template-columns:1fr; gap:8px; }
+        .stat-card { padding:11px 14px; }
+        .admin-tab, .logout-btn, .button-row button, .category-btn, .filter-btn { min-height:44px; }
+        .theme-toggle { min-height:44px; }
+      }
+
+      :root { color-scheme: dark; }
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg:#F4F0E4; --bg-2:#eee9da; --panel:#eee9da; --panel-strong:#e9e3d3;
+        --panel-soft:rgba(7,45,33,.035); --text:#193329; --muted:#435f53;
+        --soft-line:rgba(5,150,105,.24); --border:rgba(5,150,105,.24);
+        --gold:#9a7615; --gold-light:#77590b; --gold-border:rgba(154,118,21,.28);
+        --gold-glow:rgba(154,118,21,.12); --toast-bg:rgba(244,240,228,.97);
+        --shadow:0 18px 42px rgba(32,55,43,.12);
+        --danger:#9B2C2C; --success:#176B47; --status-green:#176B47; --switch-track:#72847A;
+        --label-text:#354F43; --warning:#77590b;
+      }
+      :root[data-theme="light"] body { background:radial-gradient(1100px 400px at 50% 0%,rgba(16,185,129,.1),transparent 55%),#F4F0E4; }
+      :root[data-theme="light"] input, :root[data-theme="light"] textarea, :root[data-theme="light"] select { background:#eee9da; color:var(--text); }
+      :root[data-theme="light"] .panel, :root[data-theme="light"] .preview-dialog, :root[data-theme="light"] #login-card { background:linear-gradient(145deg,#F4F0E4,#eee9da); }
+      body { background:radial-gradient(1200px 420px at 50% 0%,rgba(16,185,129,.11),transparent 54%),linear-gradient(180deg,#07110E,#091812); color:var(--text); }
+      .page-header h1, .published-heading, .preview-header h3 { font-family:Georgia,"Playfair Display",serif; }
+      .page-header h1 { width:fit-content; padding-bottom:12px; border-bottom:1px solid var(--gold); }
+      .page-header h1::before { content:""; display:inline-block; width:34px; height:34px; margin-right:12px; vertical-align:middle; background:url("assets/logo.png") center/contain no-repeat; }
+      .panel { border:1px solid var(--border); border-radius:var(--radius-md); background:linear-gradient(145deg,rgba(13,31,25,.96),rgba(9,24,18,.96)); backdrop-filter:blur(14px); }
+      .panel-label { border-left:1px solid var(--gold); padding-left:10px; color:var(--gold-light); }
+      .panel-label::before { content:""; margin:0; }
+      .publish-btn { background:linear-gradient(135deg,var(--emerald),var(--emerald-dark)); border:1px solid var(--gold-border); box-shadow:0 6px 20px rgba(16,185,129,.12); }
+      .publish-btn:hover { box-shadow:0 8px 26px rgba(16,185,129,.25),0 0 12px var(--gold-glow); }
+      .file-upload-wrap { border-color:rgba(16,185,129,.35); }
+      .file-upload-wrap:hover, .file-upload-wrap.dragover { border-color:var(--emerald); background:rgba(16,185,129,.08); }
+      .filter-btn, .category-btn, .format-btn, .action-btn, .secondary-btn, .preview-btn, .file-pick-btn, .logout-btn, .theme-toggle { color:var(--text); }
+      .category-btn { display:flex; align-items:center; justify-content:center; gap:8px; }
+      .category-btn svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.7; }
+      .status-featured, .featured-badge { color:var(--gold-light); border:1px solid var(--gold-border); background:rgba(212,175,55,.12); }
+      .character-count, .field-hint, .editor-stats, .stat-card span { font-size:13px; }
+      input[type="date"],input[type="datetime-local"],input[type="number"],select { color-scheme:dark; accent-color:var(--emerald); }
+      :root[data-theme="light"] input[type="date"],:root[data-theme="light"] input[type="datetime-local"],:root[data-theme="light"] input[type="number"],:root[data-theme="light"] select { color-scheme:light; }
+      select { appearance:none; padding-right:40px!important; background-image:linear-gradient(45deg,transparent 50%,var(--emerald) 50%),linear-gradient(135deg,var(--emerald) 50%,transparent 50%); background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%; background-size:6px 6px; background-repeat:no-repeat; }
+      * { scrollbar-color:var(--emerald-dark) var(--bg); scrollbar-width:thin; }
+      .admin-form { gap:14px; padding-bottom:92px; }
+      .sticky-editor-actions { position:sticky; bottom:10px; z-index:12; padding:12px; margin:4px -6px -6px; border:1px solid var(--border); border-radius:var(--radius-md); background:rgba(13,31,25,.94); backdrop-filter:blur(12px); box-shadow:var(--shadow); }
+      .editing-notice,.editor-tools-row,.panel-tools { display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+      .editing-notice { justify-content:space-between; padding:10px 12px; border-left:2px solid var(--gold); color:var(--gold-light); }
+      .editor-tools-row { justify-content:flex-start; color:var(--muted); font-size:13px; }
+      .saved-pulse { color:var(--emerald); animation:savedPulse 1.8s ease-in-out infinite; }
+      @keyframes savedPulse { 50% { opacity:.55; } }
+      .input-with-action { display:flex; gap:6px; }
+      .input-with-action input { min-width:0; }
+      .inline-emoji-button { min-width:44px; border:1px solid var(--border); border-radius:10px; color:var(--gold); background:var(--panel-strong); cursor:pointer; }
+      .emoji-picker { position:fixed; z-index:150; width:min(390px,calc(100vw - 24px)); max-height:min(480px,70vh); display:flex; flex-direction:column; border:1px solid var(--border); border-radius:16px; background:var(--panel); box-shadow:var(--shadow); overflow:hidden; }
+      .emoji-picker[hidden] { display:none; }
+      .emoji-picker-top { display:grid; gap:8px; padding:12px; border-bottom:1px solid var(--soft-line); }
+      .emoji-picker-top select { width:100%; min-height:40px; }
+      .emoji-tabs { display:flex; gap:5px; overflow-x:auto; }
+      .emoji-tab { flex:0 0 auto; min-height:38px; border:1px solid var(--soft-line); border-radius:8px; color:var(--muted); background:transparent; padding:5px 9px; cursor:pointer; }
+      .emoji-tab.active { color:var(--text); border-color:var(--emerald); background:var(--green-soft); }
+      .emoji-recent-title { padding:8px 12px 0; color:var(--muted); font-size:13px; }
+      .emoji-grid { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:3px; padding:8px 12px 14px; overflow:auto; }
+      .emoji-choice { min-width:38px; min-height:40px; border:0; border-radius:8px; background:transparent; font-size:22px; cursor:pointer; }
+      .emoji-choice:hover,.emoji-choice:focus-visible { background:var(--green-soft); }
+      .editor-section { border:1px solid var(--border); border-radius:var(--radius-sm); padding:0 12px 12px; }
+      .editor-section > summary { padding:14px 0; color:var(--gold-light); font-weight:700; cursor:pointer; }
+      .editor-section > summary::marker { color:var(--emerald); }
+      .section-fields { display:grid; gap:14px; }
+      .readiness-card,.aux-panel { margin:12px 0; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--panel-soft); }
+      .readiness-card > strong { color:var(--gold-light); }
+      .readiness-card > span { float:right; color:var(--emerald); font-weight:800; }
+      .readiness-card ul { display:flex; flex-wrap:wrap; gap:6px 18px; padding-left:20px; margin-bottom:0; color:var(--muted); }
+      .local-drafts-card,#localDraftsList { display:grid; gap:8px; margin:8px 0; }
+      .draft-row,.media-row,.calendar-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border:1px solid var(--soft-line); border-radius:10px; }
+      .aux-panel { overflow:auto; max-height:320px; }
+      .media-row img { width:58px; height:48px; object-fit:cover; border-radius:7px; }
+      .calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+      .calendar-day { min-height:42px; padding:4px; border:1px solid var(--soft-line); border-radius:7px; color:var(--text); background:var(--panel-soft); }
+      .calendar-day.has-news { border-color:var(--gold-border); color:var(--gold-light); }
+      .news-card { animation:cardIn .3s ease both; }
+      @keyframes cardIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+      .focus-mode #sadrzaj { min-height:65vh; }
+      .focus-mode { position:fixed; inset:12px; z-index:140; overflow:auto; padding:22px; background:var(--bg); border:1px solid var(--border); border-radius:16px; }
+      @media(max-width:600px) {
+        .emoji-picker { position:fixed; left:12px!important; right:12px; bottom:12px; top:auto!important; width:auto; max-height:72vh; }
+        .emoji-grid { grid-template-columns:repeat(7,minmax(0,1fr)); }
+        .sticky-editor-actions { bottom:4px; }
+      }
 
       @media (max-width: 900px) {
         .admin-grid {
@@ -744,9 +894,43 @@
         .card-header { flex-direction: column; gap: 5px; }
         .card-meta { justify-content: flex-start; text-align: left; }
       }
+      .admin-wide-panel { grid-column:1 / -1; min-width:0; }
+      #contactInboxPanel[hidden],#eventsAdminPanel[hidden] { display:none!important; }
+      .contact-inbox-controls { display:grid; grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(150px,1fr)); gap:10px; margin:14px 0; }
+      .contact-inbox-controls input,.contact-inbox-controls select,.inbox-card-field select,.admin-event-form input,.admin-event-form select,.admin-event-form textarea {
+        width:100%; min-width:0; min-height:42px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--panel-soft); color:var(--text); font:inherit;
+      }
+      .contact-inbox-list,.admin-events-list { display:grid; gap:12px; margin-top:12px; }
+      .contact-inbox-card,.admin-event-card { min-width:0; padding:16px; border:1px solid var(--border); border-radius:14px; background:var(--panel-soft); }
+      .contact-inbox-card-head,.admin-event-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:12px; }
+      .contact-inbox-card h3,.admin-event-card h3 { margin:0 0 4px; color:var(--text); font-size:1rem; overflow-wrap:anywhere; }
+      .contact-inbox-card a { color:var(--gold-light); overflow-wrap:anywhere; }
+      .contact-inbox-date,.admin-event-meta { color:var(--muted); font-size:.82rem; }
+      .contact-inbox-message { margin:12px 0; padding:12px; border:1px solid var(--soft-line); border-radius:10px; color:var(--text); line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
+      .inbox-card-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .inbox-card-field { display:grid; gap:5px; color:var(--muted); font-size:.8rem; }
+      .inbox-card-actions,.admin-event-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+      .contact-inbox-empty { padding:18px; border:1px dashed var(--border); border-radius:12px; color:var(--muted); text-align:center; }
+      .admin-event-form { display:grid; gap:12px; padding:14px; border:1px solid var(--border); border-radius:14px; background:var(--panel-soft); }
+      .admin-event-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+      .admin-event-form textarea { min-height:110px; resize:vertical; }
+      .admin-event-card { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+      .admin-event-card-main { min-width:0; }
+      .admin-event-badge { display:inline-flex; margin-top:7px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:var(--gold-light); font-size:.74rem; }
+      @media(max-width:700px) {
+        .contact-inbox-controls,.inbox-card-fields,.admin-event-grid { grid-template-columns:minmax(0,1fr); }
+        .contact-inbox-card-head,.admin-event-card { flex-direction:column; align-items:stretch; }
+        .inbox-card-actions>* ,.admin-event-actions>* { flex:1; }
+      }
     </style>
   </head>
   <body>
+    <svg aria-hidden="true" width="0" height="0" style="position:absolute">
+      <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M8 4h8l-1 6 3 3v2H6v-2l3-3-1-6Zm4 11v6"/></symbol>
+      <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20 8.5c0 5-8 10-8 10s-8-5-8-10a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 8 2.8Z"/></symbol>
+      <symbol id="icon-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m12 7 3 2-1 4h-4L9 9l3-2Zm-3 6-3 2m8-2 3 2m-8-8-1-3m6 3 1-3m-7 11 1 3m6-3-1 3"/></symbol>
+      <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5Zm0 0V22m4-15h8m-8 4h8"/></symbol>
+    </svg>
     <div class="page">
       <header class="page-header">
         <h1>Vijesti i aktivnosti</h1>
@@ -766,7 +950,7 @@
 
           <div class="field">
             <label for="password">Lozinka</label>
-            <input id="password" name="password" type="password" value="Savezmladih2026" required />
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
           </div>
 
           <button class="btn-primary" type="submit">Prijavi se</button>
@@ -778,8 +962,15 @@
         <div class="admin-tabs" role="tablist" aria-label="Administracija sadržaja">
           <button type="button" class="admin-tab active" id="news-tab" role="tab" aria-selected="true" aria-controls="news-tab-panel">Vijesti</button>
           <button type="button" class="admin-tab" id="social-tab" role="tab" aria-selected="false" aria-controls="social-tab-panel">Mreže / Social Media</button>
+          <button type="button" class="theme-toggle" id="themeToggle" aria-label="Promijeni temu">☀️ Svijetla tema</button>
           <button id="logoutButton" type="button" class="logout-btn">Odjavi se</button>
         </div>
+
+        <section class="stats-grid" aria-label="Pregled vijesti">
+          <div class="stat-card"><span>▤ Objavljene vijesti</span><strong id="publishedCount">0</strong><svg class="stat-trend" viewBox="0 0 90 22" aria-hidden="true"><path d="M1 18 18 13 32 16 48 7 62 12 77 3 89 6"/></svg></div>
+          <div class="stat-card"><span>✎ Lokalni nacrti</span><strong id="draftCount">0</strong><svg class="stat-trend" viewBox="0 0 90 22" aria-hidden="true"><path d="M1 17 18 15 32 17 48 9 62 11 77 6 89 8"/></svg></div>
+          <div class="stat-card"><span>◷ Zakazane objave</span><strong id="scheduledCount">0</strong><svg class="stat-trend" viewBox="0 0 90 22" aria-hidden="true"><path d="M1 18 18 17 32 12 48 15 62 8 77 10 89 3"/></svg></div>
+        </section>
 
         <div class="admin-grid" id="news-tab-panel" role="tabpanel" aria-labelledby="news-tab">
           <section class="panel">
@@ -791,10 +982,12 @@
             </div>
 
             <form id="newsForm" class="admin-form">
+              <details class="editor-section" open><summary>Osnovno</summary><div class="section-fields">
               <div class="field-group">
                 <label for="naslov">Naslov</label>
-                <input id="naslov" type="text" maxlength="120" placeholder="Unesite naslov vijesti" required />
+                <div class="input-with-action"><input id="naslov" type="text" maxlength="120" placeholder="Unesite naslov vijesti" required /><button type="button" class="inline-emoji-button" data-emoji-target="naslov" aria-label="Umetni emoji u naslov" title="Umetni emoji">☻</button></div>
                 <div id="titleCount" class="character-count">0 / 120</div>
+                <div id="seoHint" class="field-hint">Naslov za pretraživače: preporučeno do 60 znakova.</div>
               </div>
 
               <div class="field-group">
@@ -803,15 +996,49 @@
                   <button type="button" class="format-btn" data-format="bold" title="Podebljano"><strong>B</strong></button>
                   <button type="button" class="format-btn" data-format="italic" title="Kurziv"><em>I</em></button>
                   <button type="button" class="format-btn" data-format="link" title="Dodaj link">Link</button>
+                  <button type="button" class="format-btn toolbar-extra" data-format="heading" title="Naslov">H2</button>
+                  <button type="button" class="format-btn toolbar-extra" data-format="list" title="Lista">Lista</button>
+                  <button type="button" class="format-btn toolbar-extra" data-format="quote" title="Citat">Citat</button>
+                  <button type="button" class="format-btn toolbar-extra" data-emoji-target="sadrzaj" title="Otvori izbor emojija" aria-label="Otvori izbor emojija">☻ Emoji</button>
+                  <button type="button" class="format-btn toolbar-extra" id="focusModeButton" title="Fokus mod" aria-label="Otvori fokus mod">⛶ Fokus</button>
+                  <button type="button" class="format-btn toolbar-extra" id="undoButton" title="Poništi (Ctrl+Z)" aria-label="Poništi">↶</button>
+                  <button type="button" class="format-btn toolbar-extra" id="redoButton" title="Ponovi (Ctrl+Y)" aria-label="Ponovi">↷</button>
                 </div>
                 <textarea id="sadrzaj" placeholder="Napišite tekst vijesti..." required></textarea>
                 <div id="bodyCount" class="character-count">0 znakova</div>
+                <div class="editor-stats"><span>Riječi: <strong id="wordCount">0</strong></span><span>Čitanje: <strong id="readingTime">1 min</strong></span></div>
               </div>
 
               <div class="field-group">
-                <label for="slika_url">URL Slike</label>
-                <input id="slika_url" type="text" placeholder="https://example.com/slika.jpg" />
+                <label for="excerpt">Kratki opis / sažetak</label>
+                <div class="editor-toolbar"><button type="button" class="format-btn" id="generateExcerptButton">Generiši iz teksta</button><button type="button" class="format-btn" data-emoji-target="excerpt" aria-label="Umetni emoji u kratki opis">☻ Emoji</button></div>
+                <textarea id="excerpt" rows="2" maxlength="240" placeholder="Kratak opis za listu i dijeljenje"></textarea>
+                <div id="excerptCount" class="character-count">0 / 240</div>
               </div>
+              <div class="field-group">
+                <label for="authorName">Autor</label>
+                <input id="authorName" type="text" maxlength="100" placeholder="Ime autora" />
+              </div>
+              <div class="field-group">
+                <label for="photoCredit">Izvor / fotograf</label>
+                <input id="photoCredit" type="text" maxlength="160" placeholder="Izvor teksta ili fotografije" />
+              </div>
+              </div></details>
+              <details class="editor-section"><summary>Zakazivanje i SEO</summary><div class="section-fields">
+              <div class="field-group">
+                <label for="publishAt">Zakazivanje (opcionalno)</label>
+                <input id="publishAt" type="datetime-local" />
+                <div class="field-hint">Vrijeme se čuva u nacrtu; automatsko objavljivanje traži dodatnu serversku podršku.</div>
+              </div>
+              </div></details>
+
+              <details class="editor-section" open><summary>Slika</summary><div class="section-fields">
+              <div class="field-group">
+                <label for="slika_url">URL Slike</label>
+                <input id="slika_url" type="url" placeholder="https://example.com/slika.jpg" />
+              </div>
+              <div class="field-group"><label for="imageAlt">Alt tekst slike</label><input id="imageAlt" type="text" maxlength="180" placeholder="Opis slike za pristupačnost" /></div>
+              <div class="field-group"><label for="watermarkToggle" class="toggle-control"><input id="watermarkToggle" type="checkbox" /><span>Dodati logo Saveza kao vodeni žig</span><span class="toggle-switch" aria-hidden="true"></span></label></div>
 
               <div class="field-group">
                 <label for="slika-input">Slika sa računara</label>
@@ -823,38 +1050,66 @@
                     <button id="slika-pick-btn" type="button" class="file-pick-btn">Odaberi datoteku</button>
                   </div>
                   <div id="slika-file-name" class="file-name">Nijedna datoteka nije odabrana</div>
+                  <div class="field-hint">Maksimalno 10 MB. Slike se lokalno smanjuju prije slanja.</div>
+                  <div id="imagePreviewWrap" class="image-preview-wrap">
+                    <img id="imagePreview" alt="Pregled slike vijesti" />
+                    <button id="removeImageButton" class="image-remove" type="button">Ukloni sliku</button>
+                  </div>
                 </div>
               </div>
+              </div></details>
 
+              <details class="editor-section"><summary>Kategorija i tagovi</summary><div class="section-fields">
               <div class="field-group">
-                <label>Kategorija</label>
+                <label for="categoryGrid">Kategorija <span aria-hidden="true">*</span></label>
                 <div class="category-grid" id="categoryGrid">
-                  <button type="button" class="category-btn active" data-category="obavjestenje">📌 Obavještenje</button>
-                  <button type="button" class="category-btn" data-category="humanitarna">🤝 Humanitarna akcija</button>
-                  <button type="button" class="category-btn" data-category="aktivnosti">⚽ Aktivnosti i Sport</button>
-                  <button type="button" class="category-btn" data-category="historija">📜 Historija</button>
+                  <button type="button" class="category-btn active" data-category="obavjestenje"><svg aria-hidden="true"><use href="#icon-pin"></use></svg>Obavještenje</button>
+                  <button type="button" class="category-btn" data-category="humanitarna"><svg aria-hidden="true"><use href="#icon-heart"></use></svg>Humanitarna akcija</button>
+                  <button type="button" class="category-btn" data-category="aktivnosti"><svg aria-hidden="true"><use href="#icon-ball"></use></svg>Aktivnosti i sport</button>
+                  <button type="button" class="category-btn" data-category="historija"><svg aria-hidden="true"><use href="#icon-book"></use></svg>Historija</button>
                 </div>
               </div>
+              <details class="editor-section"><summary>Napredno: detalji kategorije</summary><div class="section-fields">
+              <div id="activityFields" class="field-group" hidden>
+                <label for="eventDate">Detalji događaja</label>
+                <input id="eventDate" type="date" aria-label="Datum događaja" />
+                <input id="eventLocation" type="text" maxlength="160" placeholder="Lokacija događaja" aria-label="Lokacija događaja" />
+              </div>
+              <div id="charityFields" class="field-group" hidden>
+                <label for="fundGoal">Humanitarna akcija</label>
+                <input id="fundGoal" type="number" min="0" step="0.01" placeholder="Cilj prikupljanja (KM)" aria-label="Cilj prikupljanja u KM" />
+                <input id="fundCollected" type="number" min="0" step="0.01" placeholder="Do sada prikupljeno (KM)" aria-label="Prikupljeni iznos u KM" />
+              </div>
+              </div></details>
 
               <div class="field-group">
                 <label for="tagovi">TAGOVI / HASHTAGOVI</label>
-                <input id="tagovi" type="text" placeholder="#sarajevo, #mladi, #sport" />
+                <input id="tagovi" type="text" placeholder="#sarajevo, #mladi, #sport" list="tagSuggestions" />
+                <datalist id="tagSuggestions"></datalist>
               </div>
+              <div class="field-group"><label for="templateSelect">Brzi šablon</label><select id="templateSelect"><option value="">Odaberite šablon…</option><option value="results">Rezultati takmičenja</option><option value="event">Poziv na događaj</option><option value="charity">Humanitarna akcija</option></select></div>
+              <div class="field-group"><label for="relatedNews">Povezane vijesti (Ctrl/Shift za više)</label><select id="relatedNews" multiple size="3" aria-label="Povezane vijesti"></select></div>
+              <div class="field-group"><label for="pastePlainText"><input id="pastePlainText" type="checkbox" checked /> Zalijepi kao običan tekst</label></div>
 
               <div class="field-group featured-toggle">
                 <label for="is-featured" class="toggle-control">
                   <input id="is-featured" type="checkbox" />
-                  <span>Označi kao istaknutu (Udarna vijest)</span>
+                  <span>★ Označi kao istaknutu (Udarna vijest)</span>
                   <span class="toggle-switch" aria-hidden="true"></span>
                 </label>
               </div>
+              </div></details>
 
+              <div class="readiness-card"><strong>Spremnost za objavu</strong><span id="formReadinessPercent">0%</span><ul id="formReadinessList"></ul></div>
+              <div class="sticky-editor-actions">
               <div class="button-row">
                 <button id="submitButton" class="publish-btn" type="submit">Objavi vijest</button>
                 <button id="draftButton" class="secondary-btn draft-btn" type="button">Sačuvaj nacrt</button>
                 <button id="previewButton" type="button" class="preview-btn">Pregledaj</button>
               </div>
-              <button id="cancelEditButton" type="button" class="secondary-btn" style="display:none; margin-top: 8px;">Odustani</button>
+              <div id="editingNotice" class="editing-notice" hidden><span id="editingLabel"></span><button id="cancelEditButton" type="button" class="secondary-btn">Otkaži uređivanje</button></div>
+              <div class="editor-tools-row"><span id="savedAgo" aria-live="polite">Još nije sačuvano</span><button type="button" id="copyPlainButton" class="secondary-btn">Kopiraj tekst</button><button type="button" id="copyHtmlButton" class="secondary-btn">Kopiraj HTML</button></div>
+              </div>
               <div id="newsStatus" class="form-status" aria-live="polite"></div>
             </form>
           </section>
@@ -867,18 +1122,37 @@
 
             <div id="livePreview" class="live-preview" aria-live="polite">
               <div class="live-preview-label">LIVE PREVIEW</div>
+              <div class="preview-switch" aria-label="Veličina pregleda">
+                <button type="button" id="desktopPreviewButton" aria-pressed="true">Desktop</button>
+                <button type="button" id="mobilePreviewButton" aria-pressed="false">Mobilni</button>
+              </div>
+              <section id="readinessCard" class="readiness-card" aria-live="polite"><strong>Spremnost za objavu</strong><span id="readinessPercent">0%</span><ul id="readinessList"></ul></section>
               <div id="livePreviewImage" class="live-preview-image"></div>
               <div class="live-preview-content">
                 <span id="livePreviewCategory" class="news-category">📌 Obavještenje</span>
                 <h3 id="livePreviewTitle">Naslov vijesti</h3>
                 <p id="livePreviewText">Tekst vijesti će se ažurirati dok kucate.</p>
+                <div id="livePreviewTags"></div>
+                <span id="livePreviewFeatured" class="status-badge status-featured" hidden>★ Istaknuto</span>
+                <div class="field-hint">Slug: <strong id="slugPreview">-</strong> · Meta opis: <span id="metaPreview">-</span></div>
               </div>
             </div>
 
             <h2 class="published-heading">Objavljene vijesti</h2>
 
-            <div class="search-wrap">
-              <input id="searchInput" class="search-input" type="search" placeholder="Pretraži vijesti po naslovu..." />
+            <div class="list-controls">
+              <div class="search-wrap">
+                <input id="searchInput" class="search-input" type="search" placeholder="Pretraži naslov, tekst i tagove..." aria-label="Pretraži vijesti" />
+              </div>
+              <select id="sortNews" aria-label="Sortiraj vijesti">
+                <option value="newest">Najnovije</option>
+                <option value="oldest">Najstarije</option>
+                <option value="title">Naslov A–Ž</option>
+              </select>
+              <div class="button-row">
+                <button type="button" class="secondary-btn" id="exportCsvButton">Izvezi CSV</button>
+                <button type="button" class="secondary-btn" id="printReportButton">Izvezi PDF / štampaj</button>
+              </div>
             </div>
 
             <div class="filters" id="filterBar">
@@ -886,6 +1160,10 @@
               <button type="button" class="filter-btn status-filter" data-status-filter="published">Objavljeno</button>
               <button type="button" class="filter-btn status-filter" data-status-filter="draft">Nacrti</button>
             </div>
+            <div class="local-drafts-card"><button type="button" id="localDraftsToggle" class="secondary-btn">Lokalni nacrti (<span id="localDraftsCount">0</span>)</button><div id="localDraftsList" hidden></div></div>
+            <div class="panel-tools"><button type="button" id="calendarToggle" class="secondary-btn">Kalendar objava</button><button type="button" id="eventsAdminToggle" class="secondary-btn">Kalendar aktivnosti</button><button type="button" id="contactInboxToggle" class="secondary-btn">Inbox poruka</button><button type="button" id="mediaLibraryToggle" class="secondary-btn">Biblioteka medija</button><button type="button" id="globalSearchButton" class="secondary-btn">Pretraga panela (Ctrl+K)</button></div>
+            <section id="calendarPanel" class="aux-panel" hidden></section>
+            <section id="mediaLibraryPanel" class="aux-panel" hidden></section>
             <div class="filters" id="categoryFilterBar">
               <button type="button" class="filter-btn active" data-filter="sve">Sve kategorije</button>
               <button type="button" class="filter-btn" data-filter="obavjestenje">📌 Obavještenje</button>
@@ -895,6 +1173,85 @@
             </div>
 
             <div id="newsList" class="news-list"></div>
+          </section>
+
+          <section id="contactInboxPanel" class="panel admin-wide-panel" aria-labelledby="contactInboxTitle" hidden>
+            <div class="panel-header">
+              <div>
+                <div class="panel-label">PRISTIGLI UPITI</div>
+                <h2 id="contactInboxTitle">Inbox poruka</h2>
+              </div>
+              <button id="refreshContactInbox" type="button" class="secondary-btn">Osvježi</button>
+            </div>
+            <div class="contact-inbox-controls">
+              <input id="contactInboxSearch" type="search" placeholder="Pretraži ime, email ili poruku" aria-label="Pretraži poruke" />
+              <select id="contactInboxStatusFilter" aria-label="Filtriraj po statusu">
+                <option value="all">Svi statusi</option>
+                <option value="new">Novo</option>
+                <option value="in_progress">U toku</option>
+                <option value="responded">Odgovoreno</option>
+              </select>
+              <select id="contactInboxTagFilter" aria-label="Filtriraj po oznaci">
+                <option value="all">Sve oznake</option>
+                <option value="general">Opći upit</option>
+                <option value="collaboration">Saradnja</option>
+                <option value="other">Ostalo</option>
+              </select>
+            </div>
+            <p id="contactInboxStatus" class="form-status" role="status" aria-live="polite"></p>
+            <div id="contactInboxList" class="contact-inbox-list">
+              <p class="contact-inbox-empty">Otvori inbox da učitaš pristigle poruke.</p>
+            </div>
+          </section>
+
+          <section id="eventsAdminPanel" class="panel admin-wide-panel" aria-labelledby="eventsAdminTitle" hidden>
+            <div class="panel-header">
+              <div>
+                <div class="panel-label">JAVNI KALENDAR</div>
+                <h2 id="eventsAdminTitle">Upravljanje aktivnostima</h2>
+              </div>
+              <a class="secondary-btn" href="index.html#dogadjaji" target="_blank" rel="noopener noreferrer">Otvori kalendar</a>
+            </div>
+            <form id="adminEventForm" class="admin-event-form">
+              <input id="managerEventId" type="hidden" />
+              <div class="field-group">
+                <label for="managerEventTitle">Naziv aktivnosti</label>
+                <input id="managerEventTitle" type="text" maxlength="120" required />
+              </div>
+              <div class="admin-event-grid">
+                <div class="field-group">
+                  <label for="managerEventDate">Datum</label>
+                  <input id="managerEventDate" type="date" required />
+                </div>
+                <div class="field-group">
+                  <label for="managerEventTime">Vrijeme (opciono)</label>
+                  <input id="managerEventTime" type="time" />
+                </div>
+                <div class="field-group">
+                  <label for="managerEventLocation">Lokacija (opciono)</label>
+                  <input id="managerEventLocation" type="text" maxlength="160" />
+                </div>
+                <div class="field-group">
+                  <label for="managerEventStatus">Vidljivost</label>
+                  <select id="managerEventStatus">
+                    <option value="published">Objavljeno</option>
+                    <option value="draft">Nacrt — vidljivo samo adminu</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="managerEventDescription">Opis</label>
+                <textarea id="managerEventDescription" rows="4" maxlength="3000" placeholder="Detalji koje posjetioci trebaju znati"></textarea>
+              </div>
+              <div class="button-row">
+                <button id="saveAdminEvent" class="publish-btn" type="submit">Sačuvaj aktivnost</button>
+                <button id="resetAdminEvent" class="secondary-btn" type="button">Očisti formu</button>
+              </div>
+              <p id="adminEventStatus" class="form-status" role="status" aria-live="polite"></p>
+            </form>
+            <div id="adminEventsList" class="admin-events-list">
+              <p class="contact-inbox-empty">Otvori kalendar aktivnosti da učitaš događaje.</p>
+            </div>
           </section>
         </div>
 
@@ -969,6 +1326,25 @@
       </div>
     </div>
 
+    <div id="emojiPicker" class="emoji-picker" role="dialog" aria-label="Izbor emojija" hidden>
+      <div class="emoji-picker-top">
+        <input id="emojiSearch" type="search" placeholder="Pretraži emoji…" aria-label="Pretraži emojije" />
+        <div class="emoji-tabs" id="emojiTabs" role="tablist" aria-label="Kategorije emojija"></div>
+        <label class="field-hint" for="emojiSkinTone">Ton kože
+          <select id="emojiSkinTone" aria-label="Izaberi ton kože"><option value="">Zadani</option><option value="🏻">Svijetli</option><option value="🏼">Svijetli srednji</option><option value="🏽">Srednji</option><option value="🏾">Tamniji</option><option value="🏿">Tamni</option></select>
+        </label>
+      </div>
+      <div id="emojiRecentTitle" class="emoji-recent-title" hidden>Nedavno korišteni</div>
+      <div id="emojiGrid" class="emoji-grid" role="listbox" aria-label="Emojiji"></div>
+    </div>
+
+    <div id="confirmModal" class="preview-modal" aria-hidden="true">
+      <div class="preview-dialog delete-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <div class="preview-header"><h3 id="confirmTitle">Potvrda</h3></div>
+        <p id="confirmMessage"></p>
+        <div class="button-row"><button type="button" class="secondary-btn" id="confirmCancel">Odustani</button><button type="button" class="publish-btn" id="confirmAccept">Nastavi</button></div>
+      </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1023,13 +1399,25 @@
       const searchInput = document.getElementById('searchInput');
       const featuredCheckbox = document.getElementById('is-featured');
       const tagoviInput = document.getElementById('tagovi');
+      const emojiPicker = document.getElementById('emojiPicker');
+      const emojiGrid = document.getElementById('emojiGrid');
+      const emojiSearch = document.getElementById('emojiSearch');
+      const emojiTabs = document.getElementById('emojiTabs');
+      const emojiSkinTone = document.getElementById('emojiSkinTone');
+      const confirmModal = document.getElementById('confirmModal');
       const draftButton = document.getElementById('draftButton');
       const livePreviewTitle = document.getElementById('livePreviewTitle');
       const livePreviewText = document.getElementById('livePreviewText');
       const livePreviewCategory = document.getElementById('livePreviewCategory');
       const livePreviewImage = document.getElementById('livePreviewImage');
+      const livePreviewTags = document.getElementById('livePreviewTags');
+      const livePreviewFeatured = document.getElementById('livePreviewFeatured');
+      const imagePreviewWrap = document.getElementById('imagePreviewWrap');
+      const imagePreview = document.getElementById('imagePreview');
       const titleCount = document.getElementById('titleCount');
       const bodyCount = document.getElementById('bodyCount');
+      const themeToggle = document.getElementById('themeToggle');
+      const sortNews = document.getElementById('sortNews');
       const deleteModal = document.getElementById('deleteModal');
       const confirmDeleteButton = document.getElementById('confirmDeleteButton');
       const closeDeleteButton = document.getElementById('closeDeleteButton');
@@ -1051,7 +1439,56 @@
       let newsData = [];
       let socialPosts = [];
       let editingId = null;
+      let editingLocalDraft = false;
       let pendingDeleteId = null;
+      let dirtyForm = false;
+      let imageObjectUrl = '';
+      let uploadImage = null;
+      let emojiTarget = null;
+      let activeEmojiCategory = 'Najčešće';
+      let confirmResolver = null;
+      let lastSavedAt = 0;
+      let editorHistory = [];
+      let historyIndex = -1;
+      const emojiCategories = {
+        'Najčešće': [['😀','nasmijano'],['😂','smijeh'],['😊','sretan'],['😍','zaljubljen'],['🥰','nježan'],['🙏','zahvala'],['👏','aplaus'],['👍','palac gore'],['❤️','srce'],['💚','zeleno srce'],['✨','sjaj'],['🎉','proslava'],['📌','oznaka'],['⚽','fudbal'],['🌿','priroda'],['🇧🇦','Bosna i Hercegovina']],
+        'Smajlići': [['😀','nasmijano'],['😃','sretan'],['😄','radost'],['😁','osmijeh'],['😆','smijeh'],['😂','suze radosnice'],['🤣','valjanje od smijeha'],['😊','zadovoljan'],['😇','anđeo'],['🙂','blag osmijeh'],['🙃','naopako'],['😉','namigivanje'],['😍','zaljubljen'],['🥰','nježan'],['😘','poljubac'],['😎','sunčane naočale'],['🤔','razmišljanje'],['😢','tuga'],['😭','plač'],['😡','ljutnja']],
+        'Ljudi i gestovi': [['👋','mahanje'],['🤚','podignuta ruka'],['✋','zaustavi'],['👌','u redu'],['✌️','mir'],['🤞','sretno'],['🤝','rukovanje'],['👏','aplaus'],['🙌','ruke uvis'],['🙏','molba i zahvala'],['💪','snaga'],['🫶','srce rukama'],['👨‍👩‍👧‍👦','porodica'],['🧑‍🤝‍🧑','zajednica']],
+        'Životinje i priroda': [['🐶','pas'],['🐱','mačka'],['🦋','leptir'],['🐦','ptica'],['🕊️','golub mira'],['🐝','pčela'],['🌱','sadnica'],['🌿','list'],['🌳','drvo'],['🌻','suncokret'],['🌍','planeta Zemlja'],['☀️','sunce'],['🌈','duga'],['💧','kap vode']],
+        'Hrana': [['🍎','jabuka'],['🍇','grožđe'],['🍉','lubenica'],['🍓','jagoda'],['🍒','trešnje'],['🥗','salata'],['🍞','hljeb'],['☕','kafa'],['🍵','čaj'],['🎂','torta'],['🍽️','obrok']],
+        'Aktivnosti i sport': [['⚽','fudbal'],['🏀','košarka'],['🏐','odbojka'],['🏆','trofej'],['🥇','zlatna medalja'],['🏅','medalja'],['🏃','trčanje'],['🚴','biciklizam'],['🎯','meta'],['🎉','proslava'],['🎭','umjetnost']],
+        'Putovanja': [['🚗','automobil'],['🚌','autobus'],['🚲','bicikl'],['✈️','avion'],['🚆','voz'],['🗺️','karta'],['🏙️','grad'],['🏞️','park'],['⛰️','planina'],['🏠','kuća'],['📍','lokacija']],
+        'Objekti': [['📷','kamera'],['📱','telefon'],['💻','računar'],['📚','knjige'],['📝','bilješka'],['📢','megafon'],['🎁','poklon'],['🕯️','svijeća'],['💡','ideja'],['🔔','zvono'],['🧹','čišćenje']],
+        'Simboli': [['❤️','crveno srce'],['💚','zeleno srce'],['🤍','bijelo srce'],['⭐','zvijezda'],['✨','sjaj'],['✅','potvrđeno'],['❗','uzvik'],['❓','pitanje'],['♻️','reciklaža'],['⚠️','upozorenje'],['➕','plus']],
+        'Zastave': [['🇧🇦','Bosna i Hercegovina'],['🇭🇷','Hrvatska'],['🇷🇸','Srbija'],['🇲🇪','Crna Gora'],['🇪🇺','Evropska unija'],['🇺🇳','Ujedinjene nacije']]
+      };
+
+      function escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[character]);
+      }
+
+      function safeImageUrl(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        try {
+          const parsed = new URL(raw, location.href);
+          return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+        } catch {
+          return '';
+        }
+      }
+
+      function renderSafeText(value) {
+        let safe = escapeHTML(value || '');
+        safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
+        safe = safe.replace(/^### (.+)$/gm, '<h4>$1</h4>').replace(/^## (.+)$/gm, '<h3>$1</h3>');
+        safe = safe.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+        safe = safe.replace(/^- (.+)$/gm, '<span class="preview-list-item">• $1</span>');
+        return safe.replace(/\n/g, '<br>');
+      }
       function normalizeTags(rawValue) {
         if (Array.isArray(rawValue)) {
           return rawValue
@@ -1072,9 +1509,202 @@
         if (!normalized.length) return '';
         return `
           <div class="tag-badges">
-            ${normalized.map((tag) => `<span class="tag-badge">${tag}</span>`).join('')}
+            ${normalized.map((tag) => `<button type="button" class="tag-badge" data-filter-tag="${escapeHTML(tag)}" aria-label="Filtriraj po oznaci ${escapeHTML(tag)}">${escapeHTML(tag)}</button>`).join('')}
           </div>
         `;
+      }
+
+      function collectFormData() {
+        return {
+          title: document.getElementById('naslov').value,
+          body: document.getElementById('sadrzaj').value,
+          excerpt: document.getElementById('excerpt').value,
+          author: document.getElementById('authorName').value,
+          credit: document.getElementById('photoCredit').value,
+          scheduledAt: document.getElementById('publishAt').value,
+          imageUrl: document.getElementById('slika_url').value,
+          tags: tagoviInput.value,
+          featured: featuredCheckbox.checked,
+          category: selectedCategory,
+          eventDate: document.getElementById('eventDate').value,
+          eventLocation: document.getElementById('eventLocation').value,
+          fundGoal: document.getElementById('fundGoal').value,
+          fundCollected: document.getElementById('fundCollected').value,
+          imageAlt: document.getElementById('imageAlt').value,
+          watermark: document.getElementById('watermarkToggle').checked,
+          relatedNews: [...document.getElementById('relatedNews').selectedOptions].map((option) => option.value),
+          savedAt: new Date().toISOString()
+        };
+      }
+
+      function restoreDraft(draft) {
+        if (!draft || typeof draft !== 'object') return;
+        document.getElementById('naslov').value = draft.title || '';
+        document.getElementById('sadrzaj').value = draft.body || '';
+        document.getElementById('excerpt').value = draft.excerpt || '';
+        document.getElementById('authorName').value = draft.author || '';
+        document.getElementById('photoCredit').value = draft.credit || '';
+        document.getElementById('publishAt').value = draft.scheduledAt || '';
+        document.getElementById('eventDate').value = draft.eventDate || '';
+        document.getElementById('eventLocation').value = draft.eventLocation || '';
+        document.getElementById('fundGoal').value = draft.fundGoal || '';
+        document.getElementById('fundCollected').value = draft.fundCollected || '';
+        document.getElementById('imageAlt').value = draft.imageAlt || '';
+        document.getElementById('watermarkToggle').checked = Boolean(draft.watermark);
+        document.getElementById('slika_url').value = draft.imageUrl || '';
+        tagoviInput.value = draft.tags || '';
+        featuredCheckbox.checked = Boolean(draft.featured);
+        updateCategorySelection(draft.category || 'obavjestenje');
+        updateLivePreview();
+      }
+
+      function updateCounters() {
+        const title = document.getElementById('naslov').value;
+        const body = document.getElementById('sadrzaj').value;
+        const excerpt = document.getElementById('excerpt').value;
+        const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
+        const titleNearLimit = title.length >= 100;
+        const bodyNearLimit = body.length >= 4500;
+        titleCount.textContent = `${title.length} / 120`;
+        titleCount.classList.toggle('near-limit', titleNearLimit && title.length <= 120);
+        titleCount.classList.toggle('over-limit', title.length > 120);
+        bodyCount.textContent = `${body.length} znakova${bodyNearLimit ? ' · približavate se preporučenom limitu' : ''}`;
+        bodyCount.classList.toggle('near-limit', bodyNearLimit);
+        document.getElementById('wordCount').textContent = String(wordCount);
+        document.getElementById('readingTime').textContent = `${Math.max(1, Math.ceil(wordCount / 200))} min`;
+        document.getElementById('excerptCount').textContent = `${excerpt.length} / 240`;
+        document.getElementById('seoHint').textContent = title.length > 60
+          ? `Naslov ima ${title.length} znakova; za pretraživače preporučeno je do 60.`
+          : `Naslov za pretraživače: ${title.length} / 60 znakova.`;
+      }
+
+      function updateStatistics() {
+        document.getElementById('publishedCount').textContent = String(newsData.filter((item) => !isDraft(item) && item.status !== 'scheduled').length);
+        document.getElementById('draftCount').textContent = String(newsData.filter(isDraft).length);
+        document.getElementById('scheduledCount').textContent = String(newsData.filter((item) => item.status === 'scheduled' || item.scheduled_at).length);
+      }
+
+      function getNewsExportRows() {
+        return newsData.map((item) => ({
+          naslov: item.naslov || item.title || '',
+          kategorija: getCategoryLabel(item.kategorija || item.category || ''),
+          status: item.status === 'scheduled' ? 'Zakazano' : isDraft(item) ? 'Nacrt' : 'Objavljeno',
+          datum: item.datum || item.created_at || '',
+          tagovi: normalizeTags(item.tagovi || item.tags).join(' '),
+          tekst: item.sadrzaj || item.body || item.content || ''
+        }));
+      }
+
+      function exportNewsCsv() {
+        const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+        const headers = ['Naslov', 'Kategorija', 'Status', 'Datum', 'Tagovi', 'Tekst'];
+        const csv = [headers, ...getNewsExportRows().map((row) => Object.values(row))]
+          .map((row) => row.map(quote).join(',')).join('\r\n');
+        const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `izvjestaj-vijesti-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('CSV izvještaj je preuzet.');
+      }
+
+      function printNewsReport() {
+        const reportWindow = window.open('', '_blank');
+        if (!reportWindow) {
+          showToast('Preglednik je blokirao izvještaj. Dozvolite iskačuće prozore.');
+          return;
+        }
+        const rows = getNewsExportRows().map((row) => `<tr><td>${escapeHTML(row.naslov)}</td><td>${escapeHTML(row.kategorija)}</td><td>${escapeHTML(row.status)}</td><td>${escapeHTML(row.datum)}</td><td>${escapeHTML(row.tagovi)}</td></tr>`).join('');
+        reportWindow.document.write(`<!doctype html><html lang="bs"><meta charset="utf-8"><title>Izvještaj vijesti</title><style>body{font:14px Arial,sans-serif;color:#1b241d;padding:24px}h1{font-size:22px}p{color:#536057}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border:1px solid #ccd5ce;vertical-align:top}th{background:#edf4ee}@media print{body{padding:0}}</style><h1>Izvještaj vijesti i aktivnosti</h1><p>Savez Mladih – Zelene Beretke · ${new Date().toLocaleDateString('bs-BA')}</p><table><thead><tr><th>Naslov</th><th>Kategorija</th><th>Status</th><th>Datum</th><th>Oznake</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print()<\/script></html>`);
+        reportWindow.document.close();
+      }
+
+      function updateTagSuggestions() {
+        const tags = [...new Set(newsData.flatMap((item) => normalizeTags(item.tagovi || item.tags)))];
+        document.getElementById('tagSuggestions').innerHTML = tags.map((tag) => `<option value="${escapeHTML(tag)}"></option>`).join('');
+      }
+
+      function updateRelatedNewsOptions() {
+        const select = document.getElementById('relatedNews');
+        const selected = new Set([...select.selectedOptions].map((option) => option.value));
+        select.replaceChildren();
+        newsData.filter((item) => !item.localDraft && String(item.id) !== String(editingId)).forEach((item) => {
+          const option = document.createElement('option');
+          option.value = String(item.id);
+          option.textContent = item.naslov || item.title || 'Bez naslova';
+          option.selected = selected.has(option.value);
+          select.appendChild(option);
+        });
+      }
+
+      function saveAdminMetadata(id) {
+        if (!id) return;
+        try {
+          const metadata = JSON.parse(localStorage.getItem('admin_news_metadata_v1') || '{}');
+          metadata[String(id)] = {
+            excerpt: document.getElementById('excerpt').value.trim(),
+            author: document.getElementById('authorName').value.trim(),
+            photo_credit: document.getElementById('photoCredit').value.trim(),
+            scheduled_at: document.getElementById('publishAt').value,
+            event_date: document.getElementById('eventDate').value,
+            event_location: document.getElementById('eventLocation').value.trim(),
+            fund_goal: document.getElementById('fundGoal').value,
+            fund_collected: document.getElementById('fundCollected').value,
+            image_alt: document.getElementById('imageAlt').value.trim(),
+            watermark: document.getElementById('watermarkToggle').checked,
+            related_news: [...document.getElementById('relatedNews').selectedOptions].map((option) => option.value)
+          };
+          localStorage.setItem('admin_news_metadata_v1', JSON.stringify(metadata));
+        } catch (error) {
+          console.error('Lokalni dodatni podaci nisu sačuvani:', error);
+          showToast('Vijest je sačuvana, ali dodatni podaci nisu sačuvani na ovom uređaju.');
+        }
+      }
+
+      async function compressImage(file) {
+        const bitmap = await createImageBitmap(file);
+        const maxDimension = 1800;
+        const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Preglednik ne može obraditi odabranu sliku.');
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+        if (document.getElementById('watermarkToggle').checked) {
+          const logo = new Image();
+          logo.src = 'assets/logo.png';
+          await new Promise((resolve, reject) => {
+            logo.onload = resolve;
+            logo.onerror = () => reject(new Error('Logo Saveza nije moguće učitati za vodeni žig.'));
+          });
+          const logoSize = Math.min(canvas.width * 0.18, 180);
+          context.globalAlpha = 0.8;
+          context.drawImage(logo, canvas.width - logoSize - 24, canvas.height - logoSize - 24, logoSize, logoSize);
+          context.globalAlpha = 1;
+        }
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.84));
+        if (!blob) throw new Error('Kompresija slike nije uspjela.');
+        return new File([blob], `vijest-${Date.now()}.webp`, { type: 'image/webp' });
+      }
+
+      function markFormChanged() {
+        dirtyForm = true;
+        window.clearTimeout(markFormChanged.timer);
+        markFormChanged.timer = window.setTimeout(() => {
+          try {
+            localStorage.setItem('admin_news_autosave_v1', JSON.stringify(collectFormData()));
+            lastSavedAt = Date.now();
+            document.getElementById('savedAgo').textContent = 'Sačuvano upravo sada';
+            document.getElementById('savedAgo').classList.add('saved-pulse');
+            setStatus(newsStatus, 'Nacrt automatski sačuvan na ovom uređaju.', 'success');
+          } catch (error) {
+            console.error('Automatsko čuvanje nacrta nije uspjelo:', error);
+            setStatus(newsStatus, 'Automatsko čuvanje nije uspjelo. Provjerite prostor u pregledniku.', 'error');
+          }
+        }, 10000);
       }
 
       function setStatus(element, message, type) {
@@ -1085,9 +1715,227 @@
 
       function showToast(message = 'Neuspješan unos vijesti.') {
         toast.textContent = message;
+        const state = /neuspje|nije uspjelo|nije moguće|greška|error/i.test(message)
+          ? 'error'
+          : /uspješno|sačuvan|kopiran|dodana|preuzet/i.test(message) ? 'success' : 'warning';
+        toast.dataset.state = state;
         toast.classList.add('show');
         clearTimeout(showToast.timer);
         showToast.timer = setTimeout(() => toast.classList.remove('show'), 3000);
+      }
+
+      function showConfirm(title, message, acceptText = 'Nastavi') {
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmAccept').textContent = acceptText;
+        confirmModal.classList.add('show');
+        confirmModal.setAttribute('aria-hidden', 'false');
+        return new Promise((resolve) => { confirmResolver = resolve; });
+      }
+
+      function finishConfirm(accepted) {
+        confirmModal.classList.remove('show');
+        confirmModal.setAttribute('aria-hidden', 'true');
+        if (confirmResolver) confirmResolver(accepted);
+        confirmResolver = null;
+      }
+
+      function getRecentEmojis() {
+        try {
+          const recent = JSON.parse(localStorage.getItem('admin_recent_emojis_v1') || '[]');
+          return Array.isArray(recent) ? recent : [];
+        } catch (error) {
+          console.error('Nedavno korišteni emojiji nisu dostupni:', error);
+          return [];
+        }
+      }
+
+      function renderEmojiPicker() {
+        const query = emojiSearch.value.trim().toLocaleLowerCase('bs');
+        emojiTabs.replaceChildren();
+        Object.keys(emojiCategories).forEach((category) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = `emoji-tab${category === activeEmojiCategory ? ' active' : ''}`;
+          button.role = 'tab';
+          button.setAttribute('aria-selected', String(category === activeEmojiCategory));
+          button.textContent = category;
+          button.addEventListener('click', () => {
+            activeEmojiCategory = category;
+            renderEmojiPicker();
+          });
+          emojiTabs.appendChild(button);
+        });
+
+        const recent = getRecentEmojis();
+        const recentTitle = document.getElementById('emojiRecentTitle');
+        recentTitle.hidden = Boolean(query) || activeEmojiCategory !== 'Najčešće' || !recent.length;
+        const items = query
+          ? Object.values(emojiCategories).flat().filter(([emoji, name]) => `${emoji} ${name}`.toLocaleLowerCase('bs').includes(query))
+          : activeEmojiCategory === 'Najčešće'
+            ? [...recent, ...emojiCategories[activeEmojiCategory]]
+            : emojiCategories[activeEmojiCategory];
+        emojiGrid.replaceChildren();
+        const uniqueItems = [...new Map(items.map((entry) => [entry[0], entry])).values()];
+        uniqueItems.forEach(([emoji, name]) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'emoji-choice';
+          button.role = 'option';
+          button.textContent = emoji;
+          button.title = name;
+          button.setAttribute('aria-label', name);
+          button.addEventListener('click', () => insertSelectedEmoji(emoji));
+          emojiGrid.appendChild(button);
+        });
+        if (!uniqueItems.length) {
+          const empty = document.createElement('div');
+          empty.className = 'field-hint';
+          empty.textContent = 'Nema rezultata pretrage.';
+          emojiGrid.appendChild(empty);
+        }
+      }
+
+      function openEmojiPicker(button) {
+        emojiTarget = document.getElementById(button.dataset.emojiTarget);
+        if (!emojiTarget) return;
+        const rect = button.getBoundingClientRect();
+        emojiPicker.hidden = false;
+        emojiPicker.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - 410))}px`;
+        emojiPicker.style.top = `${Math.min(rect.bottom + 8, innerHeight - 500)}px`;
+        emojiSearch.value = '';
+        activeEmojiCategory = 'Najčešće';
+        renderEmojiPicker();
+        emojiSearch.focus();
+      }
+
+      function insertSelectedEmoji(baseEmoji) {
+        if (!emojiTarget) return;
+        const skinTone = emojiSkinTone.value;
+        const personEmoji = !baseEmoji.includes('\u200d') && /^(👋|🤚|✋|👌|✌️|🤞|👏|🙌|💪|🫶|👨|👩|🧑|🏃|🚴)/u.test(baseEmoji);
+        const emoji = skinTone && personEmoji ? `${baseEmoji}${skinTone}` : baseEmoji;
+        const start = emojiTarget.selectionStart ?? emojiTarget.value.length;
+        const end = emojiTarget.selectionEnd ?? start;
+        emojiTarget.focus();
+        emojiTarget.setRangeText(emoji, start, end, 'end');
+        emojiTarget.dispatchEvent(new Event('input', { bubbles: true }));
+        const recent = getRecentEmojis().filter(([item]) => item !== emoji);
+        recent.unshift([emoji, emojiCategories ? Object.values(emojiCategories).flat().find(([item]) => item === baseEmoji)?.[1] || 'emoji' : 'emoji']);
+        try { localStorage.setItem('admin_recent_emojis_v1', JSON.stringify(recent.slice(0, 16))); }
+        catch (error) { console.error('Emoji nije dodat u nedavno korištene:', error); }
+        renderEmojiPicker();
+      }
+
+      function updateReadiness() {
+        const checks = [
+          ['Naslov', Boolean(document.getElementById('naslov').value.trim())],
+          ['Tekst', Boolean(document.getElementById('sadrzaj').value.trim())],
+          ['Slika', Boolean(uploadImage || safeImageUrl(document.getElementById('slika_url').value))],
+          ['Kategorija', Boolean(selectedCategory)],
+          ['Opis', Boolean(document.getElementById('excerpt').value.trim())],
+          ['Tagovi', Boolean(normalizeTags(tagoviInput.value).length)]
+        ];
+        const complete = checks.filter(([, done]) => done).length;
+        const percent = Math.round(complete / checks.length * 100);
+        document.getElementById('formReadinessPercent').textContent = `${percent}%`;
+        document.getElementById('readinessPercent').textContent = `${percent}%`;
+        const markup = checks.map(([label, done]) => `<li>${done ? '✓' : '○'} ${escapeHTML(label)}</li>`).join('');
+        document.getElementById('formReadinessList').innerHTML = markup;
+        document.getElementById('readinessList').innerHTML = markup;
+      }
+
+      function renderLocalDrafts() {
+        let drafts = [];
+        try { drafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]'); }
+        catch (error) {
+          console.error('Lokalni nacrti nisu dostupni:', error);
+          setStatus(newsStatus, 'Lokalni nacrti nisu dostupni u pregledniku.', 'error');
+        }
+        if (!Array.isArray(drafts)) drafts = [];
+        document.getElementById('localDraftsCount').textContent = String(drafts.length);
+        const container = document.getElementById('localDraftsList');
+        container.replaceChildren();
+        drafts.forEach((draft) => {
+          const row = document.createElement('div');
+          row.className = 'draft-row';
+          const title = document.createElement('span');
+          title.textContent = draft.naslov || 'Nacrt bez naslova';
+          const resume = document.createElement('button');
+          resume.type = 'button';
+          resume.className = 'secondary-btn';
+          resume.textContent = 'Nastavi';
+          resume.addEventListener('click', () => populateEditForm(draft));
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'danger-btn';
+          remove.textContent = 'Obriši';
+          remove.addEventListener('click', async () => {
+            if (!await showConfirm('Obrisati nacrt?', `Nacrt „${draft.naslov || 'Bez naslova'}“ bit će uklonjen.`, 'Obriši')) return;
+            const rest = drafts.filter((item) => String(item.id) !== String(draft.id));
+            localStorage.setItem('admin_news_drafts_v1', JSON.stringify(rest));
+            newsData = newsData.filter((item) => String(item.id) !== String(draft.id));
+            renderNewsList();
+          });
+          row.append(title, resume, remove);
+          container.appendChild(row);
+        });
+      }
+
+      function renderCalendar() {
+        const container = document.getElementById('calendarPanel');
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const labels = ['Po', 'Ut', 'Sr', 'Če', 'Pe', 'Su', 'Ne'];
+        const offset = (firstDay.getDay() + 6) % 7;
+        const markedDays = new Set(newsData.map((item) => new Date(item.scheduled_at || item.created_at || '').toDateString()).filter((value) => value !== 'Invalid Date'));
+        container.innerHTML = `<strong>${now.toLocaleDateString('bs-BA', { month: 'long', year: 'numeric' })}</strong><div class="calendar-grid">${labels.map((label) => `<span>${label}</span>`).join('')}${Array.from({ length: offset }, () => '<span></span>').join('')}${Array.from({ length: days }, (_, index) => { const date = new Date(now.getFullYear(), now.getMonth(), index + 1); const marked = markedDays.has(date.toDateString()); return `<button type="button" class="calendar-day${marked ? ' has-news' : ''}" title="${marked ? 'Vijest zakazana ili objavljena' : ''}">${index + 1}</button>`; }).join('')}</div>`;
+      }
+
+      function recordEditorHistory() {
+        const content = document.getElementById('sadrzaj').value;
+        if (editorHistory[historyIndex] === content) return;
+        editorHistory = editorHistory.slice(0, historyIndex + 1);
+        editorHistory.push(content);
+        if (editorHistory.length > 50) editorHistory.shift();
+        historyIndex = editorHistory.length - 1;
+      }
+
+      function moveEditorHistory(direction) {
+        const nextIndex = historyIndex + direction;
+        if (nextIndex < 0 || nextIndex >= editorHistory.length) return;
+        historyIndex = nextIndex;
+        const body = document.getElementById('sadrzaj');
+        body.value = editorHistory[historyIndex];
+        body.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      function renderMediaLibrary() {
+        const container = document.getElementById('mediaLibraryPanel');
+        const images = [...new Set(newsData.map((item) => item.slika_url || item.image_url).filter((image) => safeImageUrl(image)))];
+        container.replaceChildren();
+        if (!images.length) {
+          container.textContent = 'Još nema slika. Učitajte sliku u formi; dostupne slike iz vijesti pojavit će se ovdje.';
+          return;
+        }
+        images.forEach((src) => {
+          const row = document.createElement('div');
+          row.className = 'media-row';
+          const image = document.createElement('img');
+          image.src = safeImageUrl(src);
+          image.alt = 'Slika iz biblioteke medija';
+          const use = document.createElement('button');
+          use.type = 'button';
+          use.className = 'secondary-btn';
+          use.textContent = 'Koristi sliku';
+          use.addEventListener('click', () => {
+            document.getElementById('slika_url').value = src;
+            updateLivePreview();
+            markFormChanged();
+          });
+          row.append(image, use);
+          container.appendChild(row);
+        });
       }
 
       function setAdminTab(tabName) {
@@ -1187,7 +2035,7 @@
       }
 
       async function deleteSocialPost(postId) {
-        if (!postId || !window.confirm('Da li sigurno želite izbrisati ovu social media objavu?')) return;
+        if (!postId || !await showConfirm('Obrisati objavu?', 'Ova social media objava bit će uklonjena iz evidencije.', 'Obriši')) return;
         try {
           const { error } = await supabaseClient.from('social_posts').delete().eq('id', postId);
           if (error) throw error;
@@ -1247,10 +2095,10 @@
 
       function getCategoryLabel(category) {
         const labels = {
-          obavjestenje: '📌 Obavještenje',
-          humanitarna: '🤝 Humanitarna akcija',
-          aktivnosti: '⚽ Aktivnosti i Sport',
-          historija: '📜 Historija',
+          obavjestenje: 'Obavještenje',
+          humanitarna: 'Humanitarna akcija',
+          aktivnosti: 'Aktivnosti i sport',
+          historija: 'Historija',
         };
         return labels[category] || category;
       }
@@ -1259,7 +2107,10 @@
         selectedCategory = nextCategory;
         categoryButtons.forEach((button) => {
           button.classList.toggle('active', button.dataset.category === nextCategory);
+          button.setAttribute('aria-pressed', String(button.dataset.category === nextCategory));
         });
+        document.getElementById('activityFields').hidden = nextCategory !== 'aktivnosti';
+        document.getElementById('charityFields').hidden = nextCategory !== 'humanitarna';
       }
 
       function updateFilterSelection(nextFilter) {
@@ -1280,17 +2131,52 @@
         renderNewsList();
       }
 
+      function applyTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+        const light = theme === 'light';
+        themeToggle.textContent = light ? '🌙 Tamna tema' : '☀️ Svijetla tema';
+        themeToggle.setAttribute('aria-label', light ? 'Prebaci na tamnu temu' : 'Prebaci na svijetlu temu');
+      }
+
+      function selectImage(file) {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          setStatus(newsStatus, 'Odaberite datoteku slike.', 'error');
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          setStatus(newsStatus, 'Slika mora biti manja od 10 MB.', 'error');
+          return;
+        }
+        uploadImage = file;
+        slikaFileName.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`;
+        if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
+        imageObjectUrl = URL.createObjectURL(file);
+        imagePreview.src = imageObjectUrl;
+        imagePreviewWrap.classList.add('visible');
+        updateLivePreview();
+        markFormChanged();
+      }
+
       function resetNewsForm() {
         editingId = null;
+        editingLocalDraft = false;
+        dirtyForm = false;
+        window.clearTimeout(markFormChanged.timer);
         submitButton.textContent = 'Objavi vijest';
-        cancelEditButton.style.display = 'none';
+        document.getElementById('editingNotice').hidden = true;
         submitButton.disabled = false;
         newsForm.reset();
         slikaInput.value = '';
+        uploadImage = null;
+        if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
+        imageObjectUrl = '';
         slikaFileName.textContent = 'Nijedna datoteka nije odabrana';
+        imagePreviewWrap.classList.remove('visible');
         tagoviInput.value = '';
         featuredCheckbox.checked = false;
         updateCategorySelection('obavjestenje');
+        localStorage.removeItem('admin_news_autosave_v1');
         updateLivePreview();
       }
 
@@ -1300,51 +2186,84 @@
         const text = document.getElementById('sadrzaj').value.trim();
         const imageUrl = document.getElementById('slika_url').value.trim();
         livePreviewTitle.textContent = title || 'Naslov vijesti';
-        livePreviewText.textContent = text || 'Tekst vijesti će se ažurirati dok kucate.';
+        livePreviewText.innerHTML = text ? renderSafeText(text) : 'Tekst vijesti će se ažurirati dok kucate.';
         livePreviewCategory.textContent = getCategoryLabel(selectedCategory);
-        const file = slikaInput.files[0];
-        const source = file ? URL.createObjectURL(file) : imageUrl;
-        livePreviewImage.innerHTML = source ? `<img src="${source}" alt="Live pregled slike" class="live-preview-image" />` : '';
+        const source = imageObjectUrl || safeImageUrl(imageUrl);
+        livePreviewImage.replaceChildren();
+        if (source) {
+          const image = document.createElement('img');
+          image.src = source;
+          image.alt = document.getElementById('imageAlt').value.trim() || (title ? `Pregled: ${title}` : 'Pregled slike vijesti');
+          image.className = 'live-preview-image';
+          livePreviewImage.appendChild(image);
+        }
         livePreviewImage.style.display = source ? 'block' : 'none';
-        titleCount.textContent = `${document.getElementById('naslov').value.length} / 120`;
-        bodyCount.textContent = `${document.getElementById('sadrzaj').value.length} znakova`;
+        livePreviewTags.innerHTML = renderTagBadges(tagoviInput.value);
+        livePreviewFeatured.hidden = !featuredCheckbox.checked;
+        const meta = document.getElementById('excerpt').value.trim() || text.slice(0, 155);
+        document.getElementById('slugPreview').textContent = title
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+          .replace(/đ/g, 'dj').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || '-';
+        document.getElementById('metaPreview').textContent = meta.slice(0, 155) || '-';
+        updateCounters();
+        updateReadiness();
       }
 
       function populateEditForm(item) {
         editingId = item.id;
-        document.getElementById('naslov').value = item.naslov || '';
-        document.getElementById('sadrzaj').value = item.sadrzaj || '';
-        document.getElementById('slika_url').value = item.slika_url || '';
-        tagoviInput.value = Array.isArray(item.tagovi)
-          ? item.tagovi.join(', ')
-          : (item.tagovi || '');
-        featuredCheckbox.checked = Boolean(item.is_featured);
-        updateCategorySelection(item.kategorija || 'obavjestenje');
-        submitButton.textContent = 'Spremi izmjene';
-        cancelEditButton.style.display = 'inline-block';
+        editingLocalDraft = Boolean(item.localDraft);
+        document.getElementById('naslov').value = item.naslov || item.title || '';
+        document.getElementById('sadrzaj').value = item.sadrzaj || item.body || item.content || '';
+        document.getElementById('slika_url').value = item.slika_url || item.image_url || '';
+        document.getElementById('excerpt').value = item.excerpt || '';
+        document.getElementById('authorName').value = item.author || '';
+        document.getElementById('photoCredit').value = item.photo_credit || '';
+        document.getElementById('publishAt').value = item.scheduled_at || '';
+        document.getElementById('eventDate').value = item.event_date || '';
+        document.getElementById('eventLocation').value = item.event_location || '';
+        document.getElementById('fundGoal').value = item.fund_goal || '';
+        document.getElementById('fundCollected').value = item.fund_collected || '';
+        const tags = item.tagovi || item.tags || '';
+        tagoviInput.value = Array.isArray(tags) ? tags.join(', ') : tags;
+        featuredCheckbox.checked = Boolean(item.is_featured || item.pinned);
+        updateCategorySelection(item.kategorija || item.category || 'obavjestenje');
+        submitButton.textContent = editingLocalDraft ? 'Objavi vijest' : 'Spremi izmjene';
+        document.getElementById('editingNotice').hidden = false;
+        document.getElementById('editingLabel').textContent = `Uređuješ: ${item.naslov || item.title || 'Bez naslova'}`;
+        document.getElementById('imageAlt').value = item.image_alt || '';
+        document.getElementById('watermarkToggle').checked = Boolean(item.watermark);
+        document.getElementById('relatedNews').value = '';
+        [...document.getElementById('relatedNews').options].forEach((option) => {
+          option.selected = (item.related_news || []).includes(option.value);
+        });
         slikaInput.value = '';
+        uploadImage = null;
+        if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
+        imageObjectUrl = '';
+        imagePreviewWrap.classList.remove('visible');
         slikaFileName.textContent = 'Nijedna datoteka nije odabrana';
+        dirtyForm = false;
+        updateLivePreview();
       }
 
       function openPreviewModal() {
         const title = document.getElementById('naslov').value.trim() || 'Naslov vijesti';
         const text = document.getElementById('sadrzaj').value.trim() || 'Ovdje ide sadržaj vijesti.';
-        const imageValue = document.getElementById('slika_url').value.trim();
-        const file = slikaInput.files[0];
-        const imageSrc = file ? URL.createObjectURL(file) : (imageValue || '');
+        const imageValue = safeImageUrl(document.getElementById('slika_url').value.trim());
+        const imageSrc = imageObjectUrl || imageValue;
         const previewDate = new Date().toISOString().slice(0, 10);
         const previewTags = renderTagBadges(tagoviInput.value);
 
         previewCard.innerHTML = `
           <div class="news-item-head">
-            <span class="news-category">${getCategoryLabel(selectedCategory)}</span>
+            <span class="news-category">${escapeHTML(getCategoryLabel(selectedCategory))}</span>
             <span class="news-meta">${previewDate ? new Date(previewDate).toLocaleDateString('bs-BA') : ''}</span>
           </div>
           ${featuredCheckbox.checked ? '<div class="featured-badge">Udarna vijest</div>' : ''}
-          <h4>${title}</h4>
-          <p>${text}</p>
+          <h4>${escapeHTML(title)}</h4>
+          <p>${renderSafeText(text)}</p>
           ${previewTags}
-          ${imageSrc ? `<img src="${imageSrc}" alt="${title}" />` : ''}
+          ${imageSrc ? `<img src="${escapeHTML(imageSrc)}" alt="${escapeHTML(title)}" />` : ''}
         `;
 
         previewModal.classList.add('show');
@@ -1356,55 +2275,376 @@
         previewModal.setAttribute('aria-hidden', 'true');
       }
 
+      async function adminApiRequest(path, options = {}) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        const accessToken = data?.session?.access_token;
+        if (!accessToken) throw new Error('Prijavite se ponovo da biste nastavili.');
+
+        const headers = new Headers(options.headers || {});
+        headers.set('Authorization', `Bearer ${accessToken}`);
+        if (options.body && !headers.has('Content-Type')) {
+          headers.set('Content-Type', 'application/json');
+        }
+        const response = await fetch(path, {
+          ...options,
+          headers,
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error || 'Zahtjev nije uspio.');
+        }
+        return payload;
+      }
+
+      const inboxPanel = document.getElementById('contactInboxPanel');
+      const inboxList = document.getElementById('contactInboxList');
+      const inboxStatus = document.getElementById('contactInboxStatus');
+      const inboxSearch = document.getElementById('contactInboxSearch');
+      const inboxStatusFilter = document.getElementById('contactInboxStatusFilter');
+      const inboxTagFilter = document.getElementById('contactInboxTagFilter');
+      const eventsAdminPanel = document.getElementById('eventsAdminPanel');
+      const adminEventForm = document.getElementById('adminEventForm');
+      const adminEventsList = document.getElementById('adminEventsList');
+      const adminEventStatus = document.getElementById('adminEventStatus');
+      const adminEventSaveButton = document.getElementById('saveAdminEvent');
+      let contactInboxMessages = [];
+      let adminEvents = [];
+
+      function renderContactInbox() {
+        const query = inboxSearch.value.trim().toLocaleLowerCase('bs-BA');
+        const statusFilter = inboxStatusFilter.value;
+        const tagFilter = inboxTagFilter.value;
+        const filtered = contactInboxMessages.filter((message) => {
+          const matchesQuery = !query
+            || `${message.name} ${message.email} ${message.message}`.toLocaleLowerCase('bs-BA').includes(query);
+          return matchesQuery
+            && (statusFilter === 'all' || message.status === statusFilter)
+            && (tagFilter === 'all' || message.tag === tagFilter);
+        });
+
+        inboxList.replaceChildren();
+        if (!filtered.length) {
+          const empty = document.createElement('p');
+          empty.className = 'contact-inbox-empty';
+          empty.textContent = contactInboxMessages.length
+            ? 'Nema poruka koje odgovaraju odabranim filterima.'
+            : 'Inbox je trenutno prazan.';
+          inboxList.appendChild(empty);
+          return;
+        }
+
+        const statuses = [
+          ['new', 'Novo'],
+          ['in_progress', 'U toku'],
+          ['responded', 'Odgovoreno']
+        ];
+        const tags = [
+          ['general', 'Opći upit'],
+          ['collaboration', 'Saradnja'],
+          ['other', 'Ostalo']
+        ];
+        filtered.forEach((message) => {
+          const card = document.createElement('article');
+          card.className = 'contact-inbox-card';
+          const header = document.createElement('div');
+          header.className = 'contact-inbox-card-head';
+          const identity = document.createElement('div');
+          const name = document.createElement('h3');
+          name.textContent = message.name || 'Bez imena';
+          const email = document.createElement('a');
+          email.href = `mailto:${message.email || ''}`;
+          email.textContent = message.email || 'Email nije naveden';
+          identity.append(name, email);
+          const date = document.createElement('time');
+          date.className = 'contact-inbox-date';
+          const parsedDate = new Date(message.created_at);
+          date.textContent = Number.isNaN(parsedDate.getTime())
+            ? message.created_at || ''
+            : parsedDate.toLocaleString('bs-BA', {dateStyle:'medium', timeStyle:'short'});
+          header.append(identity, date);
+          card.appendChild(header);
+
+          const body = document.createElement('p');
+          body.className = 'contact-inbox-message';
+          body.textContent = message.message;
+          card.appendChild(body);
+
+          const fields = document.createElement('div');
+          fields.className = 'inbox-card-fields';
+          const statusField = document.createElement('label');
+          statusField.className = 'inbox-card-field';
+          statusField.textContent = 'Status obrade';
+          const statusSelect = document.createElement('select');
+          statuses.forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            statusSelect.appendChild(option);
+          });
+          statusSelect.value = message.status;
+          statusField.appendChild(statusSelect);
+          const tagField = document.createElement('label');
+          tagField.className = 'inbox-card-field';
+          tagField.textContent = 'Oznaka';
+          const tagSelect = document.createElement('select');
+          tags.forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            tagSelect.appendChild(option);
+          });
+          tagSelect.value = message.tag;
+          tagField.appendChild(tagSelect);
+          fields.append(statusField, tagField);
+          card.appendChild(fields);
+
+          const actions = document.createElement('div');
+          actions.className = 'inbox-card-actions';
+          const reply = document.createElement('a');
+          reply.className = 'secondary-btn';
+          reply.href = `mailto:${message.email || ''}?subject=${encodeURIComponent(`Re: ${message.name || 'Vaš upit'}`)}`;
+          reply.textContent = 'Odgovori emailom';
+          actions.appendChild(reply);
+          card.appendChild(actions);
+
+          async function saveMetadata() {
+            const previousStatus = message.status;
+            const previousTag = message.tag;
+            message.status = statusSelect.value;
+            message.tag = tagSelect.value;
+            statusSelect.disabled = true;
+            tagSelect.disabled = true;
+            try {
+              await adminApiRequest(`/api/admin/messages/${encodeURIComponent(message.id)}`, {
+                method: 'PATCH',
+                body: JSON.stringify({status: message.status, tag: message.tag})
+              });
+              setStatus(inboxStatus, 'Promjena je sačuvana.', 'success');
+              renderContactInbox();
+            } catch (error) {
+              message.status = previousStatus;
+              message.tag = previousTag;
+              statusSelect.value = previousStatus;
+              tagSelect.value = previousTag;
+              setStatus(inboxStatus, error.message, 'error');
+            } finally {
+              statusSelect.disabled = false;
+              tagSelect.disabled = false;
+            }
+          }
+          statusSelect.addEventListener('change', saveMetadata);
+          tagSelect.addEventListener('change', saveMetadata);
+          inboxList.appendChild(card);
+        });
+      }
+
+      async function loadContactInbox() {
+        setStatus(inboxStatus, 'Učitavanje poruka...', '');
+        inboxList.replaceChildren();
+        const loading = document.createElement('p');
+        loading.className = 'contact-inbox-empty';
+        loading.textContent = 'Učitavanje poruka...';
+        inboxList.appendChild(loading);
+        try {
+          const payload = await adminApiRequest('/api/admin/messages');
+          contactInboxMessages = payload.messages;
+          renderContactInbox();
+          setStatus(inboxStatus, `Učitano poruka: ${contactInboxMessages.length}.`, 'success');
+        } catch (error) {
+          contactInboxMessages = [];
+          renderContactInbox();
+          setStatus(inboxStatus, error.message, 'error');
+        }
+      }
+
+      function resetAdminEventForm() {
+        adminEventForm.reset();
+        document.getElementById('managerEventId').value = '';
+        adminEventSaveButton.textContent = 'Sačuvaj aktivnost';
+      }
+
+      function renderAdminEvents() {
+        adminEventsList.replaceChildren();
+        if (!adminEvents.length) {
+          const empty = document.createElement('p');
+          empty.className = 'contact-inbox-empty';
+          empty.textContent = 'Još nema aktivnosti u kalendaru.';
+          adminEventsList.appendChild(empty);
+          return;
+        }
+        adminEvents.forEach((eventItem) => {
+          const card = document.createElement('article');
+          card.className = 'admin-event-card';
+          const main = document.createElement('div');
+          main.className = 'admin-event-card-main';
+          const title = document.createElement('h3');
+          title.textContent = eventItem.title;
+          const meta = document.createElement('p');
+          meta.className = 'admin-event-meta';
+          meta.textContent = `${eventItem.date}${eventItem.time ? ` · ${eventItem.time}` : ''}${eventItem.location ? ` · ${eventItem.location}` : ''}`;
+          const badge = document.createElement('span');
+          badge.className = 'admin-event-badge';
+          badge.textContent = eventItem.status === 'published' ? 'Objavljeno' : 'Nacrt';
+          main.append(title, meta, badge);
+          const actions = document.createElement('div');
+          actions.className = 'admin-event-actions';
+          const edit = document.createElement('button');
+          edit.type = 'button';
+          edit.className = 'secondary-btn';
+          edit.textContent = 'Uredi';
+          edit.addEventListener('click', () => {
+            document.getElementById('managerEventId').value = eventItem.id;
+            document.getElementById('managerEventTitle').value = eventItem.title;
+            document.getElementById('managerEventDate').value = eventItem.date;
+            document.getElementById('managerEventTime').value = eventItem.time || '';
+            document.getElementById('managerEventLocation').value = eventItem.location || '';
+            document.getElementById('managerEventDescription').value = eventItem.description || '';
+            document.getElementById('managerEventStatus').value = eventItem.status;
+            adminEventSaveButton.textContent = 'Sačuvaj izmjene';
+            setStatus(adminEventStatus, 'Uređujete odabranu aktivnost.', '');
+            adminEventForm.scrollIntoView({behavior:'smooth', block:'start'});
+          });
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'secondary-btn';
+          remove.textContent = 'Obriši';
+          remove.addEventListener('click', async () => {
+            if (!window.confirm(`Obrisati aktivnost „${eventItem.title}“?`)) return;
+            try {
+              await adminApiRequest(`/api/admin/events/${encodeURIComponent(eventItem.id)}`, {method:'DELETE'});
+              setStatus(adminEventStatus, 'Aktivnost je obrisana.', 'success');
+              await loadAdminEvents();
+            } catch (error) {
+              setStatus(adminEventStatus, error.message, 'error');
+            }
+          });
+          actions.append(edit, remove);
+          card.append(main, actions);
+          adminEventsList.appendChild(card);
+        });
+      }
+
+      async function loadAdminEvents() {
+        setStatus(adminEventStatus, 'Učitavanje aktivnosti...', '');
+        adminEventsList.replaceChildren();
+        try {
+          const payload = await adminApiRequest('/api/admin/events');
+          adminEvents = payload.events;
+          renderAdminEvents();
+          setStatus(adminEventStatus, `Učitano aktivnosti: ${adminEvents.length}.`, 'success');
+          return true;
+        } catch (error) {
+          adminEvents = [];
+          renderAdminEvents();
+          setStatus(adminEventStatus, error.message, 'error');
+          return false;
+        }
+      }
+
+      async function saveAdminEvent(event) {
+        event.preventDefault();
+        const eventId = document.getElementById('managerEventId').value;
+        const payload = {
+          title: document.getElementById('managerEventTitle').value.trim(),
+          date: document.getElementById('managerEventDate').value,
+          time: document.getElementById('managerEventTime').value,
+          location: document.getElementById('managerEventLocation').value.trim(),
+          description: document.getElementById('managerEventDescription').value.trim(),
+          status: document.getElementById('managerEventStatus').value
+        };
+        adminEventSaveButton.disabled = true;
+        setStatus(adminEventStatus, 'Čuvanje aktivnosti...', '');
+        try {
+          const path = eventId
+            ? `/api/admin/events/${encodeURIComponent(eventId)}`
+            : '/api/admin/events';
+          await adminApiRequest(path, {
+            method: eventId ? 'PATCH' : 'POST',
+            body: JSON.stringify(payload)
+          });
+          resetAdminEventForm();
+          const listLoaded = await loadAdminEvents();
+          setStatus(
+            adminEventStatus,
+            listLoaded
+              ? (eventId ? 'Izmjene su sačuvane.' : 'Aktivnost je dodana.')
+              : 'Aktivnost je sačuvana, ali lista nije mogla biti osvježena.',
+            listLoaded ? 'success' : 'error'
+          );
+        } catch (error) {
+          setStatus(adminEventStatus, error.message, 'error');
+        } finally {
+          adminEventSaveButton.disabled = false;
+        }
+      }
+
       function renderNewsList() {
         const items = newsData.filter((item) => {
           const matchesFilter = selectedFilter === 'sve' || (item.kategorija || item.category || 'obavjestenje') === selectedFilter;
           const matchesStatus = selectedStatusFilter === 'sve'
-            || (selectedStatusFilter === 'draft' && isDraft(item))
-            || (selectedStatusFilter === 'published' && !isDraft(item));
+            || (selectedStatusFilter === 'draft' && (isDraft(item) || item.status === 'scheduled'))
+            || (selectedStatusFilter === 'published' && !isDraft(item) && item.status !== 'scheduled');
           const title = (item.naslov || item.title || '').toLowerCase();
-          const matchesSearch = !searchText || title.includes(searchText.toLowerCase());
+          const body = (item.sadrzaj || item.body || item.content || '').toLowerCase();
+          const tags = normalizeTags(item.tagovi || item.tags).join(' ').toLowerCase();
+          const matchesSearch = !searchText || `${title} ${body} ${tags}`.includes(searchText.toLowerCase());
           return matchesFilter && matchesStatus && matchesSearch;
         });
 
+        const direction = sortNews.value;
+        items.sort((a, b) => {
+          if (direction === 'title') return (a.naslov || a.title || '').localeCompare(b.naslov || b.title || '', 'bs');
+          const aDate = new Date(a.datum || a.created_at || 0).getTime() || 0;
+          const bDate = new Date(b.datum || b.created_at || 0).getTime() || 0;
+          return direction === 'oldest' ? aDate - bDate : bDate - aDate;
+        });
+
+        updateStatistics();
+        updateTagSuggestions();
+        renderLocalDrafts();
+        updateRelatedNewsOptions();
         if (!items.length) {
           newsList.innerHTML = `
             <div class="empty-state">
-              Nema objava još. Prva vijest će se pojaviti ovdje odmah nakon što je objaviš.
+              Nema rezultata za odabrane filtere. <button type="button" class="action-btn" id="startFirstNews">Napiši prvu vijest</button>
             </div>
           `;
+          document.getElementById('startFirstNews').addEventListener('click', () => document.getElementById('naslov').focus());
           return;
         }
 
         newsList.innerHTML = items.map((item) => {
           const category = item.kategorija || item.category || 'obavjestenje';
           const title = item.naslov || item.title || 'Bez naslova';
-          const text = item.sadrzaj || item.content || '';
-          const image = item.slika_url || item.image_url || '';
+          const text = item.sadrzaj || item.body || item.content || '';
+          const image = safeImageUrl(item.slika_url || item.image_url || '');
           const date = item.datum || item.created_at || '';
-          const isFeatured = Boolean(item.is_featured);
-          const tagsMarkup = renderTagBadges(item.tagovi);
+          const isFeatured = Boolean(item.is_featured || item.pinned);
+          const tagsMarkup = renderTagBadges(item.tagovi || item.tags);
 
           return `
             <article class="news-card">
-              <div class="news-thumb">${image ? `<img src="${image}" alt="${title}" />` : '<span class="news-thumb-empty">✦</span>'}</div>
+              <div class="news-thumb">${image ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(title)}" loading="lazy" />` : '<span class="news-thumb-empty">✦</span>'}</div>
               <div class="card-content">
                 <div class="card-header">
-                  <h4>${title}</h4>
+                  <h4>${escapeHTML(title)}</h4>
                   <div class="card-meta">
-                    <span>${date ? new Date(date).toLocaleDateString('bs-BA') : ''}</span>
+                    <span>${date && !Number.isNaN(new Date(date).getTime()) ? new Date(date).toLocaleDateString('bs-BA') : ''}</span>
                     <span class="status-badge ${isDraft(item) ? 'status-draft' : 'status-published'}">${isDraft(item) ? '🟡 Nacrt' : '🟢 Objavljeno'}</span>
-                    ${isFeatured ? '<span class="status-badge status-featured">📌 Udarna</span>' : ''}
+                    ${isFeatured ? '<span class="status-badge status-featured">★ Istaknuta</span>' : ''}
                   </div>
                 </div>
-                <span class="news-category">${getCategoryLabel(category)}</span>
-                <p class="card-description">${text}</p>
+                <span class="news-category">${escapeHTML(getCategoryLabel(category))}</span>
+                <p class="card-description">${escapeHTML(text)}</p>
                 ${tagsMarkup}
                 <div class="card-actions">
-                  <button type="button" class="action-btn edit-btn" data-id="${item.id}">✏️ Uredi</button>
-                  <button type="button" class="action-btn danger-btn delete-btn" data-id="${item.id}">🗑️ Izbriši</button>
-                  <button type="button" class="action-btn copy-link-btn" data-id="${item.id}">🔗 Link</button>
-                  <button type="button" class="action-btn copy-social-btn" data-id="${item.id}">📱 Social</button>
+                  <button type="button" class="action-btn edit-btn" data-id="${escapeHTML(item.id)}" aria-label="Uredi vijest ${escapeHTML(title)}">✏️ Uredi</button>
+                  <button type="button" class="action-btn danger-btn delete-btn" data-id="${escapeHTML(item.id)}" aria-label="Izbriši vijest ${escapeHTML(title)}">🗑️ Izbriši</button>
+                  <button type="button" class="action-btn copy-link-btn" data-id="${escapeHTML(item.id)}" aria-label="Kopiraj link vijesti ${escapeHTML(title)}">🔗 Link</button>
+                  <button type="button" class="action-btn copy-social-btn" data-id="${escapeHTML(item.id)}" aria-label="Kopiraj tekst za društvene mreže">📱 Social</button>
                 </div>
               </div>
             </article>
@@ -1459,6 +2699,7 @@
       }
 
       async function fetchNews() {
+        newsList.innerHTML = '<div class="skeleton" role="status" aria-label="Učitavanje vijesti"></div><div class="skeleton" aria-hidden="true"></div>';
         try {
           const { data, error } = await supabaseClient
             .from('vijesti')
@@ -1468,7 +2709,11 @@
           if (error) throw error;
 
           const localDrafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]');
-          newsData = [...localDrafts, ...(data || [])];
+          const localMetadata = JSON.parse(localStorage.getItem('admin_news_metadata_v1') || '{}');
+          newsData = [...localDrafts, ...(data || []).map((item) => ({
+            ...item,
+            ...(localMetadata[String(item.id)] || {})
+          }))];
           renderNewsList();
         } catch (error) {
           console.error(error);
@@ -1509,21 +2754,51 @@
       }
 
       function saveCurrentDraft() {
+        const formData = collectFormData();
         const draft = {
-          id: `draft-${Date.now()}`,
+          id: editingLocalDraft ? editingId : `draft-${Date.now()}`,
           localDraft: true,
-          naslov: document.getElementById('naslov').value.trim() || 'Nacrt bez naslova',
-          sadrzaj: document.getElementById('sadrzaj').value.trim(),
-          slika_url: document.getElementById('slika_url').value.trim(),
-          kategorija: selectedCategory,
-          tagovi: normalizeTags(tagoviInput.value).join(', '),
-          is_featured: featuredCheckbox.checked,
-          created_at: new Date().toISOString()
+          naslov: formData.title.trim() || 'Nacrt bez naslova',
+          sadrzaj: formData.body.trim(),
+          slika_url: formData.imageUrl.trim(),
+          kategorija: formData.category,
+          tagovi: normalizeTags(formData.tags).join(', '),
+          is_featured: formData.featured,
+          excerpt: formData.excerpt,
+          author: formData.author,
+          photo_credit: formData.credit,
+          scheduled_at: formData.scheduledAt,
+          event_date: formData.eventDate,
+          event_location: formData.eventLocation,
+          fund_goal: formData.fundGoal,
+          fund_collected: formData.fundCollected,
+          status: formData.scheduledAt ? 'scheduled' : 'draft',
+          created_at: formData.savedAt
         };
-        const drafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]');
+        let drafts = [];
+        try {
+          drafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]');
+          if (!Array.isArray(drafts)) drafts = [];
+        } catch (error) {
+          console.error('Čitanje lokalnih nacrta nije uspjelo:', error);
+          setStatus(newsStatus, 'Lokalni nacrti se ne mogu pročitati.', 'error');
+          return;
+        }
+        drafts = drafts.filter((item) => String(item.id) !== String(draft.id));
         drafts.unshift(draft);
-        localStorage.setItem('admin_news_drafts_v1', JSON.stringify(drafts.slice(0, 20)));
-        newsData = [draft, ...newsData];
+        try {
+          localStorage.setItem('admin_news_drafts_v1', JSON.stringify(drafts.slice(0, 20)));
+          localStorage.removeItem('admin_news_autosave_v1');
+        } catch (error) {
+          console.error('Čuvanje lokalnog nacrta nije uspjelo:', error);
+          setStatus(newsStatus, 'Nacrt nije sačuvan. Provjerite prostor u pregledniku.', 'error');
+          return;
+        }
+        newsData = [draft, ...newsData.filter((item) => String(item.id) !== String(draft.id))];
+        dirtyForm = false;
+        lastSavedAt = Date.now();
+        document.getElementById('savedAgo').textContent = 'Sačuvano upravo sada';
+        document.getElementById('savedAgo').classList.add('saved-pulse');
         updateStatusSelection('draft');
         showToast('Nacrt je sačuvan lokalno.');
       }
@@ -1576,15 +2851,31 @@
         const sadrzaj = document.getElementById('sadrzaj').value.trim();
         const slikaUrlText = document.getElementById('slika_url').value.trim();
         const datum = new Date().toISOString().slice(0, 10);
-        const file = slikaInput.files[0];
+        let file = uploadImage || slikaInput.files[0];
         const isFeatured = featuredCheckbox.checked;
         const tagoviValue = normalizeTags(tagoviInput.value).join(', ');
 
-        if (!naslov || !sadrzaj) {
-          setStatus(newsStatus, 'Unesite naslov i tekst vijesti.', 'error');
-          showToast('Unesite naslov i tekst vijesti.');
+        if (!naslov || !sadrzaj || !selectedCategory) {
+          setStatus(newsStatus, 'Naslov, tekst i kategorija su obavezni.', 'error');
+          showToast('Naslov, tekst i kategorija su obavezni.');
           return;
         }
+        if (slikaUrlText && !file && !safeImageUrl(slikaUrlText)) {
+          setStatus(newsStatus, 'Unesite važeći URL slike koji počinje sa http:// ili https://.', 'error');
+          return;
+        }
+        const scheduledAt = document.getElementById('publishAt').value;
+        if (scheduledAt && new Date(scheduledAt).getTime() > Date.now()) {
+          setStatus(newsStatus, 'Zakazano vrijeme je sačuvano samo u lokalnom nacrtu. Za automatsku objavu potrebna je serverska podrška.', 'error');
+          showToast('Sačuvajte zakazanu vijest kao nacrt.');
+          return;
+        }
+        const updatingExisting = Boolean(editingId && !editingLocalDraft);
+        if (!await showConfirm(
+          updatingExisting ? 'Sačuvati izmjene?' : 'Objaviti vijest?',
+          updatingExisting ? 'Želite li sačuvati izmjene ove vijesti?' : 'Vijest će biti objavljena na javnoj stranici. Nastaviti?',
+          updatingExisting ? 'Sačuvaj izmjene' : 'Objavi'
+        )) return;
 
         try {
           submitButton.disabled = true;
@@ -1594,12 +2885,15 @@
           let slikaUrl = slikaUrlText;
 
           if (file) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
+            if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+              throw new Error('Odaberite sliku do 10 MB.');
+            }
+            file = await compressImage(file);
+            const fileName = `${Date.now()}.webp`;
 
             const { error: uploadError } = await supabaseClient.storage
               .from('slike-vijesti')
-              .upload(fileName, file);
+              .upload(fileName, file, { contentType: file.type, upsert: false });
 
             if (uploadError) throw uploadError;
 
@@ -1617,19 +2911,32 @@
             datum,
             kategorija: selectedCategory,
             tagovi: tagoviValue,
-            is_featured: isFeatured,
-            created_at: new Date().toISOString(),
+            is_featured: isFeatured
           };
 
-          if (editingId) {
+          let savedRecordId = updatingExisting ? editingId : null;
+          if (updatingExisting) {
             const { error } = await supabaseClient.from('vijesti').update(payload).eq('id', editingId);
             if (error) throw error;
           } else {
-            const { error } = await supabaseClient.from('vijesti').insert([payload]);
+            payload.created_at = new Date().toISOString();
+            const { data, error } = await supabaseClient.from('vijesti').insert([payload]).select('id').single();
             if (error) throw error;
+            savedRecordId = data?.id;
           }
 
-          const successMessage = editingId ? 'Vijest je uspješno ažurirana.' : 'Vijest je uspješno objavljena.';
+          saveAdminMetadata(savedRecordId);
+          if (editingLocalDraft) {
+            try {
+              const drafts = JSON.parse(localStorage.getItem('admin_news_drafts_v1') || '[]')
+                .filter((item) => String(item.id) !== String(editingId));
+              localStorage.setItem('admin_news_drafts_v1', JSON.stringify(drafts));
+            } catch (error) {
+              console.error('Objavljeni nacrt nije moguće ukloniti iz lokalne pohrane:', error);
+              showToast('Vijest je objavljena, ali lokalni nacrt nije uklonjen.');
+            }
+          }
+          const successMessage = updatingExisting ? 'Vijest je uspješno ažurirana.' : 'Vijest je uspješno objavljena.';
           resetNewsForm();
           setStatus(newsStatus, successMessage, 'success');
           showToast(successMessage);
@@ -1641,7 +2948,7 @@
           showToast(error?.message || 'Neuspješan unos vijesti.');
         } finally {
           submitButton.disabled = false;
-          submitButton.textContent = editingId ? 'Spremi izmjene' : 'Objavi vijest';
+          submitButton.textContent = editingId && !editingLocalDraft ? 'Spremi izmjene' : 'Objavi vijest';
           if (!editingId && cancelEditButton.style.display !== 'none') {
             cancelEditButton.style.display = 'none';
           }
@@ -1654,13 +2961,124 @@
       });
 
       slikaPickButton.addEventListener('click', () => slikaInput.click());
-      slikaInput.addEventListener('change', () => {
-        slikaFileName.textContent = slikaInput.files[0]?.name || 'Nijedna datoteka nije odabrana';
+      slikaInput.addEventListener('change', () => selectImage(slikaInput.files[0]));
+      document.getElementById('removeImageButton').addEventListener('click', () => {
+        slikaInput.value = '';
+        uploadImage = null;
+        if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
+        imageObjectUrl = '';
+        slikaFileName.textContent = 'Nijedna datoteka nije odabrana';
+        imagePreviewWrap.classList.remove('visible');
         updateLivePreview();
+        markFormChanged();
       });
 
 
       draftButton.addEventListener('click', saveCurrentDraft);
+      document.querySelectorAll('[data-emoji-target]').forEach((button) => {
+        button.addEventListener('click', () => openEmojiPicker(button));
+      });
+      emojiSearch.addEventListener('input', renderEmojiPicker);
+      emojiSkinTone.addEventListener('change', renderEmojiPicker);
+      document.addEventListener('pointerdown', (event) => {
+        if (!emojiPicker.hidden && !emojiPicker.contains(event.target) && !event.target.closest('[data-emoji-target]')) {
+          emojiPicker.hidden = true;
+        }
+      });
+      document.getElementById('confirmAccept').addEventListener('click', () => finishConfirm(true));
+      document.getElementById('confirmCancel').addEventListener('click', () => finishConfirm(false));
+      confirmModal.addEventListener('click', (event) => {
+        if (event.target === confirmModal) finishConfirm(false);
+      });
+
+      document.getElementById('generateExcerptButton').addEventListener('click', () => {
+        const content = document.getElementById('sadrzaj').value.replace(/[#>*_\-\[\]()]/g, ' ').replace(/\s+/g, ' ').trim();
+        document.getElementById('excerpt').value = content.slice(0, 230) + (content.length > 230 ? '…' : '');
+        updateLivePreview();
+        markFormChanged();
+      });
+      document.getElementById('templateSelect').addEventListener('change', (event) => {
+        const templates = {
+          results: { category: 'aktivnosti', title: 'Rezultati takmičenja: ', body: 'Naši takmičari ostvarili su zapažene rezultate.\\n\\nČestitamo svim učesnicima na trudu i uspjehu!' },
+          event: { category: 'aktivnosti', title: 'Poziv na događaj: ', body: 'Pozivamo sve članove i prijatelje Saveza da nam se pridruže.\\n\\nDatum i lokacija događaja navedeni su u nastavku.' },
+          charity: { category: 'humanitarna', title: 'Humanitarna akcija: ', body: 'Pokrećemo akciju podrške onima kojima je pomoć najpotrebnija.\\n\\nSvaki doprinos je važan. Hvala na solidarnosti!' }
+        };
+        const template = templates[event.target.value];
+        if (!template) return;
+        updateCategorySelection(template.category);
+        document.getElementById('naslov').value = template.title;
+        document.getElementById('sadrzaj').value = template.body.replace(/\\n/g, '\n');
+        updateLivePreview();
+        markFormChanged();
+      });
+
+      document.getElementById('localDraftsToggle').addEventListener('click', () => {
+        const list = document.getElementById('localDraftsList');
+        list.hidden = !list.hidden;
+        if (!list.hidden) renderLocalDrafts();
+      });
+      document.getElementById('calendarToggle').addEventListener('click', () => {
+        const panel = document.getElementById('calendarPanel');
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden) renderCalendar();
+      });
+      document.getElementById('mediaLibraryToggle').addEventListener('click', () => {
+        const panel = document.getElementById('mediaLibraryPanel');
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden) renderMediaLibrary();
+      });
+      document.getElementById('globalSearchButton').addEventListener('click', () => searchInput.focus());
+      document.getElementById('undoButton').addEventListener('click', () => moveEditorHistory(-1));
+      document.getElementById('redoButton').addEventListener('click', () => moveEditorHistory(1));
+      document.getElementById('focusModeButton').addEventListener('click', (event) => {
+        newsForm.classList.toggle('focus-mode');
+        event.currentTarget.textContent = newsForm.classList.contains('focus-mode') ? 'Zatvori fokus' : '⛶ Fokus';
+        if (newsForm.classList.contains('focus-mode')) document.getElementById('sadrzaj').focus();
+      });
+      document.getElementById('relatedNews').addEventListener('change', (event) => {
+        const select = event.currentTarget;
+        const selected = [...select.selectedOptions];
+        if (selected.length > 3) {
+          selected[selected.length - 1].selected = false;
+          showToast('Možete odabrati najviše tri povezane vijesti.');
+        }
+        markFormChanged();
+      });
+      document.getElementById('copyPlainButton').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(`${document.getElementById('naslov').value}\n\n${document.getElementById('sadrzaj').value}`);
+          showToast('Tekst vijesti je kopiran.');
+        } catch (error) {
+          console.error('Kopiranje teksta nije uspjelo:', error);
+          showToast('Kopiranje teksta nije uspjelo.');
+        }
+      });
+      document.getElementById('copyHtmlButton').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(`<h2>${escapeHTML(document.getElementById('naslov').value)}</h2>${renderSafeText(document.getElementById('sadrzaj').value)}`);
+          showToast('Sigurni HTML je kopiran.');
+        } catch (error) {
+          console.error('Kopiranje HTML-a nije uspjelo:', error);
+          showToast('Kopiranje HTML-a nije uspjelo.');
+        }
+      });
+
+      document.getElementById('sadrzaj').addEventListener('input', recordEditorHistory);
+      document.getElementById('sadrzaj').addEventListener('paste', (event) => {
+        if (!document.getElementById('pastePlainText').checked) return;
+        const plainText = event.clipboardData?.getData('text/plain');
+        if (plainText == null) return;
+        event.preventDefault();
+        const editor = event.currentTarget;
+        editor.setRangeText(plainText, editor.selectionStart, editor.selectionEnd, 'end');
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      recordEditorHistory();
+      window.setInterval(() => {
+        if (!lastSavedAt) return;
+        const seconds = Math.max(0, Math.floor((Date.now() - lastSavedAt) / 1000));
+        document.getElementById('savedAgo').textContent = seconds < 60 ? `Sačuvano prije ${seconds} sek.` : `Sačuvano prije ${Math.floor(seconds / 60)} min`;
+      }, 5000);
 
       document.querySelectorAll('[data-format]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -1669,14 +3087,56 @@
           const end = textarea.selectionEnd;
           const selected = textarea.value.slice(start, end) || 'tekst';
           const format = button.dataset.format;
-          const replacement = format === 'bold' ? `**${selected}**` : format === 'italic' ? `*${selected}*` : `[${selected}](url)`;
+          const formats = {
+            bold: [`**${selected}**`, 2],
+            italic: [`*${selected}*`, 1],
+            link: [`[${selected}](https://)`, 1],
+            heading: [`## ${selected}`, 3],
+            list: [`- ${selected}`, 2],
+            quote: [`> ${selected}`, 2],
+            emoji: [`😊${selected === 'tekst' ? '' : ` ${selected}`}`, 0]
+          };
+          const [replacement, offset] = formats[format] || formats.bold;
           textarea.setRangeText(replacement, start, end, 'select');
+          if (offset) textarea.setSelectionRange(start + offset, start + replacement.length - offset);
           textarea.focus();
           updateLivePreview();
+          markFormChanged();
         });
       });
 
-      ['naslov', 'sadrzaj', 'slika_url'].forEach((id) => document.getElementById(id).addEventListener('input', updateLivePreview));
+      ['naslov', 'sadrzaj', 'slika_url', 'excerpt', 'authorName', 'photoCredit', 'publishAt', 'eventDate', 'eventLocation', 'fundGoal', 'fundCollected', 'tagovi'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', () => {
+          updateLivePreview();
+          markFormChanged();
+        });
+      });
+      featuredCheckbox.addEventListener('change', () => {
+        updateLivePreview();
+        markFormChanged();
+      });
+      sortNews.addEventListener('change', renderNewsList);
+
+      themeToggle.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        applyTheme(nextTheme);
+        localStorage.setItem('admin_news_theme_v1', nextTheme);
+      });
+      applyTheme(localStorage.getItem('admin_news_theme_v1') || 'dark');
+
+      const desktopPreviewButton = document.getElementById('desktopPreviewButton');
+      const mobilePreviewButton = document.getElementById('mobilePreviewButton');
+      desktopPreviewButton.addEventListener('click', () => {
+        document.getElementById('livePreview').classList.remove('mobile-preview');
+        desktopPreviewButton.setAttribute('aria-pressed', 'true');
+        mobilePreviewButton.setAttribute('aria-pressed', 'false');
+      });
+      mobilePreviewButton.addEventListener('click', () => {
+        document.getElementById('livePreview').classList.add('mobile-preview');
+        desktopPreviewButton.setAttribute('aria-pressed', 'false');
+        mobilePreviewButton.setAttribute('aria-pressed', 'true');
+      });
+
       const uploadZone = document.querySelector('.file-upload-wrap');
       ['dragenter', 'dragover'].forEach((eventName) => uploadZone.addEventListener(eventName, (event) => {
         event.preventDefault();
@@ -1687,17 +3147,22 @@
         uploadZone.classList.remove('dragover');
       }));
       uploadZone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        uploadZone.classList.remove('dragover');
         if (event.dataTransfer.files.length) {
-          slikaInput.files = event.dataTransfer.files;
-          slikaFileName.textContent = slikaInput.files[0].name;
-          updateLivePreview();
+          selectImage(event.dataTransfer.files[0]);
         }
+      });
+      document.addEventListener('paste', (event) => {
+        const imageItem = [...(event.clipboardData?.items || [])].find((item) => item.type.startsWith('image/'));
+        if (imageItem) selectImage(imageItem.getAsFile());
       });
 
       categoryButtons.forEach((button) => {
         button.addEventListener('click', () => {
           updateCategorySelection(button.dataset.category);
           updateLivePreview();
+          markFormChanged();
         });
       });
 
@@ -1711,6 +3176,8 @@
       previewButton.addEventListener('click', openPreviewModal);
       newsTabButton.addEventListener('click', () => setAdminTab('news'));
       socialTabButton.addEventListener('click', () => setAdminTab('social'));
+      document.getElementById('exportCsvButton').addEventListener('click', exportNewsCsv);
+      document.getElementById('printReportButton').addEventListener('click', printNewsReport);
       socialPostForm.addEventListener('submit', handleSocialPostSubmit);
       refreshSocialPostsButton.addEventListener('click', fetchSocialPosts);
       closePreviewButton.addEventListener('click', closePreviewModal);
@@ -1728,10 +3195,76 @@
         searchText = event.target.value.trim();
         renderNewsList();
       });
+      newsList.addEventListener('click', (event) => {
+        const tag = event.target.closest('[data-filter-tag]');
+        if (tag) {
+          searchInput.value = tag.dataset.filterTag;
+          searchText = tag.dataset.filterTag;
+          renderNewsList();
+        }
+      });
 
       loginForm.addEventListener('submit', handleLogin);
       logoutButton.addEventListener('click', handleLogout);
       newsForm.addEventListener('submit', handleNewsSubmit);
+      document.getElementById('contactInboxToggle').addEventListener('click', () => {
+        const shouldOpen = inboxPanel.hidden;
+        inboxPanel.hidden = !shouldOpen;
+        eventsAdminPanel.hidden = true;
+        if (shouldOpen) loadContactInbox();
+      });
+      document.getElementById('refreshContactInbox').addEventListener('click', loadContactInbox);
+      inboxSearch.addEventListener('input', renderContactInbox);
+      inboxStatusFilter.addEventListener('change', renderContactInbox);
+      inboxTagFilter.addEventListener('change', renderContactInbox);
+      document.getElementById('eventsAdminToggle').addEventListener('click', () => {
+        const shouldOpen = eventsAdminPanel.hidden;
+        eventsAdminPanel.hidden = !shouldOpen;
+        inboxPanel.hidden = true;
+        if (shouldOpen) loadAdminEvents();
+      });
+      adminEventForm.addEventListener('submit', saveAdminEvent);
+      document.getElementById('resetAdminEvent').addEventListener('click', () => {
+        resetAdminEventForm();
+        setStatus(adminEventStatus, '', '');
+      });
+      updateCategorySelection(selectedCategory);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          emojiPicker.hidden = true;
+          if (confirmModal.classList.contains('show')) finishConfirm(false);
+          if (newsForm.classList.contains('focus-mode')) {
+            newsForm.classList.remove('focus-mode');
+            document.getElementById('focusModeButton').textContent = '⛶ Fokus';
+          }
+        }
+        if (event.ctrlKey && event.key.toLowerCase() === 'k') {
+          event.preventDefault();
+          searchInput.focus();
+        }
+        if (event.ctrlKey && event.key.toLowerCase() === 'z' && event.target.id === 'sadrzaj') {
+          event.preventDefault();
+          moveEditorHistory(-1);
+        }
+        if (event.ctrlKey && event.key.toLowerCase() === 'y' && event.target.id === 'sadrzaj') {
+          event.preventDefault();
+          moveEditorHistory(1);
+        }
+        if (event.ctrlKey && event.key.toLowerCase() === 's') {
+          event.preventDefault();
+          saveCurrentDraft();
+        }
+        if (event.ctrlKey && event.key === 'Enter' && !submitButton.disabled) {
+          event.preventDefault();
+          newsForm.requestSubmit();
+        }
+      });
+      window.addEventListener('beforeunload', (event) => {
+        if (dirtyForm) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
       updateLivePreview();
 
       async function initSession() {
@@ -1742,6 +3275,17 @@
           if (session?.user) {
             await fetchNews();
             await fetchSocialPosts();
+            try {
+              const savedDraft = JSON.parse(localStorage.getItem('admin_news_autosave_v1') || 'null');
+              if (savedDraft?.savedAt && Date.now() - new Date(savedDraft.savedAt).getTime() < 14 * 24 * 60 * 60 * 1000) {
+                restoreDraft(savedDraft);
+                dirtyForm = true;
+                showToast('Nastavljen je automatski sačuvani nacrt.');
+              }
+            } catch (error) {
+              console.error('Automatski nacrt nije moguće vratiti:', error);
+              setStatus(newsStatus, 'Automatski nacrt nije moguće vratiti.', 'error');
+            }
           }
         } catch (error) {
           console.error(error);

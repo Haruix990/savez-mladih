@@ -31,6 +31,7 @@
           <li><a href="#tim">Naš tim</a></li>
           <li><a href="#galerija">Galerija</a></li>
           <li><a href="#vijesti">Vijesti</a></li>
+          <li><a href="#partnerstvo">Partnerstvo</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
         </ul>
         <div class="nav-social" aria-label="Društvene mreže">
@@ -69,8 +70,7 @@
           <div class="news-drawer-meta">
             <span id="news-modal-category" class="news-drawer-tag">Vijest</span>
             <span id="news-modal-date" class="news-drawer-date">Datum</span>
-            <span class="news-drawer-readtime">⏱ 4 min</span>
-            <span class="news-drawer-views">👁️ 142</span>
+            <span id="news-modal-readtime" class="news-drawer-readtime">⏱ 1 min čitanja</span>
           </div>
 
           <div class="news-drawer-head">
@@ -82,12 +82,6 @@
           </div>
 
           <div id="news-modal-body" class="news-drawer-copy"></div>
-
-          <div class="news-drawer-reactions" aria-label="Reakcije">
-            <button type="button" class="reaction-btn" data-reaction="like" data-count="142"><span>👍</span><strong class="count">142</strong></button>
-            <button type="button" class="reaction-btn" data-reaction="love" data-count="96"><span>❤️</span><strong class="count">96</strong></button>
-            <button type="button" class="reaction-btn" data-reaction="fire" data-count="58"><span>🔥</span><strong class="count">58</strong></button>
-          </div>
 
           <div class="news-drawer-share" aria-label="Dijeljenje">
             <button type="button" class="share-btn" data-share="facebook">Facebook</button>
@@ -193,75 +187,129 @@
         </div>
         <div class="gallery-grid" id="gallery-grid">
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-11-09_13-25-11-090.jpg" alt="Članovi saveza na terenskoj obuci" fetchpriority="high">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-11-09_13-25-11-090-480.webp 480w, assets/galerija/optimized/viber_slika_2026-11-09_13-25-11-090-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-11-09_13-25-11-090.jpg" alt="Članovi saveza na terenskoj obuci" loading="lazy" decoding="async" width="1600" height="1068">
+            </picture>
             <figcaption><strong>Terenska obuka</strong><span>Praktične aktivnosti na terenu</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-09-20_17-34-55-410.jpg" alt="Torta sa obilježjima Saveza mladih Zelene beretke" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-09-20_17-34-55-410-480.webp 480w, assets/galerija/optimized/viber_slika_2026-09-20_17-34-55-410-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-09-20_17-34-55-410.jpg" alt="Torta sa obilježjima Saveza mladih Zelene beretke" loading="lazy" decoding="async" width="1200" height="1600">
+            </picture>
             <figcaption><strong>Torta saveza</strong><span>Zajednički trenuci i obilježavanje</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-09-20_17-34-56-335.jpg" alt="Radni sastanak članova saveza" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-09-20_17-34-56-335-480.webp 480w, assets/galerija/optimized/viber_slika_2026-09-20_17-34-56-335-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-09-20_17-34-56-335.jpg" alt="Radni sastanak članova saveza" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Radni sastanak</strong><span>Razgovor i planiranje aktivnosti</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-189.jpg" alt="Članovi na zajedničkom sastanku" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-09-20_17-34-57-189-480.webp 480w, assets/galerija/optimized/viber_slika_2026-09-20_17-34-57-189-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-189.jpg" alt="Članovi na zajedničkom sastanku" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Radni sastanak</strong><span>Zajedničko planiranje i druženje</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-230.jpg" alt="Članovi saveza tokom sastanka" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-09-20_17-34-57-230-480.webp 480w, assets/galerija/optimized/viber_slika_2026-09-20_17-34-57-230-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-230.jpg" alt="Članovi saveza tokom sastanka" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Razgovor članova</strong><span>Razmjena ideja i iskustava</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-261.jpg" alt="Članovi saveza na zajedničkom druženju" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-09-20_17-34-57-261-480.webp 480w, assets/galerija/optimized/viber_slika_2026-09-20_17-34-57-261-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-09-20_17-34-57-261.jpg" alt="Članovi saveza na zajedničkom druženju" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Druženje članova</strong><span>Susret članova u prijateljskoj atmosferi</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-18_12-57-18-919.jpg" alt="Članovi tokom terenske aktivnosti" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-18_12-57-18-919-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-18_12-57-18-919-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-18_12-57-18-919.jpg" alt="Članovi tokom terenske aktivnosti" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Aktivnosti na terenu</strong><span>Obuka i zajedničko djelovanje</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-18_12-57-19-017.jpg" alt="Posjeta muzejskoj postavci" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-18_12-57-19-017-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-18_12-57-19-017-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-18_12-57-19-017.jpg" alt="Posjeta muzejskoj postavci" loading="lazy" decoding="async" width="1200" height="1600">
+            </picture>
             <figcaption><strong>Posjeta muzeju</strong><span>Upoznavanje s historijskim naslijeđem</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-435.jpg" alt="Članovi u muzejskoj postavci" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-22_15-29-22-435-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-22_15-29-22-435-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-435.jpg" alt="Članovi u muzejskoj postavci" loading="lazy" decoding="async" width="1080" height="810">
+            </picture>
             <figcaption><strong>Posjeta muzeju</strong><span>Učenje kroz historijske postavke</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-493.jpg" alt="Zajednička posjeta muzeju" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-22_15-29-22-493-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-22_15-29-22-493-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-493.jpg" alt="Zajednička posjeta muzeju" loading="lazy" decoding="async" width="1080" height="810">
+            </picture>
             <figcaption><strong>Muzejska postavka</strong><span>Čuvanje sjećanja i naslijeđa</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-820.jpg" alt="Članovi razgledaju muzejsku izložbu" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-22_15-29-22-820-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-22_15-29-22-820-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-22_15-29-22-820.jpg" alt="Članovi razgledaju muzejsku izložbu" loading="lazy" decoding="async" width="2000" height="1126">
+            </picture>
             <figcaption><strong>Historijska izložba</strong><span>Edukativna posjeta muzeju</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-22_15-29-23-270.jpg" alt="Historijski grb u muzejskoj postavci" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-22_15-29-23-270-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-22_15-29-23-270-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-22_15-29-23-270.jpg" alt="Historijski grb u muzejskoj postavci" loading="lazy" decoding="async" width="2000" height="1126">
+            </picture>
             <figcaption><strong>Muzejsko naslijeđe</strong><span>Detalj iz historijske postavke</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-22_15-29-28-570.jpg" alt="Obilježavanje sjećanja na mezarju" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-22_15-29-28-570-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-22_15-29-28-570-900.webp 900w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-22_15-29-28-570.jpg" alt="Obilježavanje sjećanja na mezarju" loading="lazy" decoding="async" width="900" height="1600">
+            </picture>
             <figcaption><strong>Odavanje počasti</strong><span>Sjećanje i poštovanje</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-26_10-55-19-071.jpg" alt="Članovi saveza na zajedničkoj aktivnosti" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-26_10-55-19-071-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-26_10-55-19-071-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-26_10-55-19-071.jpg" alt="Članovi saveza na zajedničkoj aktivnosti" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Zajednička aktivnost</strong><span>Angažman članova na terenu</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-10-26_10-55-19-580.jpg" alt="Članovi predstavljaju obilježje saveza" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-10-26_10-55-19-580-480.webp 480w, assets/galerija/optimized/viber_slika_2026-10-26_10-55-19-580-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-10-26_10-55-19-580.jpg" alt="Članovi predstavljaju obilježje saveza" loading="lazy" decoding="async" width="1600" height="1200">
+            </picture>
             <figcaption><strong>Obilježja saveza</strong><span>Ponos i zajedništvo</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-11-08_12-42-51-891.jpg" alt="Večernje druženje članova uz vatru" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-11-08_12-42-51-891-480.webp 480w, assets/galerija/optimized/viber_slika_2026-11-08_12-42-51-891-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-11-08_12-42-51-891.jpg" alt="Večernje druženje članova uz vatru" loading="lazy" decoding="async" width="1200" height="1600">
+            </picture>
             <figcaption><strong>Druženje na terenu</strong><span>Večernji predah nakon aktivnosti</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-11-09_13-25-10-406.jpg" alt="Ekipa tokom praktične obuke" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-11-09_13-25-10-406-480.webp 480w, assets/galerija/optimized/viber_slika_2026-11-09_13-25-10-406-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-11-09_13-25-10-406.jpg" alt="Ekipa tokom praktične obuke" loading="lazy" decoding="async" width="1600" height="1068">
+            </picture>
             <figcaption><strong>Praktična obuka</strong><span>Vježba i timska saradnja</span></figcaption>
           </figure>
           <figure class="gallery-item">
-            <img src="assets/galerija/viber_slika_2026-11-09_13-25-10-689.jpg" alt="Članovi saveza nakon terenske obuke" loading="lazy">
+            <picture>
+              <source type="image/webp" srcset="assets/galerija/optimized/viber_slika_2026-11-09_13-25-10-689-480.webp 480w, assets/galerija/optimized/viber_slika_2026-11-09_13-25-10-689-960.webp 960w" sizes="(max-width: 600px) 90vw, (max-width: 1000px) 33vw, 25vw">
+              <img src="assets/galerija/viber_slika_2026-11-09_13-25-10-689.jpg" alt="Članovi saveza nakon terenske obuke" loading="lazy" decoding="async" width="1600" height="1068">
+            </picture>
             <figcaption><strong>Timski rad</strong><span>Zajedništvo i podrška</span></figcaption>
           </figure>
         </div>
@@ -320,29 +368,144 @@
 
         <div class="contact-form-wrapper">
           <div class="contact-form-info">
-            <h3>Direktna poruka</h3>
-            <p>Brzo odgovaramo na upite vezane za naše aktivnosti i program. U poruci napiši i kada ti najviše odgovara da te kontaktiramo.</p>
+            <p class="section-kicker">Kontaktiraj nas</p>
+            <h3>Poruka ili prijedlog saradnje</h3>
+            <p>Pošalji nam pitanje, ideju za zajednički projekat ili prijedlog aktivnosti. Odgovorit ćemo na email koji ostaviš.</p>
           </div>
 
-<form id="contact-form" class="contact-form" action="/send-message" method="post" aria-label="Kontakt forma">
+          <form id="contact-form" class="contact-form" action="/send-message" method="post" aria-label="Kontakt forma" autocomplete="on">
             <div class="form-row">
-              <label for="name">Ime</label>
-              <input id="name" name="name" type="text" placeholder="Tvoje ime" required>
+              <label for="contact-topic">O čemu nam pišeš?</label>
+              <select id="contact-topic" name="topic" required>
+                <option value="general">Opći upit</option>
+                <option value="collaboration">Saradnja i partnerstvo</option>
+              </select>
             </div>
-            <div class="form-row">
-              <label for="email">Email</label>
-              <input id="email" name="email" type="email" placeholder="tvoj@email.com" required>
+
+            <div id="collaboration-fields" class="contact-collaboration-panel" hidden>
+              <div class="contact-collaboration-heading">
+                <span class="contact-collaboration-icon" aria-hidden="true">✦</span>
+                <div>
+                  <h4>Hajde da sarađujemo</h4>
+                  <p>Podijeli osnovne informacije o ideji, a mi ćemo ti se javiti.</p>
+                </div>
+              </div>
+              <div class="contact-field-grid">
+                <div class="form-row">
+                  <label for="organization">Organizacija ili ustanova <span>(opciono)</span></label>
+                  <input id="organization" name="organization" type="text" maxlength="160" placeholder="Naziv organizacije" disabled>
+                </div>
+                <div class="form-row">
+                  <label for="collaboration-kind">Oblast saradnje</label>
+                  <select id="collaboration-kind" name="collaboration_kind" required disabled>
+                    <option value="">Odaberi oblast</option>
+                    <option value="education">Edukacija i radionice</option>
+                    <option value="community_event">Događaj i aktivnosti</option>
+                    <option value="humanitarian">Humanitarna akcija</option>
+                    <option value="sports">Sport i rekreacija</option>
+                    <option value="other">Drugo</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="activity-date">Predloženi datum <span>(opciono)</span></label>
+                  <input id="activity-date" name="activity_date" type="date" disabled>
+                </div>
+              </div>
             </div>
+
+            <div class="contact-field-grid">
+              <div class="form-row">
+                <label for="name">Ime i prezime</label>
+                <input id="name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="Kako da te oslovimo?" required>
+              </div>
+              <div class="form-row">
+                <label for="email">Email adresa</label>
+                <input id="email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="ime@primjer.ba" required>
+              </div>
+              <div class="form-row">
+                <label for="phone">Telefon <span>(opciono)</span></label>
+                <input id="phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+387 ...">
+              </div>
+            </div>
+
             <div class="form-row">
               <label for="message">Poruka</label>
-              <textarea id="message" name="message" rows="6" placeholder="Napiši poruku..." required></textarea>
+              <textarea id="message" name="message" rows="6" maxlength="3000" placeholder="Napiši nam nekoliko detalja o svom upitu ili ideji..." required></textarea>
+              <div class="contact-message-meta">
+                <span>Do 3.000 znakova</span>
+                <span id="contact-message-count" aria-live="polite">0 / 3000</span>
+              </div>
             </div>
+
+            <div class="contact-consent">
+              <input id="contact-consent" name="consent" type="checkbox" value="true" required>
+              <label for="contact-consent">Saglasan/saglasna sam da se moji podaci koriste samo radi odgovora na ovaj upit.</label>
+            </div>
+            <p class="contact-privacy-link"><a href="#privatnost">Pročitaj kako obrađujemo podatke</a></p>
+
+            <div class="contact-honeypot" aria-hidden="true">
+              <label for="website">Ostavite ovo polje prazno</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="form-row form-actions">
-              <button type="submit" class="btn btn-primary">Pošalji</button>
-              <button type="button" id="save-local" class="btn btn-outline">Sačuvaj lokalno</button>
+              <button type="submit" class="btn btn-primary">Pošalji poruku</button>
+              <span class="contact-response-note">Odgovaramo čim budemo u mogućnosti.</span>
             </div>
-            <div id="contact-form-message" class="contact-form-message" aria-live="polite"></div>
+            <div id="contact-form-message" class="contact-form-message" role="status" aria-live="polite" aria-atomic="true"></div>
           </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="partnerstvo" class="section partnership-section">
+      <div class="container">
+        <div class="partnership-intro">
+          <div>
+            <p class="section-kicker">Partnerstvo i podrška</p>
+            <h2>Gradimo bolju zajednicu zajedno</h2>
+            <p class="lead">Otvoreni smo za saradnju s organizacijama, ustanovama i ljudima koji žele podržati mlade i korisne aktivnosti u Starom Gradu.</p>
+          </div>
+          <aside class="partnership-note">
+            <span class="partnership-note-mark" aria-hidden="true">✦</span>
+            <div>
+              <strong>Svaka dobra ideja počinje razgovorom.</strong>
+              <p>Predstavi nam svoju ideju — zajedno ćemo vidjeti šta je moguće.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="partnership-grid">
+          <article class="partnership-card">
+            <span class="partnership-number" aria-hidden="true">01</span>
+            <h3>Zajednički projekti</h3>
+            <p>Pokrenimo aktivnosti koje mladima donose priliku za učenje, povezivanje i doprinos lokalnoj zajednici.</p>
+            <span class="partnership-tag">Ideje pretvaramo u akciju</span>
+          </article>
+          <article class="partnership-card">
+            <span class="partnership-number" aria-hidden="true">02</span>
+            <h3>Resursi i logistika</h3>
+            <p>Podrška može biti oprema, prostor, materijal ili drugi resursi — uvijek uz prethodni dogovor o potrebama.</p>
+            <span class="partnership-tag">Podrška prema stvarnoj potrebi</span>
+          </article>
+          <article class="partnership-card">
+            <span class="partnership-number" aria-hidden="true">03</span>
+            <h3>Znanje i volontiranje</h3>
+            <p>Podijeli iskustvo, održi radionicu ili se uključi svojim vremenom i vještinama.</p>
+            <span class="partnership-tag">Svako može doprinijeti</span>
+          </article>
+        </div>
+
+        <div class="partnership-cta">
+          <div>
+            <p class="section-kicker">Imaš prijedlog?</p>
+            <h3>Hajde da razgovaramo o saradnji.</h3>
+            <p>Pošalji nam osnovne informacije, a mi ćemo ti se javiti.</p>
+          </div>
+          <a class="btn btn-primary partnership-button" href="#kontakt" data-contact-topic="collaboration">
+            <i class="fa-solid fa-handshake" aria-hidden="true"></i>
+            Predloži saradnju
+          </a>
         </div>
       </div>
     </section>
@@ -355,21 +518,34 @@
             <p class="section-kicker">Događaji</p>
             <h2>Događaji i aktivnosti</h2>
           </div>
-          <p class="lead">Pregled događaja i akcija u narednim mjesecima.</p>
+          <p class="lead">Pogledaj planirane aktivnosti i odaberi datum za detalje.</p>
         </div>
-        <div class="events-list">
-          <article class="event">
-            <div class="event-date">
-              <span class="event-day">11</span>
-              <span class="event-month">JUL</span>
+        <div id="public-event-calendar" class="public-calendar">
+          <div class="public-calendar-shell">
+            <div class="event-calendar-panel">
+              <div class="event-calendar-toolbar">
+                <button id="event-month-prev" class="calendar-nav-button" type="button" aria-label="Prethodni mjesec">‹</button>
+                <h3 id="event-month-label" aria-live="polite">Učitavanje...</h3>
+                <button id="event-month-next" class="calendar-nav-button" type="button" aria-label="Sljedeći mjesec">›</button>
+              </div>
+              <div class="event-calendar-weekdays" aria-hidden="true">
+                <span>Pon</span><span>Uto</span><span>Sri</span><span>Čet</span><span>Pet</span><span>Sub</span><span>Ned</span>
+              </div>
+              <div id="event-calendar-grid" class="event-calendar-grid" role="group" aria-label="Dani u mjesecu"></div>
+              <div class="calendar-legend"><span aria-hidden="true"></span> Dan s planiranom aktivnošću</div>
             </div>
-            <div class="event-body">
-              <div class="event-meta">Obilježavanje • Memorijal</div>
-              <h3>Obilježavanje godišnjice genocida u Srebrenici</h3>
-              <p>Učešće članova Sekcije u komemoraciji i odavanju počasti žrtvama genocida u Srebrenici (11. juli).</p>
-            </div>
-          </article>
+            <section class="event-agenda" aria-labelledby="event-agenda-title">
+              <div class="event-agenda-heading">
+                <p class="section-kicker">Plan aktivnosti</p>
+                <h3 id="event-agenda-title">Odaberi datum</h3>
+              </div>
+              <div id="event-agenda-list" class="event-agenda-list" aria-live="polite">
+                <p class="event-calendar-loading">Učitavaju se aktivnosti...</p>
+              </div>
+            </section>
+          </div>
         </div>
+        <p id="event-calendar-status" class="event-calendar-status" role="status" aria-live="polite"></p>
       </div>
     </section>
 
@@ -456,12 +632,96 @@
 
     <section id="faq" class="section faq">
       <div class="container">
-        <h2>Često postavljana pitanja</h2>
-        <p class="lead">Ako imaš dodatnih pitanja, pošalji nam poruku preko forme.</p>
-        <div class="faq-list">
-          <details class="faq-item"><summary>Da li su aktivnosti besplatne?</summary><div class="faq-body"><p>Većina naših aktivnosti je besplatna za učesnike. Neke specijalizirane radionice mogu imati simboličnu kotizaciju.</p></div></details>
-          <details class="faq-item"><summary>Kako mogu donirati opremu?</summary><div class="faq-body"><p>Kontaktiraj nas putem forme ili direktno na email naveden u kontakt sekciji.</p></div></details>
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Brzi odgovori</p>
+            <h2>Često postavljana pitanja</h2>
+          </div>
+          <p class="lead">Pronađi odgovor ili nam pošalji pitanje ako ti treba dodatno pojašnjenje.</p>
         </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Ko može predložiti saradnju?</summary>
+            <div class="faq-body"><p>Organizacije, ustanove, neformalne grupe i pojedinci mogu predložiti ideju. U kontakt formi odaberi „Saradnja i partnerstvo“ i ukratko opiši prijedlog.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Kako mogu podržati aktivnosti?</summary>
+            <div class="faq-body"><p>Možeš ponuditi znanje, volontiranje, prostor, opremu ili drugi resurs. Za finansijsku podršku prvo nam se javi da dogovorimo provjerene detalje — na stranici ne objavljujemo neprovjerene podatke za uplatu.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Da li su aktivnosti besplatne?</summary>
+            <div class="faq-body"><p>Većina naših aktivnosti je besplatna za učesnike. Ako pojedina aktivnost ima posebne uslove ili troškove, informacije će biti objavljene uz njenu najavu.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Kako mogu donirati opremu ili materijal?</summary>
+            <div class="faq-body"><p>Pošalji nam poruku s kratkim opisom ponuđene opreme ili materijala. Javit ćemo ti se da provjerimo potrebe i dogovorimo preuzimanje.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Kako se uključiti kao volonter/ka?</summary>
+            <div class="faq-body"><p>Javi nam svoje interese i vještine preko kontakt forme. Kada pripremamo aktivnost za koju je potrebna pomoć, možemo ti se javiti s detaljima.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Kada ću dobiti odgovor na poruku?</summary>
+            <div class="faq-body"><p>Odgovaramo čim budemo u mogućnosti na email koji ostaviš u formi. Trenutno ne garantujemo fiksni rok odgovora.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Kako tražiti uvid ili brisanje kontaktne poruke?</summary>
+            <div class="faq-body"><p>Pošalji zahtjev na naš kontaktni email i navedi dovoljno informacija da možemo pronaći poruku. Više detalja je u <a href="#privatnost">informacijama o privatnosti</a>.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>Kako mogu saznati više o događaju?</summary>
+            <div class="faq-body"><p>Prati naše objave i društvene mreže. Za pitanje o konkretnoj aktivnosti pošalji nam poruku s njenim nazivom.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="privatnost" class="section privacy-section">
+      <div class="container">
+        <div class="section-heading privacy-heading">
+          <div>
+            <p class="section-kicker">Jasno i transparentno</p>
+            <h2>Kako postupamo s tvojim podacima</h2>
+          </div>
+          <p class="lead">Ove informacije opisuju kako se trenutno obrađuju podaci poslani putem kontakt forme i newsletter prijave.</p>
+        </div>
+
+        <div class="privacy-grid">
+          <article class="privacy-card">
+            <span class="privacy-card-icon" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></span>
+            <h3>Šta prikupljamo?</h3>
+            <p>Za kontakt: ime, email i tekst poruke, te opcionalno telefon, organizaciju i prijedlog datuma. Za newsletter: email i, ako ga uneseš, ime.</p>
+          </article>
+          <article class="privacy-card">
+            <span class="privacy-card-icon" aria-hidden="true"><i class="fa-solid fa-bullseye"></i></span>
+            <h3>Zašto ih koristimo?</h3>
+            <p>Kontakt podatke koristimo da odgovorimo na tvoj upit i dogovorimo predloženu aktivnost. Newsletter email koristimo za slanje obavijesti nakon prijave.</p>
+          </article>
+          <article class="privacy-card">
+            <span class="privacy-card-icon" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></span>
+            <h3>Ko može pristupiti?</h3>
+            <p>Pristup imaju osobe zadužene za obradu upita. Kontaktna poruka se čuva u Supabase bazi, a email obavijest se šalje na adresu podešenu za organizaciju. Newsletter prijave se čuvaju u aplikacijskom registru.</p>
+          </article>
+          <article class="privacy-card privacy-retention-card">
+            <span class="privacy-card-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>
+            <h3>Koliko dugo se čuvaju?</h3>
+            <p>Kontaktne poruke se trenutno ne brišu automatski i ostaju sačuvane dok ih ovlaštena osoba ručno ne ukloni. Newsletter prijavu možeš ukloniti odjavom putem linka u poruci.</p>
+            <span class="privacy-status"><span aria-hidden="true"></span> Nema automatskog roka za brisanje kontaktnih poruka</span>
+          </article>
+        </div>
+
+        <div class="privacy-request">
+          <div>
+            <p class="section-kicker">Tvoja prava</p>
+            <h3>Želiš uvid, ispravku ili brisanje?</h3>
+            <p>Pošalji nam zahtjev emailom. Napiši koju poruku ili podatke želiš da pronađemo.</p>
+          </div>
+          <a class="btn btn-outline privacy-email-link" href="mailto:zeleneberetke.savezmladihsg@gmail.com?subject=Zahtjev%20za%20privatnost">
+            <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+            Pošalji zahtjev
+          </a>
+        </div>
+        <p class="privacy-footnote">Ne šalji osjetljive podatke koji nisu potrebni za tvoj upit. Ako se način obrade promijeni, ažurirat ćemo ove informacije.</p>
       </div>
     </section>
 
@@ -490,7 +750,7 @@
               <label class="nl-consent"><input id="nl-consent" name="consent" type="checkbox" required /> Slažem se primati obavijesti i prihvatam politiku privatnosti</label>
               <button class="btn btn-primary" type="submit">Prijavi se</button>
             </form>
-            <p class="newsletter-footnote">Možeš se odjaviti u bilo kojem trenutku — u svakoj poruci nalazi se link za odjavu.</p>
+            <p class="newsletter-footnote">Možeš se odjaviti u bilo kojem trenutku — u svakoj poruci nalazi se link za odjavu. <a href="#privatnost">Pročitaj informacije o privatnosti.</a></p>
           </div>
         </div>
       </div>
@@ -534,8 +794,9 @@
       <div class="footer-inner">
       <div>© <span id="year"></span> Savez Mladih — Zelene Beretke. Sva prava zadržana.</div>
       <div class="footer-links">
-        <a href="#">Privatnost</a>
-        <a href="#">Uslovi</a>
+        <a href="#partnerstvo">Partnerstvo</a>
+        <a href="#faq">Česta pitanja</a>
+        <a href="#privatnost">Privatnost</a>
         <a href="#" class="admin-secret-link" role="button">Admin</a>
       </div>
       </div>

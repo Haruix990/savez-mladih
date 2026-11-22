@@ -3,9 +3,18 @@ import os
 import json
 import uuid
 import datetime
+import html
+import hashlib
+import hmac
+import re
+import secrets
+import sqlite3
+import time
+from contextlib import closing
 from flask import Flask, request, jsonify, redirect, send_from_directory, url_for, session
 from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 import resend
 
@@ -15,10 +24,15 @@ SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
 SUPABASE_CLIENT_KEY = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY
+SUPABASE_ADMIN_EMAIL = os.environ.get(
+    'SUPABASE_ADMIN_EMAIL',
+    'zeleneberetke.savezmladihsg@gmail.com'
+).strip().lower()
 SUPABASE_TABLE = os.environ.get('SUPABASE_TABLE', 'messages').strip()
 NEWS_TABLE = os.environ.get('NEWS_TABLE', 'news').strip()
 MEMBERS_TABLE = os.environ.get('MEMBERS_TABLE', 'members').strip()
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'zeleneberetke2026').strip()
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '').strip()
+ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', '').strip()
 NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', 'harunkapo@gmail.com').strip()
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '').strip()
 MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '').strip()
@@ -35,8 +49,24 @@ MY_EMAIL = os.environ.get('MY_EMAIL', 'harunkapo@gmail.com').strip()
 if RESEND_API_KEY:
     resend.api_key = RESEND_API_KEY
 
+ENVIRONMENT = os.environ.get('ENVIRONMENT', '').strip().lower()
+IS_PRODUCTION = (
+    ENVIRONMENT == 'production'
+    or os.environ.get('FLASK_ENV', '').strip().lower() == 'production'
+    or bool(os.environ.get('RENDER'))
+    or bool(os.environ.get('DYNO'))
+)
+SECRET_KEY = os.environ.get('SECRET_KEY', '').strip()
+if IS_PRODUCTION and not SECRET_KEY:
+    raise RuntimeError('SECRET_KEY must be configured in production.')
+if not (ADMIN_PASSWORD_HASH or ADMIN_PASSWORD):
+    raise RuntimeError('Configure ADMIN_PASSWORD_HASH or ADMIN_PASSWORD before starting the app.')
+if IS_PRODUCTION and not ADMIN_PASSWORD_HASH:
+    raise RuntimeError('Configure ADMIN_PASSWORD_HASH in production.')
+
 app = Flask(__name__, static_folder='.', template_folder='.')
 app.config.update({
+    'SECRET_KEY': SECRET_KEY or secrets.token_urlsafe(32),
     'MAIL_SERVER': MAIL_SERVER,
     'MAIL_PORT': MAIL_PORT,
     'MAIL_USE_TLS': MAIL_USE_TLS,
@@ -44,37 +74,57 @@ app.config.update({
     'MAIL_USERNAME': MAIL_USERNAME,
     'MAIL_PASSWORD': MAIL_PASSWORD,
     'MAIL_DEFAULT_SENDER': MAIL_DEFAULT_SENDER,
+    'SESSION_COOKIE_HTTPONLY': True,
+    'SESSION_COOKIE_SAMESITE': 'Lax',
+    'SESSION_COOKIE_SECURE': os.environ.get(
+        'SESSION_COOKIE_SECURE', '1' if IS_PRODUCTION else '0'
+    ).strip().lower() in ('1', 'true', 'yes'),
+    'PERMANENT_SESSION_LIFETIME': datetime.timedelta(hours=8),
 })
 mail = Mail(app)
-app.secret_key = os.environ.get('SECRET_KEY', 'change-me-to-a-secure-random-value')
+app.secret_key = app.config['SECRET_KEY']
 DATA_DIR = Path('data')
 DATA_DIR.mkdir(exist_ok=True)
+LOGIN_RATE_LIMIT_DB = DATA_DIR / 'login_attempts.sqlite3'
+EVENTS_FILE = DATA_DIR / 'events.json'
+CONTACT_INBOX_DB = DATA_DIR / 'contact_inbox.sqlite3'
+LOGIN_RATE_LIMIT = 5
+LOGIN_RATE_WINDOW_SECONDS = 15 * 60
+CONTACT_RATE_LIMIT = 5
+CONTACT_RATE_WINDOW_SECONDS = 15 * 60
 
 # upload folder for news images
 UPLOAD_DIR = Path('assets') / 'uploads'
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Optional dev CORS support so Live Server or other origins can call API during development.
-DEV_ALLOW_CORS = os.environ.get('DEV_ALLOW_CORS', '1').strip()
-if DEV_ALLOW_CORS and DEV_ALLOW_CORS != '0':
+# Optional CORS support for explicitly trusted local development origins.
+DEV_ALLOW_CORS = os.environ.get('DEV_ALLOW_CORS', '0').strip().lower() in ('1', 'true', 'yes')
+DEV_CORS_ORIGINS = {
+    origin.strip()
+    for origin in os.environ.get(
+        'DEV_CORS_ORIGINS',
+        'http://127.0.0.1:5500,http://localhost:5500'
+    ).split(',')
+    if origin.strip()
+}
+if DEV_ALLOW_CORS and not IS_PRODUCTION:
     @app.after_request
     def add_cors_headers(response):
-        origin = request.headers.get('Origin') or '*'
-        # allow the requesting origin only (safe for development)
-        if origin and origin != '':
+        origin = request.headers.get('Origin')
+        if origin in DEV_CORS_ORIGINS:
             response.headers['Access-Control-Allow-Origin'] = origin
-        else:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET,POST,OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = (
+                'Content-Type, Authorization, X-Requested-With, X-Admin-Password, Accept'
+            )
+            response.vary.add('Origin')
         return response
     
     @app.before_request
     def handle_options():
-        # respond to preflight OPTIONS requests during development
-        if request.method == 'OPTIONS':
-            return ('', 200)
+        if request.method == 'OPTIONS' and request.headers.get('Origin') in DEV_CORS_ORIGINS:
+            return ('', 204)
 
 # Human-readable category labels
 CATEGORY_LABELS = {
@@ -91,7 +141,7 @@ if SUPABASE_URL and SUPABASE_CLIENT_KEY:
         from supabase import create_client
         supabase = create_client(SUPABASE_URL, SUPABASE_CLIENT_KEY)
         # Detect which columns are available in the messages table.
-        for column in ['name', 'email', 'message', 'created_at']:
+        for column in ['name', 'username', 'email', 'message', 'content', 'created_at']:
             try:
                 test_res = supabase.from_(SUPABASE_TABLE).select(column).limit(1).execute()
                 if getattr(test_res, 'error', None) is None:
@@ -150,6 +200,25 @@ def save_news_local(entry):
         pass
     existing.append(entry_copy)
     output_file.write_text(json.dumps(existing, indent=2, ensure_ascii=False), encoding='utf-8')
+
+
+def load_events_local():
+    if not EVENTS_FILE.exists():
+        return []
+    try:
+        events = json.loads(EVENTS_FILE.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError) as err:
+        raise RuntimeError('Kalendar aktivnosti trenutno nije dostupan.') from err
+    if not isinstance(events, list) or any(not isinstance(item, dict) for item in events):
+        raise RuntimeError('Podaci kalendara nisu ispravni.')
+    return events
+
+
+def save_events_local(events):
+    EVENTS_FILE.write_text(
+        json.dumps(events, indent=2, ensure_ascii=False),
+        encoding='utf-8'
+    )
 
 
 def load_news_local():
@@ -233,7 +302,7 @@ def send_notification_email(entry):
         return False, 'SMTP not configured'
     try:
         msg = Message(
-            subject=f"Nova poruka sa sajta - {entry['name']}",
+            subject=f"Nova poruka sa sajta - {entry['topic_label']}",
             sender=app.config['MAIL_DEFAULT_SENDER'],
             recipients=[NOTIFICATION_EMAIL],
             reply_to=entry['email']
@@ -242,6 +311,9 @@ def send_notification_email(entry):
             f"Nova poruka sa sajta:\n\n"
             f"Ime: {entry['name']}\n"
             f"Email: {entry['email']}\n"
+            f"Vrsta upita: {entry['topic_label']}\n"
+            f"Organizacija: {entry['organization'] or 'Nije navedeno'}\n"
+            f"Telefon: {entry['phone'] or 'Nije navedeno'}\n"
             f"Poruka:\n{entry['message']}\n\n"
             f"Poslano: {entry['created']}"
         )
@@ -257,18 +329,24 @@ def save_to_supabase(entry):
     if not SUPABASE_COLUMNS:
         return False, 'Supabase table schema not compatible'
     try:
-        payload = {}
-        if 'name' in SUPABASE_COLUMNS:
-            payload['name'] = entry['name']
-        if 'email' in SUPABASE_COLUMNS:
-            payload['email'] = entry['email']
-        if 'message' in SUPABASE_COLUMNS:
-            payload['message'] = entry['message']
+        name_column = next(
+            (column for column in ('name', 'username') if column in SUPABASE_COLUMNS),
+            None
+        )
+        message_column = next(
+            (column for column in ('message', 'content') if column in SUPABASE_COLUMNS),
+            None
+        )
+        if not name_column or 'email' not in SUPABASE_COLUMNS or not message_column:
+            return False, 'Supabase messages table is missing required columns'
+
+        payload = {
+            name_column: entry['name'],
+            'email': entry['email'],
+            message_column: entry['message']
+        }
         if 'created_at' in SUPABASE_COLUMNS:
             payload['created_at'] = entry['created']
-
-        if not payload:
-            return False, 'No supported Supabase columns available'
 
         result = supabase.from_(SUPABASE_TABLE).insert([payload]).execute()
         error = getattr(result, 'error', None)
@@ -277,6 +355,41 @@ def save_to_supabase(entry):
         return True, None
     except Exception as err:
         return False, str(err)
+
+
+def send_contact_notification(entry):
+    resend_error = None
+    if RESEND_API_KEY:
+        try:
+            safe_message = html.escape(entry['message']).replace('\n', '<br>')
+            html_body = f"""
+            <div style="font-family:Arial,sans-serif;color:#333;line-height:1.6">
+              <h2 style="color:#2e5e2f">Nova poruka sa web stranice</h2>
+              <p><strong>Vrsta upita:</strong> {html.escape(entry['topic_label'])}</p>
+              <p><strong>Ime:</strong> {html.escape(entry['name'])}</p>
+              <p><strong>Email:</strong> {html.escape(entry['email'])}</p>
+              <p><strong>Telefon:</strong> {html.escape(entry['phone'] or 'Nije navedeno')}</p>
+              <p><strong>Organizacija:</strong> {html.escape(entry['organization'] or 'Nije navedeno')}</p>
+              <hr style="border:0;border-top:1px solid #ddd;margin:20px 0">
+              <h3>Poruka</h3>
+              <p style="white-space:pre-wrap">{safe_message}</p>
+            </div>
+            """
+            resend.Emails.send({
+                'from': 'Savez Mladih <onboarding@resend.dev>',
+                'to': MY_EMAIL,
+                'reply_to': entry['email'],
+                'subject': f"Nova poruka: {entry['topic_label']}",
+                'html': html_body
+            })
+            return True, None
+        except Exception as err:
+            resend_error = str(err)
+
+    sent, smtp_error = send_notification_email(entry)
+    if sent:
+        return True, None
+    return False, resend_error or smtp_error
 
 
 @app.route('/')
@@ -348,13 +461,127 @@ def save_uploaded_file(file_storage):
         return ''
 
 
+def verify_admin_password(password):
+    now = time.time()
+    client_key = request_client_key()
+
+    with closing(sqlite3.connect(LOGIN_RATE_LIMIT_DB, timeout=5)) as database:
+        with database:
+            database.execute(
+                'CREATE TABLE IF NOT EXISTS admin_login_attempts '
+                '(client_key TEXT NOT NULL, attempted_at REAL NOT NULL)'
+            )
+            database.execute(
+                'CREATE INDEX IF NOT EXISTS idx_admin_login_attempts_key_time '
+                'ON admin_login_attempts (client_key, attempted_at)'
+            )
+            database.execute('BEGIN IMMEDIATE')
+            database.execute(
+                'DELETE FROM admin_login_attempts WHERE attempted_at <= ?',
+                (now - LOGIN_RATE_WINDOW_SECONDS,)
+            )
+            row = database.execute(
+                'SELECT COUNT(*), MIN(attempted_at) FROM admin_login_attempts WHERE client_key = ?',
+                (client_key,)
+            ).fetchone()
+            attempt_count, first_attempt = row
+            if attempt_count >= LOGIN_RATE_LIMIT:
+                retry_after = max(
+                    1,
+                    int(first_attempt + LOGIN_RATE_WINDOW_SECONDS - now) + 1
+                )
+                return False, retry_after
+
+            if ADMIN_PASSWORD_HASH:
+                authenticated = bool(password) and check_password_hash(ADMIN_PASSWORD_HASH, password)
+            else:
+                authenticated = bool(password) and hmac.compare_digest(password, ADMIN_PASSWORD)
+
+            if authenticated:
+                database.execute(
+                    'DELETE FROM admin_login_attempts WHERE client_key = ?',
+                    (client_key,)
+                )
+            else:
+                database.execute(
+                    'INSERT INTO admin_login_attempts (client_key, attempted_at) VALUES (?, ?)',
+                    (client_key, now)
+                )
+            return authenticated, 0
+
+
 def is_admin_authenticated(password_from_form=None):
-    # Allow either session-based admin or password provided in form
     if session.get('is_admin'):
         return True
-    if password_from_form and password_from_form == ADMIN_PASSWORD:
+    password = password_from_form or request.headers.get('X-Admin-Password', '').strip()
+    authenticated, _ = verify_admin_password(password)
+    return authenticated
+
+
+def is_admin_api_authenticated():
+    if session.get('is_admin'):
         return True
-    return False
+
+    authorization = request.headers.get('Authorization', '')
+    if authorization.startswith('Bearer '):
+        token = authorization[7:].strip()
+        if not token or not supabase or not SUPABASE_ADMIN_EMAIL:
+            return False
+        try:
+            user_response = supabase.auth.get_user(token)
+            user = getattr(user_response, 'user', None)
+            email = (getattr(user, 'email', '') or '').strip().lower()
+            return bool(email) and hmac.compare_digest(email, SUPABASE_ADMIN_EMAIL)
+        except Exception:
+            app.logger.warning('Supabase admin token validation failed')
+            return False
+
+    return is_admin_authenticated()
+
+
+def request_client_key():
+    client_ip = request.remote_addr or 'unknown'
+    return hmac.new(
+        str(app.secret_key).encode('utf-8'),
+        client_ip.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+
+def contact_rate_limit_retry_after():
+    now = time.time()
+    client_key = request_client_key()
+
+    with closing(sqlite3.connect(LOGIN_RATE_LIMIT_DB, timeout=5)) as database:
+        with database:
+            database.execute(
+                'CREATE TABLE IF NOT EXISTS contact_message_attempts '
+                '(client_key TEXT NOT NULL, attempted_at REAL NOT NULL)'
+            )
+            database.execute(
+                'CREATE INDEX IF NOT EXISTS idx_contact_message_attempts_key_time '
+                'ON contact_message_attempts (client_key, attempted_at)'
+            )
+            database.execute('BEGIN IMMEDIATE')
+            database.execute(
+                'DELETE FROM contact_message_attempts WHERE attempted_at <= ?',
+                (now - CONTACT_RATE_WINDOW_SECONDS,)
+            )
+            row = database.execute(
+                'SELECT COUNT(*), MIN(attempted_at) FROM contact_message_attempts WHERE client_key = ?',
+                (client_key,)
+            ).fetchone()
+            attempt_count, first_attempt = row
+            if attempt_count >= CONTACT_RATE_LIMIT:
+                return max(
+                    1,
+                    int(first_attempt + CONTACT_RATE_WINDOW_SECONDS - now) + 1
+                )
+            database.execute(
+                'INSERT INTO contact_message_attempts (client_key, attempted_at) VALUES (?, ?)',
+                (client_key, now)
+            )
+            return 0
 
 
 MEMBERS_FILE = DATA_DIR / 'members.json'
@@ -553,8 +780,7 @@ def api_confirm_subscription():
 @app.route('/api/subscribers', methods=['GET'])
 def api_list_subscribers():
     # admin-only
-    password = request.args.get('password','').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
     subs = load_subscribers()
     # do not expose tokens in list if not admin via session
@@ -614,8 +840,7 @@ def api_confirm_subscriber():
 
 @app.route('/api/subscribers/export', methods=['GET'])
 def api_export_subscribers():
-    password = request.args.get('password','').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
     subs = load_subscribers()
     # CSV header
@@ -743,15 +968,22 @@ def api_send_newsletter():
 @app.route('/api/login', methods=['POST'])
 def api_login():
     password = request.form.get('password', '').strip()
-    if password == ADMIN_PASSWORD:
+    authenticated, retry_after = verify_admin_password(password)
+    if retry_after:
+        return jsonify({'ok': False, 'error': 'Previše neuspješnih pokušaja. Pokušajte kasnije.'}), 429, {
+            'Retry-After': str(retry_after)
+        }
+    if authenticated:
+        session.clear()
         session['is_admin'] = True
+        session.permanent = True
         return jsonify({'ok': True}), 200
     return jsonify({'ok': False, 'error': 'Neispravna lozinka.'}), 401
 
 
 @app.route('/api/logout', methods=['POST'])
 def api_logout():
-    session.pop('is_admin', None)
+    session.clear()
     return jsonify({'ok': True}), 200
 
 
@@ -762,8 +994,7 @@ def api_me():
 
 @app.route('/api/members', methods=['GET'])
 def api_list_members():
-    password = request.args.get('password', '').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
 
     members = load_members_local()
@@ -878,8 +1109,7 @@ def api_verify_member(member_id):
 
 @app.route('/api/members/<member_id>', methods=['GET'])
 def api_member_detail(member_id):
-    password = request.args.get('password', '').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
     members = load_members_local()
     member = next((m for m in members if str(m.get('id')) == str(member_id)), None)
@@ -1069,77 +1299,364 @@ def admin_membership_html():
 
 @app.route('/send-message', methods=['POST'])
 def send_message():
-    # Ako je zahtjev JSON, koristimo get_json(); inače koristimo form data
+    def error_response(message, status):
+        if request.is_json:
+            return jsonify({'success': False, 'message': message}), status
+        return redirect('/#kontakt')
+
+    if request.content_length and request.content_length > 12_000:
+        return error_response('Poruka je prevelika.', 413)
+
     if request.is_json:
-        data = request.get_json() or {}
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return error_response('Podaci forme nisu ispravni.', 400)
     else:
-        data = request.form or {}
+        data = request.form
 
-    ime = (data.get('ime') or data.get('name') or '').strip()
-    email = (data.get('email') or '').strip()
-    poruka = (data.get('poruka') or data.get('message') or '').strip()
+    def field(name, alias=None):
+        value = data.get(name, '')
+        if not value and alias:
+            value = data.get(alias, '')
+        return value.strip() if isinstance(value, str) else ''
 
-    if not ime or not email or not poruka:
-        # Ako je AJAX/JSON, vratimo JSON grešku, inače redirect nazad sa statusom
-        if request.is_json:
-            return jsonify({'success': False, 'message': 'Ime, email i poruka su obavezni.'}), 400
-        else:
-            return redirect('/#kontakt')
+    name = field('name', 'ime')
+    email = field('email')
+    message = field('message', 'poruka')
+    topic = field('topic') or 'general'
+    organization = field('organization')
+    phone = field('phone')
+    activity_date = field('activity_date')
+    collaboration_kind = field('collaboration_kind')
+    honeypot = field('website')
+    consent_value = data.get('consent')
+    consent = consent_value is True or (
+        isinstance(consent_value, str)
+        and consent_value.strip().lower() in ('true', '1', 'on')
+    )
 
-    if not supabase:
-        if request.is_json:
-            return jsonify({'success': False, 'message': 'Supabase nije konfigurisan.'}), 500
-        else:
-            return redirect('/#kontakt')
+    if honeypot:
+        return error_response('Poruku nije moguće poslati.', 400)
+    if not name or not email or not message:
+        return error_response('Ime, email i poruka su obavezni.', 400)
+    if not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
+        return error_response('Unesite ispravnu email adresu.', 400)
+    if not consent:
+        return error_response('Potvrdite saglasnost za obradu podataka.', 400)
+    if topic not in ('general', 'collaboration'):
+        return error_response('Odabrana vrsta upita nije ispravna.', 400)
 
-    payload = {
-        'username': ime,
+    field_limits = {
+        'name': (name, 100),
+        'email': (email, 254),
+        'message': (message, 3000),
+        'organization': (organization, 160),
+        'phone': (phone, 40)
+    }
+    if any(len(value) > limit for value, limit in field_limits.values()):
+        return error_response('Neko od polja prelazi dozvoljenu dužinu.', 400)
+
+    collaboration_labels = {
+        'education': 'Edukacija i radionice',
+        'community_event': 'Događaj i aktivnosti',
+        'humanitarian': 'Humanitarna akcija',
+        'sports': 'Sport i rekreacija',
+        'other': 'Drugo'
+    }
+    if topic == 'collaboration' and collaboration_kind not in collaboration_labels:
+        return error_response('Odaberite oblast saradnje.', 400)
+    if activity_date:
+        try:
+            datetime.date.fromisoformat(activity_date)
+        except ValueError:
+            return error_response('Datum aktivnosti nije ispravan.', 400)
+
+    topic_label = 'Saradnja i partnerstvo' if topic == 'collaboration' else 'Opći upit'
+    message_parts = [f'Vrsta upita: {topic_label}']
+    if topic == 'collaboration':
+        message_parts.append(f'Oblast saradnje: {collaboration_labels[collaboration_kind]}')
+    if organization:
+        message_parts.append(f'Organizacija: {organization}')
+    if phone:
+        message_parts.append(f'Telefon: {phone}')
+    if activity_date:
+        message_parts.append(f'Predloženi datum: {activity_date}')
+    message_parts.extend(('', 'Poruka:', message))
+
+    entry = {
+        'name': name,
         'email': email,
-        'content': poruka
+        'message': '\n'.join(message_parts),
+        'topic_label': topic_label,
+        'organization': organization,
+        'phone': phone,
+        'created': datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
 
     try:
-        result = supabase.from_(SUPABASE_TABLE).insert([payload]).execute()
-        error = getattr(result, 'error', None)
-        if error:
-            if request.is_json:
-                return jsonify({'success': False, 'message': str(error)}), 500
-            else:
-                return redirect('/#kontakt')
-    except Exception as e:
+        retry_after = contact_rate_limit_retry_after()
+    except sqlite3.Error:
+        app.logger.exception('Contact message rate limiter failed')
+        return error_response('Slanje poruke trenutno nije dostupno. Pokušajte kasnije.', 503)
+    if retry_after:
+        response = error_response(
+            'Poslali ste više poruka u kratkom vremenu. Pokušajte ponovo kasnije.',
+            429
+        )
         if request.is_json:
-            return jsonify({'success': False, 'message': str(e)}), 500
-        else:
-            return redirect('/#kontakt')
+            response[0].headers['Retry-After'] = str(retry_after)
+        return response
 
-    # Pošalji email obavještenje preko Resenda (ne blokiramo korisnika ako ne uspije)
-    if RESEND_API_KEY:
-        try:
-            html_body = f"""
-            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-                <h2 style="color: #2e5e2f;">Nova poruka sa web stranice</h2>
-                <p><strong>Ime:</strong> {ime}</p>
-                <p><strong>Email:</strong> {email}</p>
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                <h3>Poruka:</h3>
-                <p style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap;">{poruka}</p>
-            </div>
-            """
-            resend.Emails.send({
-                "from": "Savez Mladih <onboarding@resend.dev>",
-                "to": MY_EMAIL,
-                "subject": "Nova poruka sa web stranice",
-                "html": html_body
-            })
-            print(f"Email obavještenje poslano za poruku od {ime} ({email})")
-        except Exception as email_err:
-            print(f"Email slanje neuspješno: {email_err}")
+    saved, save_error = save_to_supabase(entry)
+    if not saved:
+        app.logger.error('Contact message could not be saved: %s', save_error)
+        return error_response('Poruku trenutno nije moguće sačuvati. Pokušajte kasnije.', 503)
 
-    # Ako je JSON/AJAX, vrati JSON; ako je klasična forma, redirect nazad na kontakt sekciju
+    notification_sent, notification_error = send_contact_notification(entry)
+    if not notification_sent:
+        app.logger.error('Contact notification could not be sent: %s', notification_error)
+
     if request.is_json:
-        return jsonify({'success': True, 'message': 'Poruka je uspješno poslata!'}), 200
-    else:
-        return redirect('/#kontakt')
+        return jsonify({
+            'success': True,
+            'message': 'Poruka je zaprimljena. Hvala, javit ćemo vam se uskoro.'
+        }), 201
+    return redirect('/#kontakt')
+
+
+def contact_message_id(row):
+    normalized = {
+        'created_at': str(row.get('created_at') or row.get('created') or ''),
+        'name': str(row.get('name') or row.get('username') or ''),
+        'email': str(row.get('email') or ''),
+        'message': str(row.get('message') or row.get('content') or '')
+    }
+    serialized = json.dumps(normalized, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+    return hmac.new(
+        str(app.secret_key).encode('utf-8'),
+        serialized.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+
+def fetch_contact_rows():
+    if not supabase or not SUPABASE_TABLE or not SUPABASE_SERVICE_ROLE_KEY:
+        raise RuntimeError('Supabase messages are not configured')
+    result = supabase.from_(SUPABASE_TABLE).select('*').order('created_at', desc=True).limit(200).execute()
+    error = getattr(result, 'error', None)
+    if error:
+        raise RuntimeError('Supabase messages could not be loaded')
+    rows = getattr(result, 'data', None) or []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def load_contact_message_metadata():
+    with closing(sqlite3.connect(CONTACT_INBOX_DB, timeout=5)) as database:
+        with database:
+            database.execute(
+                'CREATE TABLE IF NOT EXISTS contact_message_metadata '
+                '(message_id TEXT PRIMARY KEY, status TEXT NOT NULL, tag TEXT NOT NULL, updated_at TEXT NOT NULL)'
+            )
+            rows = database.execute(
+                'SELECT message_id, status, tag FROM contact_message_metadata'
+            ).fetchall()
+    return {
+        row[0]: {'status': row[1], 'tag': row[2]}
+        for row in rows
+    }
+
+
+def inferred_contact_tag(message):
+    if 'Saradnja i partnerstvo' in message:
+        return 'collaboration'
+    if 'Opći upit' in message:
+        return 'general'
+    return 'other'
+
+
+@app.route('/api/admin/messages', methods=['GET'])
+def admin_contact_messages():
+    if not is_admin_api_authenticated():
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+    try:
+        rows = fetch_contact_rows()
+        metadata = load_contact_message_metadata()
+        messages = []
+        for row in rows:
+            message = str(row.get('message') or row.get('content') or '')
+            message_id = contact_message_id(row)
+            saved_metadata = metadata.get(message_id, {})
+            messages.append({
+                'id': message_id,
+                'name': str(row.get('name') or row.get('username') or ''),
+                'email': str(row.get('email') or ''),
+                'message': message,
+                'created_at': str(row.get('created_at') or row.get('created') or ''),
+                'status': saved_metadata.get('status', 'new'),
+                'tag': saved_metadata.get('tag', inferred_contact_tag(message))
+            })
+        response = jsonify({'ok': True, 'messages': messages})
+        response.headers['Cache-Control'] = 'no-store'
+        return response, 200
+    except Exception:
+        app.logger.exception('Admin contact inbox could not be loaded')
+        return jsonify({'ok': False, 'error': 'Poruke se trenutno ne mogu učitati.'}), 503
+
+
+@app.route('/api/admin/messages/<message_id>', methods=['PATCH'])
+def update_admin_contact_message(message_id):
+    if not is_admin_api_authenticated():
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+    if not re.fullmatch(r'[a-f0-9]{64}', message_id):
+        return jsonify({'ok': False, 'error': 'ID poruke nije ispravan.'}), 400
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'ok': False, 'error': 'Podaci nisu ispravni.'}), 400
+
+    status = data.get('status')
+    tag = data.get('tag')
+    if status not in ('new', 'in_progress', 'responded'):
+        return jsonify({'ok': False, 'error': 'Status poruke nije ispravan.'}), 400
+    if tag not in ('general', 'collaboration', 'other'):
+        return jsonify({'ok': False, 'error': 'Oznaka poruke nije ispravna.'}), 400
+
+    try:
+        if message_id not in {contact_message_id(row) for row in fetch_contact_rows()}:
+            return jsonify({'ok': False, 'error': 'Poruka nije pronađena.'}), 404
+        updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        with closing(sqlite3.connect(CONTACT_INBOX_DB, timeout=5)) as database:
+            with database:
+                database.execute(
+                    'CREATE TABLE IF NOT EXISTS contact_message_metadata '
+                    '(message_id TEXT PRIMARY KEY, status TEXT NOT NULL, tag TEXT NOT NULL, updated_at TEXT NOT NULL)'
+                )
+                database.execute(
+                    'INSERT INTO contact_message_metadata (message_id, status, tag, updated_at) '
+                    'VALUES (?, ?, ?, ?) '
+                    'ON CONFLICT(message_id) DO UPDATE SET '
+                    'status=excluded.status, tag=excluded.tag, updated_at=excluded.updated_at',
+                    (message_id, status, tag, updated_at)
+                )
+        return jsonify({'ok': True, 'status': status, 'tag': tag}), 200
+    except Exception:
+        app.logger.exception('Admin contact message could not be updated')
+        return jsonify({'ok': False, 'error': 'Promjena poruke nije sačuvana.'}), 503
+
+
+def normalize_event_payload(data):
+    if not isinstance(data, dict):
+        return None, 'Podaci događaja nisu ispravni.'
+    title = data.get('title', '')
+    event_date = data.get('date', '')
+    event_time = data.get('time', '')
+    location = data.get('location', '')
+    description = data.get('description', '')
+    status = data.get('status', 'published')
+    values = (title, event_date, event_time, location, description, status)
+    if any(not isinstance(value, str) for value in values):
+        return None, 'Podaci događaja nisu ispravni.'
+    title = title.strip()
+    event_date = event_date.strip()
+    event_time = event_time.strip()
+    location = location.strip()
+    description = description.strip()
+    status = status.strip()
+
+    if not title or len(title) > 120 or len(event_date) != 10:
+        return None, 'Unesite naslov i ispravan datum događaja.'
+    try:
+        datetime.date.fromisoformat(event_date)
+        if event_time:
+            datetime.time.fromisoformat(event_time)
+    except ValueError:
+        return None, 'Datum ili vrijeme događaja nisu ispravni.'
+    if len(event_time) > 8 or len(location) > 160 or len(description) > 3000:
+        return None, 'Neko od polja prelazi dozvoljenu dužinu.'
+    if status not in ('published', 'draft'):
+        return None, 'Status događaja nije ispravan.'
+    return {
+        'title': title,
+        'date': event_date,
+        'time': event_time,
+        'location': location,
+        'description': description,
+        'status': status
+    }, None
+
+
+@app.route('/api/events', methods=['GET'])
+def public_events():
+    try:
+        events = load_events_local()
+        published = [event for event in events if event.get('status') == 'published']
+        published.sort(key=lambda event: (event.get('date', ''), event.get('time', '')))
+        return jsonify({'ok': True, 'events': published}), 200
+    except Exception:
+        app.logger.exception('Public event calendar could not be loaded')
+        return jsonify({'ok': False, 'error': 'Kalendar trenutno nije dostupan.'}), 503
+
+
+@app.route('/api/admin/events', methods=['GET', 'POST'])
+def admin_events():
+    if not is_admin_api_authenticated():
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+    try:
+        events = load_events_local()
+        if request.method == 'GET':
+            return jsonify({'ok': True, 'events': sorted(
+                events,
+                key=lambda event: (event.get('date', ''), event.get('time', ''))
+            )}), 200
+
+        payload, error = normalize_event_payload(request.get_json(silent=True))
+        if error:
+            return jsonify({'ok': False, 'error': error}), 400
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        event = {
+            'id': str(uuid.uuid4()),
+            **payload,
+            'created_at': now,
+            'updated_at': now
+        }
+        events.append(event)
+        save_events_local(events)
+        return jsonify({'ok': True, 'event': event}), 201
+    except Exception:
+        app.logger.exception('Admin events could not be loaded or saved')
+        return jsonify({'ok': False, 'error': 'Događaj nije sačuvan.'}), 503
+
+
+@app.route('/api/admin/events/<event_id>', methods=['PATCH', 'DELETE'])
+def update_admin_event(event_id):
+    if not is_admin_api_authenticated():
+        return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
+    try:
+        events = load_events_local()
+        event_index = next(
+            (index for index, event in enumerate(events) if event.get('id') == event_id),
+            None
+        )
+        if event_index is None:
+            return jsonify({'ok': False, 'error': 'Događaj nije pronađen.'}), 404
+        if request.method == 'DELETE':
+            events.pop(event_index)
+            save_events_local(events)
+            return jsonify({'ok': True}), 200
+
+        payload, error = normalize_event_payload(request.get_json(silent=True))
+        if error:
+            return jsonify({'ok': False, 'error': error}), 400
+        existing = events[event_index]
+        events[event_index] = {
+            **existing,
+            **payload,
+            'updated_at': datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        save_events_local(events)
+        return jsonify({'ok': True, 'event': events[event_index]}), 200
+    except Exception:
+        app.logger.exception('Admin event could not be changed')
+        return jsonify({'ok': False, 'error': 'Događaj nije sačuvan.'}), 503
 
 
 @app.route('/api/news', methods=['GET'])
@@ -1303,6 +1820,8 @@ if __name__ == '__main__':
         PORT = int(os.environ.get('PORT', '8000'))
     except Exception:
         PORT = 8000
-    DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
+    DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
+    if IS_PRODUCTION:
+        DEBUG = False
     print(f"Starting Flask app on http://0.0.0.0:{PORT} (debug={DEBUG})")
     app.run(host='0.0.0.0', port=PORT, debug=DEBUG)
