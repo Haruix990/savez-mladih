@@ -17,6 +17,16 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 import resend
+from urllib.parse import quote
+from newsletter_service import (
+    EMAIL_PATTERN,
+    email_shell,
+    hash_token,
+    make_token,
+    normalize_email,
+    public_host,
+    send_resend,
+)
 
 load_dotenv()
 
@@ -92,6 +102,8 @@ LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 15 * 60
 CONTACT_RATE_LIMIT = 5
 CONTACT_RATE_WINDOW_SECONDS = 15 * 60
+NEWSLETTER_RATE_LIMIT = 5
+NEWSLETTER_RATE_WINDOW_SECONDS = 15 * 60
 
 # upload folder for news images
 UPLOAD_DIR = Path('assets') / 'uploads'
@@ -584,6 +596,41 @@ def contact_rate_limit_retry_after():
             return 0
 
 
+def newsletter_rate_limit_retry_after():
+    now = time.time()
+    client_key = request_client_key()
+    with closing(sqlite3.connect(LOGIN_RATE_LIMIT_DB, timeout=5)) as database:
+        with database:
+            database.execute(
+                'CREATE TABLE IF NOT EXISTS newsletter_attempts '
+                '(client_key TEXT NOT NULL, attempted_at REAL NOT NULL)'
+            )
+            database.execute(
+                'CREATE INDEX IF NOT EXISTS idx_newsletter_attempts_key_time '
+                'ON newsletter_attempts (client_key, attempted_at)'
+            )
+            database.execute('BEGIN IMMEDIATE')
+            database.execute(
+                'DELETE FROM newsletter_attempts WHERE attempted_at <= ?',
+                (now - NEWSLETTER_RATE_WINDOW_SECONDS,)
+            )
+            row = database.execute(
+                'SELECT COUNT(*), MIN(attempted_at) FROM newsletter_attempts WHERE client_key = ?',
+                (client_key,)
+            ).fetchone()
+            attempt_count, first_attempt = row
+            if attempt_count >= NEWSLETTER_RATE_LIMIT:
+                return max(
+                    1,
+                    int(first_attempt + NEWSLETTER_RATE_WINDOW_SECONDS - now) + 1
+                )
+            database.execute(
+                'INSERT INTO newsletter_attempts (client_key, attempted_at) VALUES (?, ?)',
+                (client_key, now)
+            )
+            return 0
+
+
 MEMBERS_FILE = DATA_DIR / 'members.json'
 PROTOCOLS_DIR = DATA_DIR / 'protocols'
 PROTOCOLS_DIR.mkdir(exist_ok=True)
@@ -700,165 +747,414 @@ def save_subscribers(subs):
 
 @app.route('/api/subscribe', methods=['POST'])
 def api_subscribe():
-    email = (request.form.get('email') or '').strip().lower()
-    name = (request.form.get('name') or '').strip()
-    consent = (request.form.get('consent') or '').strip() in ('1','true','on')
-    if not email or '@' not in email or not consent:
-        return jsonify({'ok': False, 'error': 'Invalid email or consent missing.'}), 400
-    subs = load_subscribers()
-    # avoid duplicates: if already confirmed, return ok; if unconfirmed, resend token
-    for s in subs:
-        if s.get('email','').lower() == email:
-            if s.get('confirmed'):
-                return jsonify({'ok': True, 'message': 'Već pretplaćen.'}), 200
+    payload = request.get_json(silent=True) if request.is_json else request.form
+    retry_after = newsletter_rate_limit_retry_after()
+    if retry_after:
+        response = jsonify({'ok': False, 'error': 'Previše zahtjeva. Pokušaj ponovo kasnije.'})
+        response.headers['Retry-After'] = str(retry_after)
+        return response, 429
+
+    turnstile_secret = os.environ.get('CLOUDFLARE_TURNSTILE_SECRET', '').strip()
+    if turnstile_secret:
+        turnstile_token = str(payload.get('turnstile_token') or '').strip()
+        if not turnstile_token:
+            return jsonify({'ok': False, 'error': 'Potvrdi da nisi robot.'}), 400
+        try:
+            import urllib.parse
+            import urllib.request
+            verification = urllib.parse.urlencode({
+                'secret': turnstile_secret,
+                'response': turnstile_token,
+                'remoteip': request.remote_addr or '',
+            }).encode('utf-8')
+            with urllib.request.urlopen(
+                'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                verification,
+                timeout=5,
+            ) as verification_response:
+                verification_data = json.loads(verification_response.read().decode('utf-8'))
+            if not verification_data.get('success'):
+                return jsonify({'ok': False, 'error': 'Sigurnosna provjera nije uspjela. Pokušaj ponovo.'}), 400
+        except Exception:
+            app.logger.exception('Turnstile verification failed')
+            return jsonify({'ok': False, 'error': 'Sigurnosna provjera trenutno nije dostupna.'}), 503
+
+    email = normalize_email(str(payload.get('email', '') or ''))
+    name = str(payload.get('name', '') or '').strip()
+    consent = str(payload.get('consent', '') or '').strip().lower() in ('1', 'true', 'on', 'yes')
+
+    if not re.fullmatch(EMAIL_PATTERN, email):
+        return jsonify({'ok': False, 'error': 'Unesi ispravnu e-mail adresu.'}), 400
+    if len(name) < 2 or len(name) > 120:
+        return jsonify({'ok': False, 'error': 'Ime i prezime mora imati između 2 i 120 znakova.'}), 400
+    if not consent:
+        return jsonify({'ok': False, 'error': 'Moraš prihvatiti saglasnost za primanje newslettera.'}), 400
+    if not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        app.logger.error('Newsletter Supabase configuration is missing')
+        return jsonify({'ok': False, 'error': 'Sistem prijave trenutno nije dostupan. Pokušaj ponovo kasnije.'}), 503
+
+    existing_result = supabase.from_('newsletter_subscribers').select(
+        'id,status,email_confirmed_at'
+    ).eq('normalized_email', email).limit(1).execute()
+    existing_error = getattr(existing_result, 'error', None)
+    if existing_error:
+        app.logger.error('Newsletter lookup failed: %s', existing_error)
+        return jsonify({'ok': False, 'error': 'Pretplata trenutno ne može biti provjerena.'}), 503
+
+    existing_rows = getattr(existing_result, 'data', None) or []
+    if existing_rows:
+        subscriber = existing_rows[0]
+        if subscriber.get('status') == 'aktivan':
+            return jsonify({
+                'ok': True,
+                'message': 'Ova e-mail adresa je već aktivno prijavljena.'
+            }), 200
+        if subscriber.get('status') == 'odjavljen':
+            return jsonify({
+                'ok': False,
+                'error': 'Ova adresa je odjavljena. Za ponovnu prijavu potrebna je nova saglasnost.'
+            }), 409
+    else:
+        try:
+            insert_result = supabase.from_('newsletter_subscribers').insert({
+                'full_name': name,
+                'email': email,
+                'normalized_email': email,
+                'status': 'na_cekanju',
+                'consent_given': True,
+                'consent_given_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            }).execute()
+            existing_error = getattr(insert_result, 'error', None)
+            if existing_error:
+                raise RuntimeError(str(existing_error))
+            inserted = getattr(insert_result, 'data', None) or []
+            if not inserted:
+                raise RuntimeError('Baza nije vratila kreiranog pretplatnika.')
+            subscriber = inserted[0]
+        except Exception as exc:
+            app.logger.warning('Newsletter subscriber insert failed: %s', exc)
+            if 'duplicate' in str(exc).lower() or 'unique' in str(exc).lower():
+                subscriber_result = supabase.from_('newsletter_subscribers').select(
+                    'id,status'
+                ).eq('normalized_email', email).limit(1).execute()
+                rows = getattr(subscriber_result, 'data', None) or []
+                if not rows:
+                    return jsonify({'ok': False, 'error': 'Pretplata trenutno ne može biti sačuvana.'}), 503
+                subscriber = rows[0]
             else:
-                token = s.get('confirm_token') or str(uuid.uuid4())
-                s['confirm_token'] = token
-                save_subscribers(subs)
-                # attempt to send confirmation email
-                sent = False
-                try:
-                    sent = send_confirmation_email(email, token)
-                except Exception as e:
-                    print('Confirm email send failed:', e)
-                return jsonify({'ok': True, 'message': 'Potvrda poslana ponovo.', 'sent_email': sent, 'token': (token if not sent else None)}), 200
-    # create new pending subscriber
-    token = str(uuid.uuid4())
-    entry = {'id': str(uuid.uuid4()), 'email': email, 'name': name, 'subscribed_at': datetime.datetime.utcnow().isoformat() + 'Z', 'confirmed': False, 'confirm_token': token}
-    subs.append(entry)
-    saved = save_subscribers(subs)
-    if not saved:
-        return jsonify({'ok': False, 'error': 'Ne mogu sačuvati pretplatu.'}), 500
-    sent = False
+                return jsonify({'ok': False, 'error': 'Pretplata trenutno ne može biti sačuvana.'}), 503
+
+    if subscriber.get('status') == 'odjavljen':
+        return jsonify({
+            'ok': False,
+            'error': 'Ova adresa je odjavljena. Za ponovnu prijavu potrebna je nova saglasnost.'
+        }), 409
+
     try:
-        sent = send_confirmation_email(email, token)
-    except Exception as e:
-        print('Confirm email send failed:', e)
-    return jsonify({'ok': True, 'entry': entry, 'sent_email': sent, 'token': (None if sent else token)}), 200
+        supabase.from_('newsletter_confirmation_tokens').delete().eq(
+            'subscriber_id', subscriber['id']
+        ).is_('used_at', 'null').execute()
+    except Exception:
+        app.logger.exception('Old confirmation tokens could not be cleared')
+
+    token = make_token()
+    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+    try:
+        supabase.from_('newsletter_confirmation_tokens').insert({
+            'subscriber_id': subscriber['id'],
+            'token_hash': hash_token(token),
+            'expires_at': expires_at.isoformat(),
+        }).execute()
+        unsubscribe_token = make_token()
+        supabase.from_('newsletter_unsubscribe_tokens').upsert({
+            'subscriber_id': subscriber['id'],
+            'security_token': unsubscribe_token,
+        }, on_conflict='subscriber_id').execute()
+    except Exception as exc:
+        app.logger.exception('Newsletter tokens could not be stored')
+        return jsonify({'ok': False, 'error': 'Sigurnosni podaci prijave nisu sačuvani.'}), 503
+
+    host = public_host(request)
+    confirmation_url = f"{host}/api/confirm_subscription?token={quote(token, safe='')}"
+    unsubscribe_url = f"{host}/api/unsubscribe?token={quote(unsubscribe_token, safe='')}"
+    content = (
+        f"<h1 style='margin-top:0;color:#f1d28d;'>Potvrdi prijavu, {html.escape(name)}</h1>"
+        "<p>Primili smo tvoju prijavu na newsletter Saveza mladih.</p>"
+        '<p style="text-align:center;margin:28px 0;">'
+        f'<a href="{confirmation_url}" style="display:inline-block;padding:14px 22px;border-radius:999px;'
+        'background:#b98f3b;color:#081109;text-decoration:none;font-family:Arial,sans-serif;font-weight:bold;">'
+        'Potvrdi e-mail adresu</a></p>'
+        "<p>Link vrijedi 24 sata. Ako ti nijesi zatražio prijavu, možeš ignorisati ovu poruku.</p>"
+    )
+    html = email_shell('Potvrda newsletter prijave', content, unsubscribe_url)
+    sent, provider_id, send_error = send_resend(
+        email,
+        'Potvrdi svoju prijavu na newsletter',
+        html,
+        unsubscribe_url,
+    )
+
+    log_payload = {
+        'subscriber_id': subscriber['id'],
+        'email_type': 'potvrda',
+        'provider_message_id': provider_id,
+        'delivery_status': 'poslano' if sent else 'neuspjelo',
+        'error_message': send_error,
+        'sent_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }
+    try:
+        supabase.from_('newsletter_email_logs').insert(log_payload).execute()
+    except Exception:
+        app.logger.exception('Newsletter email log could not be written')
+
+    if not sent:
+        app.logger.error('Resend confirmation failed: %s', send_error)
+        return jsonify({
+            'ok': False,
+            'error': 'Prijava je sačuvana, ali potvrda e-maila nije poslana. Pokušaj ponovo kasnije.'
+        }), 502
+
+    return jsonify({
+        'ok': True,
+        'message': 'Hvala! Provjeri e-mail i potvrdi svoju adresu.'
+    }), 200
 
 
 @app.route('/api/unsubscribe', methods=['POST','GET'])
 def api_unsubscribe():
-    # Support unsubscribe by token (preferred) or by email param
-    token = (request.values.get('token') or '').strip()
-    email = (request.values.get('email') or '').strip().lower()
-    if not token and (not email or '@' not in email):
-        return jsonify({'ok': False, 'error': 'Neispravan email ili token.'}), 400
-    subs = load_subscribers()
-    if token:
-        filtered = [s for s in subs if s.get('unsub_token') != token]
-    else:
-        filtered = [s for s in subs if s.get('email','').lower() != email]
-    if len(filtered) == len(subs):
+    token = str(request.values.get('token') or '').strip()
+    if not token or not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({'ok': False, 'error': 'Link za odjavu nije ispravan.'}), 400
+
+    token_result = supabase.from_('newsletter_unsubscribe_tokens').select(
+        'subscriber_id'
+    ).eq('security_token', token).limit(1).execute()
+    rows = getattr(token_result, 'data', None) or []
+    if not rows:
+        return jsonify({'ok': False, 'error': 'Link za odjavu je neispravan.'}), 404
+
+    subscriber_id = rows[0]['subscriber_id']
+    subscriber_result = supabase.from_('newsletter_subscribers').select(
+        'id,email,status,full_name'
+    ).eq('id', subscriber_id).limit(1).execute()
+    subscribers = getattr(subscriber_result, 'data', None) or []
+    if not subscribers:
         return jsonify({'ok': False, 'error': 'Pretplatnik nije pronađen.'}), 404
-    save_subscribers(filtered)
-    return jsonify({'ok': True}), 200
+
+    subscriber = subscribers[0]
+    if subscriber.get('status') != 'odjavljen':
+        supabase.from_('newsletter_subscribers').update({
+            'status': 'odjavljen',
+            'unsubscribed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }).eq('id', subscriber_id).execute()
+
+    try:
+        supabase.from_('newsletter_unsubscribe_tokens').delete().eq(
+            'subscriber_id', subscriber_id
+        ).execute()
+    except Exception:
+        app.logger.exception('Unsubscribe token could not be consumed')
+
+    content = (
+        '<h1 style="margin-top:0;color:#f1d28d;">Odjava je potvrđena</h1>'
+        f"<p>{html.escape(subscriber.get('full_name') or 'Poštovani')}, više nećeš primati newsletter poruke od Saveza mladih.</p>"
+    )
+    sent, provider_id, send_error = send_resend(
+        subscriber['email'],
+        'Potvrda odjave sa newslettera',
+        email_shell('Potvrda odjave', content),
+    )
+    try:
+        supabase.from_('newsletter_email_logs').insert({
+            'subscriber_id': subscriber_id,
+            'email_type': 'odjava',
+            'provider_message_id': provider_id,
+            'delivery_status': 'poslano' if sent else 'neuspjelo',
+            'error_message': send_error,
+            'sent_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        app.logger.exception('Unsubscribe email log could not be written')
+
+    if request.method == 'GET':
+        return redirect(url_for('index') + '#newsletter')
+    return jsonify({'ok': True, 'message': 'Odjava je uspješno potvrđena.'}), 200
 
 
 @app.route('/api/confirm_subscription', methods=['GET'])
 def api_confirm_subscription():
-    token = (request.values.get('token') or '').strip()
-    if not token:
-        return jsonify({'ok': False, 'error': 'Token missing.'}), 400
-    subs = load_subscribers()
-    found = False
-    for s in subs:
-        if s.get('confirm_token') == token:
-            s['confirmed'] = True
-            s.pop('confirm_token', None)
-            s['confirmed_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
-            found = True
-            break
-    if not found:
-        return jsonify({'ok': False, 'error': 'Token nije važeći.'}), 404
-    save_subscribers(subs)
-    # redirect to site with success message optional
-    # optionally show a minimal confirmation page
+    token = str(request.values.get('token') or '').strip()
+    if not token or not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        return redirect(url_for('index') + '#newsletter')
+
+    token_result = supabase.from_('newsletter_confirmation_tokens').select(
+        'id,subscriber_id,expires_at,used_at'
+    ).eq('token_hash', hash_token(token)).limit(1).execute()
+    rows = getattr(token_result, 'data', None) or []
+    if not rows:
+        return jsonify({'ok': False, 'error': 'Link za potvrdu nije ispravan.'}), 404
+
+    token_row = rows[0]
+    if token_row.get('used_at'):
+        return jsonify({'ok': False, 'error': 'Ovaj link za potvrdu je već korišten.'}), 409
+
+    expires_at = datetime.datetime.fromisoformat(str(token_row['expires_at']).replace('Z', '+00:00'))
+    if expires_at <= datetime.datetime.now(datetime.timezone.utc):
+        return jsonify({'ok': False, 'error': 'Link za potvrdu je istekao. Zatraži novu prijavu.'}), 410
+
+    consume_result = supabase.from_('newsletter_confirmation_tokens').update({
+        'used_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }).eq('id', token_row['id']).is_('used_at', 'null').execute()
+    consumed = getattr(consume_result, 'data', None) or []
+    if not consumed:
+        return jsonify({'ok': False, 'error': 'Ovaj link za potvrdu je već korišten.'}), 409
+
+    subscriber_result = supabase.from_('newsletter_subscribers').select(
+        'id,email,full_name,status'
+    ).eq('id', token_row['subscriber_id']).limit(1).execute()
+    subscribers = getattr(subscriber_result, 'data', None) or []
+    if not subscribers:
+        return jsonify({'ok': False, 'error': 'Pretplatnik nije pronađen.'}), 404
+    subscriber = subscribers[0]
+    if subscriber.get('status') == 'odjavljen':
+        return jsonify({'ok': False, 'error': 'Pretplata je odjavljena.'}), 409
+
+    supabase.from_('newsletter_subscribers').update({
+        'status': 'aktivan',
+        'email_confirmed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }).eq('id', subscriber['id']).execute()
+
+    unsubscribe_result = supabase.from_('newsletter_unsubscribe_tokens').select(
+        'security_token'
+    ).eq('subscriber_id', subscriber['id']).limit(1).execute()
+    unsubscribe_rows = getattr(unsubscribe_result, 'data', None) or []
+    unsubscribe_url = None
+    if unsubscribe_rows:
+        host = public_host(request)
+        unsubscribe_url = f"{host}/api/unsubscribe?token={quote(unsubscribe_rows[0]['security_token'], safe='')}"
+
+    content = (
+        '<h1 style="margin-top:0;color:#f1d28d;">Pretplata je aktivna</h1>'
+        f"<p>{html.escape(subscriber.get('full_name') or 'Poštovani')}, hvala što pratiš rad Saveza mladih.</p>"
+        "<p>Uskoro ćeš dobiti najave događaja, izvještaje sa akcija i važne obavijesti.</p>"
+    )
+    sent, provider_id, send_error = send_resend(
+        subscriber['email'],
+        'Dobrodošli u newsletter Saveza mladih',
+        email_shell('Aktivna newsletter pretplata', content, unsubscribe_url),
+        unsubscribe_url,
+    )
+    try:
+        supabase.from_('newsletter_email_logs').insert({
+            'subscriber_id': subscriber['id'],
+            'email_type': 'aktivacija',
+            'provider_message_id': provider_id,
+            'delivery_status': 'poslano' if sent else 'neuspjelo',
+            'error_message': send_error,
+            'sent_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        app.logger.exception('Activation email log could not be written')
+
     return redirect(url_for('index') + '#newsletter')
 
 
 @app.route('/api/subscribers', methods=['GET'])
 def api_list_subscribers():
-    # admin-only
-    if not is_admin_authenticated():
+    if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
-    subs = load_subscribers()
-    # do not expose tokens in list if not admin via session
-    return jsonify({'ok': True, 'count': len(subs), 'subscribers': subs}), 200
+    if not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({'ok': False, 'error': 'Supabase nije konfigurisan.'}), 503
+    try:
+        result = supabase.from_('newsletter_subscribers').select(
+            'id,full_name,normalized_email,status,consent_given,consent_given_at,'
+            'email_confirmed_at,unsubscribed_at,registered_at,updated_at'
+        ).order('registered_at', desc=True).limit(1000).execute()
+        rows = getattr(result, 'data', None) or []
+        subscribers = [{
+            'id': row['id'],
+            'name': row['full_name'],
+            'email': row['normalized_email'],
+            'confirmed': row['status'] == 'aktivan',
+            'status': row['status'],
+            'subscribed_at': row['registered_at'],
+            'confirmed_at': row.get('email_confirmed_at'),
+        } for row in rows]
+        return jsonify({'ok': True, 'count': len(subscribers), 'subscribers': subscribers}), 200
+    except Exception:
+        app.logger.exception('Newsletter subscribers could not be loaded')
+        return jsonify({'ok': False, 'error': 'Pretplatnici se trenutno ne mogu učitati.'}), 503
 
 
 @app.route('/api/subscriber/delete', methods=['POST'])
 def api_delete_subscriber():
-    password = request.form.get('password','').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
-    email = (request.form.get('email') or '').strip().lower()
-    sid = (request.form.get('id') or '').strip()
-    if not email and not sid:
-        return jsonify({'ok': False, 'error': 'Email ili id su obavezni.'}), 400
-    subs = load_subscribers()
-    filtered = subs
-    if sid:
-        filtered = [s for s in subs if s.get('id') != sid]
-    else:
-        filtered = [s for s in subs if s.get('email','').lower() != email]
-    if len(filtered) == len(subs):
+    payload = request.get_json(silent=True) if request.is_json else request.form
+    subscriber_id = str(payload.get('id') or '').strip()
+    email = normalize_email(str(payload.get('email') or '').strip())
+    if not subscriber_id and not email:
+        return jsonify({'ok': False, 'error': 'ID ili e-mail pretplatnika su obavezni.'}), 400
+    if not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({'ok': False, 'error': 'Supabase nije konfigurisan.'}), 503
+
+    query = supabase.from_('newsletter_subscribers').select('id,status').limit(1)
+    query = query.eq('id', subscriber_id) if subscriber_id else query.eq('normalized_email', email)
+    result = query.execute()
+    rows = getattr(result, 'data', None) or []
+    if not rows:
         return jsonify({'ok': False, 'error': 'Pretplatnik nije pronađen.'}), 404
-    save_subscribers(filtered)
+    if rows[0].get('status') == 'odjavljen':
+        return jsonify({'ok': True, 'message': 'Pretplatnik je već odjavljen.'}), 200
+
+    supabase.from_('newsletter_subscribers').update({
+        'status': 'odjavljen',
+        'unsubscribed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }).eq('id', rows[0]['id']).execute()
+    try:
+        supabase.from_('newsletter_admin_activity').insert({
+            'action': 'newsletter_manual_unsubscribe',
+            'details': {'subscriber_id': rows[0]['id']},
+        }).execute()
+    except Exception:
+        app.logger.exception('Newsletter admin activity could not be written')
     return jsonify({'ok': True}), 200
 
 
 @app.route('/api/subscriber/confirm', methods=['POST'])
 def api_confirm_subscriber():
-    password = request.form.get('password','').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
-    email = (request.form.get('email') or '').strip().lower()
-    sid = (request.form.get('id') or '').strip()
-    if not email and not sid:
-        return jsonify({'ok': False, 'error': 'Email ili id su obavezni.'}), 400
-    subs = load_subscribers()
-    found = False
-    for s in subs:
-        if sid and s.get('id') == sid:
-            s['confirmed'] = True
-            s.pop('confirm_token', None)
-            s['confirmed_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
-            found = True
-            break
-        if email and s.get('email','').lower() == email:
-            s['confirmed'] = True
-            s.pop('confirm_token', None)
-            s['confirmed_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
-            found = True
-            break
-    if not found:
-        return jsonify({'ok': False, 'error': 'Pretplatnik nije pronađen.'}), 404
-    save_subscribers(subs)
-    return jsonify({'ok': True}), 200
+    return jsonify({
+        'ok': False,
+        'error': 'Pretplatnik se ne može ručno potvrditi. Potrebna je nova potvrda e-maila.'
+    }), 409
 
 
 @app.route('/api/subscribers/export', methods=['GET'])
 def api_export_subscribers():
-    if not is_admin_authenticated():
+    if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
-    subs = load_subscribers()
-    # CSV header
-    lines = ['email,name,confirmed,subscribed_at,confirmed_at']
-    for s in subs:
-        email = s.get('email','')
-        name = s.get('name','')
-        confirmed = '1' if s.get('confirmed') else '0'
-        subs_at = s.get('subscribed_at','')
-        conf_at = s.get('confirmed_at','')
-        # escape commas by quoting
-        def q(v):
-            if v is None: return ''
-            v = str(v).replace('"','""')
-            if ',' in v or '"' in v or '\n' in v:
-                return f'"{v}"'
-            return v
-        lines.append(','.join([q(email), q(name), q(confirmed), q(subs_at), q(conf_at)]))
+    if not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({'ok': False, 'error': 'Supabase nije konfigurisan.'}), 503
+    result = supabase.from_('newsletter_subscribers').select(
+        'normalized_email,full_name,status,registered_at,email_confirmed_at'
+    ).order('registered_at', desc=True).execute()
+    rows = getattr(result, 'data', None) or []
+    lines = ['email,name,status,subscribed_at,confirmed_at']
+    for row in rows:
+        values = [
+            row.get('normalized_email', ''),
+            row.get('full_name', ''),
+            row.get('status', ''),
+            row.get('registered_at', ''),
+            row.get('email_confirmed_at', ''),
+        ]
+        escaped = []
+        for value in values:
+            text = '' if value is None else str(value).replace('"', '""')
+            escaped.append(f'"{text}"')
+        lines.append(','.join(escaped))
     csv_body = '\n'.join(lines)
     from flask import Response
     resp = Response(csv_body, mimetype='text/csv')
@@ -908,60 +1204,79 @@ def send_confirmation_email(email, token):
 
 @app.route('/api/send_newsletter', methods=['POST'])
 def api_send_newsletter():
-    # Admin-only endpoint to send a newsletter to all subscribers
-    password = request.form.get('password', '').strip()
-    if not is_admin_authenticated(password):
+    if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
-    subject = request.form.get('subject', '').strip() or 'Objava od Savez Mladih'
-    html = request.form.get('html', '').strip() or request.form.get('body', '')
-    subs = load_subscribers()
-    # only confirmed subscribers should receive newsletters
-    confirmed = [s for s in subs if s.get('confirmed')]
-    if not confirmed:
-        return jsonify({'ok': False, 'error': 'Nema potvrđenih pretplatnika.'}), 400
-    send_errors = []
-    host = os.environ.get('PUBLIC_HOST') or request.host_url.rstrip('/')
-    # send via SendGrid if available
-    if os.environ.get('SENDGRID_API_KEY'):
-        try:
-            import importlib
-            sendgrid = importlib.import_module('sendgrid')
-            helpers = importlib.import_module('sendgrid.helpers.mail')
-            SendGridAPIClient = sendgrid.SendGridAPIClient
-            Mail = helpers.Mail
-            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            for s in confirmed:
-                try:
-                    unsub_link = f"{host}/api/unsubscribe?token={s.get('unsub_token')}"
-                    personalized = f"{html}<hr><p><small>Ako više ne želiš primati poruke, <a href=\"{unsub_link}\">odjavi se</a>.</small></p>"
-                    msg = Mail(from_email=MAIL_FROM, to_emails=s.get('email'), subject=subject, html_content=personalized)
-                    sg.send(msg)
-                except Exception as e:
-                    send_errors.append({'email': s.get('email'), 'error': str(e)})
-        except ImportError as e:
-            send_errors.append({'error': 'SendGrid library unavailable: ' + str(e)})
-        except Exception as e:
-            send_errors.append({'error': 'SendGrid error: ' + str(e)})
-    else:
-        # Flask-Mail SMTP fallback
-        if MAIL_USERNAME and MAIL_PASSWORD:
-            for s in confirmed:
-                try:
-                    unsub_link = f"{host}/api/unsubscribe?token={s.get('unsub_token')}"
-                    msg = Message(
-                        subject=subject,
-                        sender=app.config['MAIL_DEFAULT_SENDER'],
-                        recipients=[s.get('email')]
-                    )
-                    msg.body = (html or subject) + f"\n\nAko se želiš odjaviti: {unsub_link}"
-                    msg.html = (html or subject) + f"<hr><p><small>Ako više ne želiš primati poruke, <a href=\"{unsub_link}\">odjavi se</a>.</small></p>"
-                    mail.send(msg)
-                except Exception as e:
-                    send_errors.append({'email': s.get('email'), 'error': str(e)})
-        else:
-            return jsonify({'ok': False, 'error': 'Nijedan provider za slanje nije konfiguriran.'}), 500
+    if not supabase or not SUPABASE_SERVICE_ROLE_KEY:
+        return jsonify({'ok': False, 'error': 'Supabase nije konfigurisan.'}), 503
 
-    return jsonify({'ok': True, 'sent': len(confirmed) - len(send_errors), 'errors': send_errors, 'total_confirmed': len(confirmed)}), 200
+    payload = request.get_json(silent=True) if request.is_json else request.form
+    subject = str(payload.get('subject') or '').strip()
+    content = str(payload.get('html') or payload.get('body') or '').strip()
+    if len(subject) < 1 or len(subject) > 160:
+        return jsonify({'ok': False, 'error': 'Naslov poruke mora imati između 1 i 160 znakova.'}), 400
+    if len(content) < 1:
+        return jsonify({'ok': False, 'error': 'Sadržaj kampanje je obavezan.'}), 400
+
+    campaign_result = supabase.from_('newsletter_campaigns').insert({
+        'title': subject,
+        'email_subject': subject,
+        'html_content': content,
+        'status': 'poslana',
+        'sent_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }).execute()
+    campaigns = getattr(campaign_result, 'data', None) or []
+    if not campaigns:
+        app.logger.error('Newsletter campaign could not be created')
+        return jsonify({'ok': False, 'error': 'Kampanja nije sačuvana.'}), 503
+    campaign = campaigns[0]
+
+    subscribers_result = supabase.from_('newsletter_subscribers').select(
+        'id,email,full_name'
+    ).eq('status', 'aktivan').execute()
+    subscribers = getattr(subscribers_result, 'data', None) or []
+    sent_count = 0
+    errors = []
+    host = public_host(request)
+
+    for subscriber in subscribers:
+        token_result = supabase.from_('newsletter_unsubscribe_tokens').select(
+            'security_token'
+        ).eq('subscriber_id', subscriber['id']).limit(1).execute()
+        token_rows = getattr(token_result, 'data', None) or []
+        unsubscribe_url = None
+        if token_rows:
+            unsubscribe_url = f"{host}/api/unsubscribe?token={quote(token_rows[0]['security_token'], safe='')}"
+
+        html = email_shell(subject, content, unsubscribe_url)
+        ok, provider_id, send_error = send_resend(
+            subscriber['email'],
+            subject,
+            html,
+            unsubscribe_url,
+        )
+        if ok:
+            sent_count += 1
+        else:
+            errors.append(send_error or 'Nepoznata greška dostave')
+        try:
+            supabase.from_('newsletter_email_logs').insert({
+                'subscriber_id': subscriber['id'],
+                'campaign_id': campaign['id'],
+                'email_type': 'kampanja',
+                'provider_message_id': provider_id,
+                'delivery_status': 'poslano' if ok else 'neuspjelo',
+                'error_message': send_error,
+                'sent_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            }).execute()
+        except Exception:
+            app.logger.exception('Campaign email log could not be written')
+
+    return jsonify({
+        'ok': True,
+        'sent': sent_count,
+        'errors': errors,
+        'total_confirmed': len(subscribers),
+    }), 200
 
 
 

@@ -1545,17 +1545,48 @@ function initNewsletter(){
     const email = (q('#nl-email') && q('#nl-email').value || '').trim();
     const name = (q('#nl-name') && q('#nl-name').value || '').trim();
     const consent = !!(q('#nl-consent') && q('#nl-consent').checked);
-    if(!email || !email.includes('@')) return showToast('Unesi validan email');
-    if(!consent) return showToast('Moraš prihvatiti politiku privatnosti');
+    const status = q('#newsletter-status');
+    const submitBtn = form.querySelector('button[type=submit]');
+    if(status) status.textContent = '';
+    if(name.length < 2) return showToast('Unesi ime i prezime.');
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showToast('Unesi ispravnu e-mail adresu.');
+    if(!consent) return showToast('Moraš prihvatiti politiku privatnosti.');
+    if(submitBtn && submitBtn.disabled) return;
     try{
-      const submitBtn = form.querySelector('button[type=submit]'); if(submitBtn) submitBtn.disabled = true;
-      const body = new URLSearchParams(); body.set('email', email); body.set('name', name); body.set('consent', consent ? '1' : '0');
-      const res = await apiFetch('/api/subscribe', {method: 'POST', body: body, credentials: 'same-origin'});
+      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Šaljem...'; submitBtn.setAttribute('aria-busy','true'); }
+      const body = new URLSearchParams();
+      body.set('email', email);
+      body.set('name', name);
+      body.set('consent', consent ? '1' : '0');
+      const res = await apiFetch('/api/subscribe', {
+        method: 'POST',
+        body: body,
+        credentials: 'same-origin'
+      });
       const js = await res.json().catch(()=>({ok:false, error:'Neuspješan odgovor'}));
-      if(res.ok && js.ok){ showToast('Hvala! Uspješno si prijavljen. Provjeri email za potvrdu (ako ima).'); form.reset(); }
-      else { console.error('Subscribe failed', res.status, js); showToast(js.error || 'Neuspjela pretplata. Pokušaj kasnije.'); }
-    }catch(e){ console.error('Subscribe error', e); showToast('Greška pri prijavi.'); }
-    finally{ const submitBtn = form.querySelector('button[type=submit]'); if(submitBtn) submitBtn.disabled = false; }
+      const message = js.message || js.error || 'Neuspjela prijava. Pokušaj kasnije.';
+      if(res.ok && js.ok){
+        showToast(message);
+        if(status){ status.textContent = message; status.className = 'newsletter-status is-success'; }
+        form.reset();
+      }else{
+        console.error('Newsletter prijava nije uspjela', res.status, js);
+        showToast(message);
+        if(status){ status.textContent = message; status.className = 'newsletter-status is-error'; }
+      }
+    }catch(e){
+      console.error('Newsletter prijava nije uspjela', e);
+      const message = 'Greška pri prijavi. Provjeri mrežnu vezu i pokušaj ponovo.';
+      showToast(message);
+      if(status){ status.textContent = message; status.className = 'newsletter-status is-error'; }
+    }
+    finally{
+      if(submitBtn){
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Prijavi se';
+        submitBtn.removeAttribute('aria-busy');
+      }
+    }
   });
 }
 

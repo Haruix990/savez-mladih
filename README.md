@@ -72,3 +72,37 @@ The gallery uses responsive WebP files with the original images as a fallback. A
 ```powershell
 python scripts/optimize_gallery_images.py
 ```
+
+Newsletter konfiguracija
+------------------------
+
+1. Primijeni migraciju `supabase/migrations/20261124_create_newsletter.sql` u Supabase SQL editoru.
+2. Dodaj Supabase korisnika u tabelu `public.newsletter_admins`:
+
+```sql
+insert into public.newsletter_admins (user_id, email)
+select id, email
+from auth.users
+where email = 'zeleneberetke.savezmladihsg@gmail.com';
+```
+
+Konfiguriraj sljedeće environment varijable samo na serveru:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM` — primjer: `Savez Mladih <newsletter@tvoj-verifikovani-domen.ba>`
+- `PUBLIC_HOST` — javni HTTPS URL aplikacije
+- `CLOUDFLARE_TURNSTILE_SECRET` — obavezno u produkciji
+- `CLOUDFLARE_TURNSTILE_SITE_KEY` — samo za frontend widget
+
+Potvrđeni Resend domen se mora dodati i verifikovati u Resend Dashboardu prije slanja drugima. Testni režim Resenda može slati samo adresi vlasnika ključa. Service role ključ, Resend ključ i Turnstile tajni ključ nikada ne smiju biti u HTML, JavaScriptu ili repozitoriju.
+
+Newsletter instalacija se pokreće ovim rutama:
+
+- `POST /api/subscribe`
+- `GET /api/confirm_subscription?token=...`
+- `POST|GET /api/unsubscribe?token=...`
+- `POST /api/send_newsletter`
+
+Potvrda prijave i odjava su zasnovani na random tokenima čiji se samo SHA-256 hash čuva u bazi. Newsletter se šalje isključivo pretplatnicima statusa `aktivan`.

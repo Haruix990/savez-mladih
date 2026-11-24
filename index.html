@@ -745,10 +745,11 @@
               <span class="newsletter-pill">1 poruka mjesečno</span>
             </div>
             <form id="newsletter-form" class="newsletter-form" aria-label="Newsletter prijava">
-              <input type="text" id="nl-name" name="name" placeholder="Ime (opciono)" />
+              <input type="text" id="nl-name" name="name" placeholder="Ime i prezime" required minlength="2" maxlength="120" autocomplete="name" />
               <input type="email" id="nl-email" name="email" placeholder="tvoj@email.com" required />
               <label class="nl-consent"><input id="nl-consent" name="consent" type="checkbox" required /> Slažem se primati obavijesti i prihvatam politiku privatnosti</label>
               <button class="btn btn-primary" type="submit">Prijavi se</button>
+              <p id="newsletter-status" class="newsletter-status" role="status" aria-live="polite"></p>
             </form>
             <p class="newsletter-footnote">Možeš se odjaviti u bilo kojem trenutku — u svakoj poruci nalazi se link za odjavu. <a href="#privatnost">Pročitaj informacije o privatnosti.</a></p>
           </div>
@@ -1690,7 +1691,7 @@
       }
 
       const supabaseUrl = 'https://enxvnjwdrpvlmywqtqwl.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVueHZuandkcnB2bG15d3F0cXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjcwODksImV4cCI6MjA5ODg0MzA4OX0.kC4VKtBLcuHtb01rAMQ-3qXLxmpdpFb1rBia8HgF_Vk';
+      const supabaseKey = 'sb_publishable_4X6W3hoe4EvBWGMrrl9yog_UNLvLAB5';
 
       async function loadNews() {
         try {
