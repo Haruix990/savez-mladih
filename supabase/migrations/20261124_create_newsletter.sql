@@ -1,39 +1,10 @@
-create type public.newsletter_subscriber_status as enum (
-  'na_cekanju',
-  'aktivan',
-  'odjavljen',
-  'neispravna_dostava'
-);
-
-create type public.newsletter_campaign_status as enum (
-  'nacrt',
-  'zakazana',
-  'poslana',
-  'otkazana'
-);
-
-create type public.newsletter_email_type as enum (
-  'potvrda',
-  'aktivacija',
-  'kampanja',
-  'odjava',
-  'test'
-);
-
-create type public.newsletter_delivery_status as enum (
-  'na_cekanju',
-  'poslano',
-  'dostavljeno',
-  'neispravna_adresa',
-  'neuspjelo'
-);
-
 create table if not exists public.newsletter_subscribers (
   id uuid primary key default gen_random_uuid(),
   full_name text not null check (char_length(btrim(full_name)) between 2 and 120),
   email text not null check (char_length(email) between 3 and 320),
   normalized_email text not null unique check (char_length(normalized_email) between 3 and 320),
-  status public.newsletter_subscriber_status not null default 'na_cekanju',
+  status text not null default 'na_cekanju'
+    check (status in ('na_cekanju','aktivan','odjavljen','neispravna_dostava')),
   consent_given boolean not null default false,
   consent_given_at timestamptz,
   email_confirmed_at timestamptz,
@@ -47,7 +18,8 @@ create table if not exists public.newsletter_campaigns (
   title text not null check (char_length(btrim(title)) between 1 and 160),
   email_subject text not null check (char_length(btrim(email_subject)) between 1 and 160),
   html_content text not null,
-  status public.newsletter_campaign_status not null default 'nacrt',
+  status text not null default 'nacrt'
+    check (status in ('nacrt','zakazana','poslana','otkazana')),
   scheduled_at timestamptz,
   sent_at timestamptz,
   created_at timestamptz not null default now(),
@@ -58,9 +30,11 @@ create table if not exists public.newsletter_email_logs (
   id uuid primary key default gen_random_uuid(),
   subscriber_id uuid references public.newsletter_subscribers(id) on delete set null,
   campaign_id uuid references public.newsletter_campaigns(id) on delete set null,
-  email_type public.newsletter_email_type not null,
+  email_type text not null
+    check (email_type in ('potvrda','aktivacija','kampanja','odjava','test')),
   provider_message_id text,
-  delivery_status public.newsletter_delivery_status not null default 'na_cekanju',
+  delivery_status text not null default 'na_cekanju'
+    check (delivery_status in ('na_cekanju','poslano','dostavljeno','neispravna_adresa','neuspjelo')),
   error_message text,
   sent_at timestamptz not null default now()
 );
@@ -143,6 +117,9 @@ as $$
   );
 $$;
 
+revoke execute on function public.is_newsletter_admin() from public, anon;
+grant execute on function public.is_newsletter_admin() to authenticated;
+
 revoke all on public.newsletter_subscribers from anon, authenticated;
 revoke all on public.newsletter_campaigns from anon, authenticated;
 revoke all on public.newsletter_email_logs from anon, authenticated;
@@ -159,36 +136,43 @@ grant select, insert, update, delete on public.newsletter_unsubscribe_tokens to 
 grant select, insert, update, delete on public.newsletter_admin_activity to authenticated;
 grant select on public.newsletter_admins to authenticated;
 
+drop policy if exists newsletter_subscribers_admin_all on public.newsletter_subscribers;
 create policy newsletter_subscribers_admin_all
   on public.newsletter_subscribers for all to authenticated
   using (public.is_newsletter_admin())
   with check (public.is_newsletter_admin());
 
+drop policy if exists newsletter_campaigns_admin_all on public.newsletter_campaigns;
 create policy newsletter_campaigns_admin_all
   on public.newsletter_campaigns for all to authenticated
   using (public.is_newsletter_admin())
   with check (public.is_newsletter_admin());
 
+drop policy if exists newsletter_email_logs_admin_all on public.newsletter_email_logs;
 create policy newsletter_email_logs_admin_all
   on public.newsletter_email_logs for all to authenticated
   using (public.is_newsletter_admin())
   with check (public.is_newsletter_admin());
 
+drop policy if exists newsletter_confirmation_tokens_admin_all on public.newsletter_confirmation_tokens;
 create policy newsletter_confirmation_tokens_admin_all
   on public.newsletter_confirmation_tokens for all to authenticated
   using (public.is_newsletter_admin())
   with check (public.is_newsletter_admin());
 
+drop policy if exists newsletter_unsubscribe_tokens_admin_all on public.newsletter_unsubscribe_tokens;
 create policy newsletter_unsubscribe_tokens_admin_all
   on public.newsletter_unsubscribe_tokens for all to authenticated
   using (public.is_newsletter_admin())
   with check (public.is_newsletter_admin());
 
+drop policy if exists newsletter_admin_activity_admin_all on public.newsletter_admin_activity;
 create policy newsletter_admin_activity_admin_all
   on public.newsletter_admin_activity for all to authenticated
   using (public.is_newsletter_admin())
   with check (public.is_newsletter_admin());
 
+drop policy if exists newsletter_admins_admin_select on public.newsletter_admins;
 create policy newsletter_admins_admin_select
   on public.newsletter_admins for select to authenticated
   using (public.is_newsletter_admin());
