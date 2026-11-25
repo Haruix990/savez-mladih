@@ -373,87 +373,152 @@
             <p>Pošalji nam pitanje, ideju za zajednički projekat ili prijedlog aktivnosti. Odgovorit ćemo na email koji ostaviš.</p>
           </div>
 
-          <form id="contact-form" class="contact-form" action="/send-message" method="post" aria-label="Kontakt forma" autocomplete="on">
-            <div class="form-row">
-              <label for="contact-topic">O čemu nam pišeš?</label>
-              <select id="contact-topic" name="topic" required>
-                <option value="general">Opći upit</option>
-                <option value="collaboration">Saradnja i partnerstvo</option>
-              </select>
-            </div>
+          <div class="contact-topic-row">
+            <label for="contact-topic">O čemu nam pišeš?</label>
+            <select id="contact-topic" name="topic" required>
+              <option value="general">Opći upit</option>
+              <option value="collaboration">Saradnja i partnerstvo</option>
+            </select>
+          </div>
 
-            <div id="collaboration-fields" class="contact-collaboration-panel" hidden>
+          <div id="contact-form-stage">
+            <form id="contact-form" class="contact-form contact-form-panel" action="/send-message" method="post" aria-label="Forma za opći upit" autocomplete="on" data-contact-kind="general">
+              <div class="contact-field-grid">
+                <div class="form-row">
+                  <label for="name">Ime i prezime</label>
+                  <input id="name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="Kako da te oslovimo?" required>
+                </div>
+                <div class="form-row">
+                  <label for="email">Email adresa</label>
+                  <input id="email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="ime@primjer.ba" required>
+                </div>
+                <div class="form-row">
+                  <label for="phone">Telefon <span>(opciono)</span></label>
+                  <input id="phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+387 ...">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label for="message">Poruka</label>
+                <textarea id="message" name="message" rows="6" maxlength="3000" placeholder="Napiši nam nekoliko detalja o svom upitu ili ideji..." required></textarea>
+                <div class="contact-message-meta">
+                  <span>Do 3.000 znakova</span>
+                  <span id="contact-message-count" aria-live="polite">0 / 3000</span>
+                </div>
+              </div>
+
+              <div class="contact-consent">
+                <input id="contact-consent" name="consent" type="checkbox" value="true" required>
+                <label for="contact-consent">Saglasan/saglasna sam da se moji podaci koriste samo radi odgovora na ovaj upit.</label>
+              </div>
+              <p class="contact-privacy-link"><a href="#privatnost">Pročitaj kako obrađujemo podatke</a></p>
+
+              <div class="contact-honeypot" aria-hidden="true">
+                <label for="website">Ostavite ovo polje prazno</label>
+                <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+              </div>
+
+              <div class="form-row form-actions">
+                <button type="submit" class="btn btn-primary">Pošalji poruku</button>
+                <span class="contact-response-note">Odgovaramo čim budemo u mogućnosti.</span>
+              </div>
+              <div class="contact-form-message" role="status" aria-live="polite" aria-atomic="true"></div>
+            </form>
+
+            <form id="collaboration-form" class="contact-form contact-form-panel" action="/send-message" method="post" aria-label="Forma za saradnju i partnerstvo" autocomplete="on" data-contact-kind="collaboration" hidden>
               <div class="contact-collaboration-heading">
                 <span class="contact-collaboration-icon" aria-hidden="true">✦</span>
                 <div>
                   <h4>Hajde da sarađujemo</h4>
-                  <p>Podijeli osnovne informacije o ideji, a mi ćemo ti se javiti.</p>
+                  <p>Imate ideju, prijedlog ili priliku za saradnju? Voljeli bismo čuti više o vašoj inicijativi. Ispunite osnovne informacije, a naš tim će vam se javiti.</p>
                 </div>
               </div>
+
               <div class="contact-field-grid">
                 <div class="form-row">
-                  <label for="organization">Organizacija ili ustanova <span>(opciono)</span></label>
-                  <input id="organization" name="organization" type="text" maxlength="160" placeholder="Naziv organizacije" disabled>
+                  <label for="collaboration-organization">Organizacija ili ustanova <span>(opciono)</span></label>
+                  <input id="collaboration-organization" name="organization" type="text" maxlength="160" placeholder="Naziv organizacije ili kompanije" autocomplete="organization">
                 </div>
                 <div class="form-row">
-                  <label for="collaboration-kind">Oblast saradnje</label>
-                  <select id="collaboration-kind" name="collaboration_kind" required disabled>
-                    <option value="">Odaberi oblast</option>
-                    <option value="education">Edukacija i radionice</option>
-                    <option value="community_event">Događaj i aktivnosti</option>
-                    <option value="humanitarian">Humanitarna akcija</option>
-                    <option value="sports">Sport i rekreacija</option>
+                  <label for="collaboration-type">Vrsta saradnje</label>
+                  <select id="collaboration-type" name="collaboration_type" required>
+                    <option value="">Odaberi vrstu saradnje</option>
+                    <option value="business">Poslovno partnerstvo</option>
+                    <option value="media">Medijska saradnja</option>
+                    <option value="sponsorship">Sponzorstvo</option>
+                    <option value="marketing">Marketing i promocija</option>
+                    <option value="technology">Tehnološka saradnja</option>
+                    <option value="project">Projektna saradnja</option>
+                    <option value="event">Organizacija događaja</option>
                     <option value="other">Drugo</option>
                   </select>
                 </div>
                 <div class="form-row">
-                  <label for="activity-date">Predloženi datum <span>(opciono)</span></label>
-                  <input id="activity-date" name="activity_date" type="date" disabled>
+                  <label for="collaboration-area">Oblast saradnje</label>
+                  <select id="collaboration-area" name="collaboration_area" required>
+                    <option value="">Odaberi oblast</option>
+                    <option value="education">Obrazovanje i mladi</option>
+                    <option value="community">Zajednica i civilno društvo</option>
+                    <option value="culture">Kultura i umjetnost</option>
+                    <option value="sports">Sport i rekreacija</option>
+                    <option value="humanitarian">Humanitarne i društvene akcije</option>
+                    <option value="environment">Ekologija i zaštita okoliša</option>
+                    <option value="technology">Tehnologija i inovacije</option>
+                    <option value="media">Mediji i komunikacije</option>
+                    <option value="other">Drugo</option>
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <div class="contact-field-grid">
+              <div class="contact-field-grid">
+                <div class="form-row">
+                  <label for="collaboration-name">Ime i prezime</label>
+                  <input id="collaboration-name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="Kako da vas oslovimo?" required>
+                </div>
+                <div class="form-row">
+                  <label for="collaboration-email">E-mail adresa</label>
+                  <input id="collaboration-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="ime@primjer.ba" required>
+                </div>
+              </div>
+
+              <div class="contact-field-grid">
+                <div class="form-row">
+                  <label for="collaboration-phone">Broj telefona <span>(opciono)</span></label>
+                  <input id="collaboration-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+387 ...">
+                </div>
+                <div class="form-row">
+                  <label for="collaboration-website">Web stranica ili profil organizacije <span>(opciono)</span></label>
+                  <input id="collaboration-website" name="organization_profile" type="url" maxlength="300" placeholder="https://primjer.ba">
+                </div>
+              </div>
+
               <div class="form-row">
-                <label for="name">Ime i prezime</label>
-                <input id="name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="Kako da te oslovimo?" required>
+                <label for="collaboration-message">Poruka</label>
+                <textarea id="collaboration-message" name="message" rows="6" maxlength="3000" placeholder="Opišite nam svoju ideju, prijedlog ili mogućnost saradnje..." required></textarea>
+                <div class="contact-message-meta">
+                  <span>Do 3.000 znakova</span>
+                  <span class="collaboration-message-count" aria-live="polite">0 / 3000</span>
+                </div>
               </div>
-              <div class="form-row">
-                <label for="email">Email adresa</label>
-                <input id="email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="ime@primjer.ba" required>
+
+              <div class="contact-consent">
+                <input id="collaboration-consent" name="consent" type="checkbox" value="true" required>
+                <label for="collaboration-consent">Saglasan/saglasna sam sa politikom privatnosti i prihvatam obradu navedenih podataka radi odgovora na prijedlog saradnje.</label>
               </div>
-              <div class="form-row">
-                <label for="phone">Telefon <span>(opciono)</span></label>
-                <input id="phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+387 ...">
+              <p class="contact-privacy-link"><a href="#privatnost">Pročitaj kako obrađujemo podatke</a></p>
+
+              <div class="contact-honeypot" aria-hidden="true">
+                <label for="collaboration-website-honeypot">Ostavite ovo polje prazno</label>
+                <input id="collaboration-website-honeypot" name="website" type="text" tabindex="-1" autocomplete="off">
               </div>
-            </div>
 
-            <div class="form-row">
-              <label for="message">Poruka</label>
-              <textarea id="message" name="message" rows="6" maxlength="3000" placeholder="Napiši nam nekoliko detalja o svom upitu ili ideji..." required></textarea>
-              <div class="contact-message-meta">
-                <span>Do 3.000 znakova</span>
-                <span id="contact-message-count" aria-live="polite">0 / 3000</span>
+              <div class="form-row form-actions">
+                <button type="submit" class="btn btn-primary">Pošalji prijedlog za saradnju</button>
+                <span class="contact-response-note">Naš tim će vam se javiti.</span>
               </div>
-            </div>
-
-            <div class="contact-consent">
-              <input id="contact-consent" name="consent" type="checkbox" value="true" required>
-              <label for="contact-consent">Saglasan/saglasna sam da se moji podaci koriste samo radi odgovora na ovaj upit.</label>
-            </div>
-            <p class="contact-privacy-link"><a href="#privatnost">Pročitaj kako obrađujemo podatke</a></p>
-
-            <div class="contact-honeypot" aria-hidden="true">
-              <label for="website">Ostavite ovo polje prazno</label>
-              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
-            </div>
-
-            <div class="form-row form-actions">
-              <button type="submit" class="btn btn-primary">Pošalji poruku</button>
-              <span class="contact-response-note">Odgovaramo čim budemo u mogućnosti.</span>
-            </div>
-            <div id="contact-form-message" class="contact-form-message" role="status" aria-live="polite" aria-atomic="true"></div>
-          </form>
+              <div class="contact-form-message" role="status" aria-live="polite" aria-atomic="true"></div>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -700,7 +765,7 @@
           <article class="privacy-card">
             <span class="privacy-card-icon" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></span>
             <h3>Ko može pristupiti?</h3>
-            <p>Pristup imaju osobe zadužene za obradu upita. Kontaktna poruka se čuva u Supabase bazi, a email obavijest se šalje na adresu podešenu za organizaciju. Newsletter prijave se čuvaju u aplikacijskom registru.</p>
+            <p>Pristup imaju osobe zadužene za obradu upita. Kontaktne poruke i newsletter prijave čuvaju se u našoj sigurnoj bazi podataka, a email obavijesti šalju se putem podešene usluge za organizaciju.</p>
           </article>
           <article class="privacy-card privacy-retention-card">
             <span class="privacy-card-icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>

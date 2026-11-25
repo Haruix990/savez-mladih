@@ -101,107 +101,119 @@ function initSmoothLinks(){
 
 /* Contact form handling */
 function initContactForm(){
-  const form = q('#contact-form');
-  if(!form) return;
+  const topicInput = q('#contact-topic');
+  if(!topicInput) return;
 
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const messageEl = q('#contact-form-message');
-  const topicInput = form.querySelector('#contact-topic');
-  const collaborationFields = form.querySelector('#collaboration-fields');
-  const collaborationKind = form.querySelector('#collaboration-kind');
-  const organizationInput = form.querySelector('#organization');
-  const activityDateInput = form.querySelector('#activity-date');
-  const messageInput = form.querySelector('#message');
-  const messageCount = form.querySelector('#contact-message-count');
-  const consentInput = form.querySelector('#contact-consent');
-  const websiteInput = form.querySelector('#website');
+  const wrapper = q('#contact-form-stage');
+  if(!wrapper) return;
 
-  function updateCollaborationFields(){
-    const isCollaboration = topicInput && topicInput.value === 'collaboration';
-    if(collaborationFields) collaborationFields.hidden = !isCollaboration;
-    [collaborationKind, organizationInput, activityDateInput].forEach(input => {
-      if(input) input.disabled = !isCollaboration;
-    });
-    if(!isCollaboration){
-      if(collaborationKind) collaborationKind.value = '';
-      if(organizationInput) organizationInput.value = '';
-      if(activityDateInput) activityDateInput.value = '';
-    }
-  }
+  const forms = {
+    general: q('#contact-form'),
+    collaboration: q('#collaboration-form')
+  };
 
-  function updateMessageCount(){
-    if(messageCount && messageInput){
-      messageCount.textContent = `${messageInput.value.length} / ${messageInput.maxLength}`;
-    }
-  }
-
-  function setContactMessage(text, isError = false){
+  function setContactMessage(activeForm, text, isError = false){
+    const messageEl = activeForm?.querySelector('.contact-form-message');
     if(!messageEl) return;
     messageEl.textContent = text;
     messageEl.className = 'contact-form-message';
     if(text) messageEl.classList.add(isError ? 'error' : 'success');
   }
 
-  if(topicInput) topicInput.addEventListener('change', updateCollaborationFields);
-  if(messageInput) messageInput.addEventListener('input', updateMessageCount);
-  updateCollaborationFields();
-  updateMessageCount();
-
-  form.addEventListener('submit', async function(ev){
-    ev.preventDefault();
-    if(submitBtn){
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Šaljem...';
+  function updateMessageCount(activeForm){
+    const messageInput = activeForm.querySelector('textarea[name="message"]');
+    const counter = activeForm.querySelector('#contact-message-count') || activeForm.querySelector('.collaboration-message-count');
+    if(messageInput && counter){
+      counter.textContent = `${messageInput.value.length} / ${messageInput.maxLength}`;
     }
-    form.setAttribute('aria-busy', 'true');
-    setContactMessage('');
+  }
 
-    const jsonData = {
-      name: form.querySelector('#name')?.value.trim() || '',
-      email: form.querySelector('#email')?.value.trim() || '',
-      phone: form.querySelector('#phone')?.value.trim() || '',
-      message: messageInput?.value.trim() || '',
-      topic: topicInput?.value || 'general',
-      organization: organizationInput?.value.trim() || '',
-      collaboration_kind: collaborationKind?.value || '',
-      activity_date: activityDateInput?.value || '',
-      consent: !!consentInput?.checked,
-      website: websiteInput?.value.trim() || ''
-    };
-
-    const action = form.getAttribute('action') || '/send-message';
-
-    try {
-      const response = await fetch(action, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(jsonData)
-      });
-      const payload = await response.json().catch(() => ({}));
-
-      if(response.ok && payload.success){
-        setContactMessage(payload.message || 'Poruka je uspješno poslata!', false);
-        form.reset();
-        updateCollaborationFields();
-        updateMessageCount();
-      } else {
-        const errorMessage = payload.message || payload.error || 'Greška pri slanju. Pokušaj ponovo.';
-        setContactMessage(errorMessage, true);
+  function switchContactForm(kind, animate = true){
+    Object.entries(forms).forEach(([name, activeForm])=>{
+      if(!activeForm) return;
+      const selected = name === kind;
+      activeForm.hidden = !selected;
+      activeForm.classList.toggle('is-active', selected);
+      if(selected && animate){
+        activeForm.classList.remove('contact-form-enter');
+        void activeForm.offsetWidth;
+        activeForm.classList.add('contact-form-enter');
       }
-    } catch (err) {
-      console.error('Contact submit error:', err);
-      setContactMessage('Greška pri slanju. Provjeri vezu.', true);
-    } finally {
-      form.removeAttribute('aria-busy');
-      if(submitBtn){
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Pošalji poruku';
-      }
-    }
+    });
+  }
+
+  topicInput.addEventListener('change', function(){
+    switchContactForm(topicInput.value);
   });
+
+  Object.values(forms).forEach(activeForm=>{
+    if(!activeForm) return;
+    const messageInput = activeForm.querySelector('textarea[name="message"]');
+    if(messageInput){
+      messageInput.addEventListener('input', ()=>updateMessageCount(activeForm));
+      updateMessageCount(activeForm);
+    }
+
+    activeForm.addEventListener('submit', async function(ev){
+      ev.preventDefault();
+      const submitBtn = activeForm.querySelector('button[type="submit"]');
+      const kind = activeForm.dataset.contactKind || 'general';
+      const originalText = submitBtn?.textContent || '';
+
+      if(submitBtn){
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Šaljem...';
+      }
+      activeForm.setAttribute('aria-busy', 'true');
+      setContactMessage(activeForm, '');
+
+      const jsonData = {
+        topic: kind,
+        name: activeForm.querySelector('[name="name"]')?.value.trim() || '',
+        email: activeForm.querySelector('[name="email"]')?.value.trim() || '',
+        phone: activeForm.querySelector('[name="phone"]')?.value.trim() || '',
+        message: activeForm.querySelector('[name="message"]')?.value.trim() || '',
+        organization: activeForm.querySelector('[name="organization"]')?.value.trim() || '',
+        organization_profile: activeForm.querySelector('[name="organization_profile"]')?.value.trim() || '',
+        collaboration_type: activeForm.querySelector('[name="collaboration_type"]')?.value || '',
+        collaboration_area: activeForm.querySelector('[name="collaboration_area"]')?.value || '',
+        consent: !!activeForm.querySelector('[name="consent"]')?.checked,
+        website: activeForm.querySelector('[name="website"]')?.value.trim() || ''
+      };
+
+      try{
+        const response = await fetch(activeForm.action || '/send-message', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(jsonData)
+        });
+        const payload = await response.json().catch(()=>({}));
+
+        if(response.ok && payload.success){
+          const successText = kind === 'collaboration'
+            ? 'Prijedlog za saradnju je uspješno poslan!'
+            : (payload.message || 'Poruka je uspješno poslata!');
+          setContactMessage(activeForm, successText, false);
+          activeForm.reset();
+          updateMessageCount(activeForm);
+        }else{
+          setContactMessage(activeForm, payload.message || payload.error || 'Greška pri slanju. Pokušaj ponovo.', true);
+        }
+      }catch(err){
+        console.error('Contact submit error:', err);
+        setContactMessage(activeForm, 'Greška pri slanju. Provjeri vezu i pokušaj ponovo.', true);
+      }finally{
+        activeForm.removeAttribute('aria-busy');
+        if(submitBtn){
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
+    });
+  });
+
+  switchContactForm(topicInput.value, false);
 }
 
 function initPartnershipCtas(){
@@ -765,7 +777,7 @@ function initNewsManager(){
       // if resource not found on the current origin (e.g., Live Server), try fallback backends
       if(res && res.status === 404){
         console.warn('Relative fetch returned 404, attempting fallback backends for', path);
-        const bases = ['http://127.0.0.1:5000','http://127.0.0.1:5001','http://localhost:5000','http://localhost:5001'];
+        const bases = ['http://127.0.0.1:8000','http://127.0.0.1:5000','http://127.0.0.1:5001','http://localhost:8000','http://localhost:5000','http://localhost:5001'];
         for(const base of bases){
           try{
             const newOpts = Object.assign({}, opts);
@@ -782,7 +794,7 @@ function initNewsManager(){
     }catch(err){
       console.warn('Relative fetch failed, attempting fallback backends for', path, err);
       // network error -> try known backends
-      const bases = ['http://127.0.0.1:5000','http://127.0.0.1:5001','http://localhost:5000','http://localhost:5001'];
+      const bases = ['http://127.0.0.1:8000','http://127.0.0.1:5000','http://127.0.0.1:5001','http://localhost:8000','http://localhost:5000','http://localhost:5001'];
       for(const base of bases){
         try{
           const newOpts = Object.assign({}, opts);

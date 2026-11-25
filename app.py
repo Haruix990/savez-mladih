@@ -3,7 +3,7 @@ import os
 import json
 import uuid
 import datetime
-import html
+import html as html_lib
 import hashlib
 import hmac
 import re
@@ -110,12 +110,15 @@ UPLOAD_DIR = Path('assets') / 'uploads'
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Optional CORS support for explicitly trusted local development origins.
-DEV_ALLOW_CORS = os.environ.get('DEV_ALLOW_CORS', '0').strip().lower() in ('1', 'true', 'yes')
+DEV_ALLOW_CORS = (
+    os.environ.get('DEV_ALLOW_CORS', '0').strip().lower() in ('1', 'true', 'yes')
+    or not IS_PRODUCTION
+)
 DEV_CORS_ORIGINS = {
     origin.strip()
     for origin in os.environ.get(
         'DEV_CORS_ORIGINS',
-        'http://127.0.0.1:5500,http://localhost:5500'
+        'http://127.0.0.1:5500,http://localhost:5500,http://127.0.0.1:8000,http://localhost:8000'
     ).split(',')
     if origin.strip()
 }
@@ -373,15 +376,15 @@ def send_contact_notification(entry):
     resend_error = None
     if RESEND_API_KEY:
         try:
-            safe_message = html.escape(entry['message']).replace('\n', '<br>')
+            safe_message = html_lib.escape(entry['message']).replace('\n', '<br>')
             html_body = f"""
             <div style="font-family:Arial,sans-serif;color:#333;line-height:1.6">
               <h2 style="color:#2e5e2f">Nova poruka sa web stranice</h2>
-              <p><strong>Vrsta upita:</strong> {html.escape(entry['topic_label'])}</p>
-              <p><strong>Ime:</strong> {html.escape(entry['name'])}</p>
-              <p><strong>Email:</strong> {html.escape(entry['email'])}</p>
-              <p><strong>Telefon:</strong> {html.escape(entry['phone'] or 'Nije navedeno')}</p>
-              <p><strong>Organizacija:</strong> {html.escape(entry['organization'] or 'Nije navedeno')}</p>
+              <p><strong>Vrsta upita:</strong> {html_lib.escape(entry['topic_label'])}</p>
+              <p><strong>Ime:</strong> {html_lib.escape(entry['name'])}</p>
+              <p><strong>Email:</strong> {html_lib.escape(entry['email'])}</p>
+              <p><strong>Telefon:</strong> {html_lib.escape(entry['phone'] or 'Nije navedeno')}</p>
+              <p><strong>Organizacija:</strong> {html_lib.escape(entry['organization'] or 'Nije navedeno')}</p>
               <hr style="border:0;border-top:1px solid #ddd;margin:20px 0">
               <h3>Poruka</h3>
               <p style="white-space:pre-wrap">{safe_message}</p>
@@ -878,7 +881,7 @@ def api_subscribe():
     confirmation_url = f"{host}/api/confirm_subscription?token={quote(token, safe='')}"
     unsubscribe_url = f"{host}/api/unsubscribe?token={quote(unsubscribe_token, safe='')}"
     content = (
-        f"<h1 style='margin-top:0;color:#f1d28d;'>Potvrdi prijavu, {html.escape(name)}</h1>"
+        f"<h1 style='margin-top:0;color:#f1d28d;'>Potvrdi prijavu, {html_lib.escape(name)}</h1>"
         "<p>Primili smo tvoju prijavu na newsletter Saveza mladih.</p>"
         '<p style="text-align:center;margin:28px 0;">'
         f'<a href="{confirmation_url}" style="display:inline-block;padding:14px 22px;border-radius:999px;'
@@ -957,7 +960,7 @@ def api_unsubscribe():
 
     content = (
         '<h1 style="margin-top:0;color:#f1d28d;">Odjava je potvrđena</h1>'
-        f"<p>{html.escape(subscriber.get('full_name') or 'Poštovani')}, više nećeš primati newsletter poruke od Saveza mladih.</p>"
+        f"<p>{html_lib.escape(subscriber.get('full_name') or 'Poštovani')}, više nećeš primati newsletter poruke od Saveza mladih.</p>"
     )
     sent, provider_id, send_error = send_resend(
         subscriber['email'],
@@ -1035,7 +1038,7 @@ def api_confirm_subscription():
 
     content = (
         '<h1 style="margin-top:0;color:#f1d28d;">Pretplata je aktivna</h1>'
-        f"<p>{html.escape(subscriber.get('full_name') or 'Poštovani')}, hvala što pratiš rad Saveza mladih.</p>"
+        f"<p>{html_lib.escape(subscriber.get('full_name') or 'Poštovani')}, hvala što pratiš rad Saveza mladih.</p>"
         "<p>Uskoro ćeš dobiti najave događaja, izvještaje sa akcija i važne obavijesti.</p>"
     )
     sent, provider_id, send_error = send_resend(
@@ -1643,6 +1646,9 @@ def send_message():
     phone = field('phone')
     activity_date = field('activity_date')
     collaboration_kind = field('collaboration_kind')
+    collaboration_type = field('collaboration_type')
+    collaboration_area = field('collaboration_area')
+    organization_profile = field('organization_profile')
     honeypot = field('website')
     consent_value = data.get('consent')
     consent = consent_value is True or (
@@ -1656,6 +1662,11 @@ def send_message():
         return error_response('Ime, email i poruka su obavezni.', 400)
     if not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
         return error_response('Unesite ispravnu email adresu.', 400)
+    if phone and not re.fullmatch(r'^\+?[0-9 ()/-]{7,40}$', phone):
+        return error_response('Unesite ispravan broj telefona.', 400)
+    if organization_profile:
+        if not re.fullmatch(r'https?://[^\s]+', organization_profile, re.I):
+            return error_response('Unesite ispravnu web adresu sa http:// ili https://.', 400)
     if not consent:
         return error_response('Potvrdite saglasnost za obradu podataka.', 400)
     if topic not in ('general', 'collaboration'):
@@ -1666,20 +1677,53 @@ def send_message():
         'email': (email, 254),
         'message': (message, 3000),
         'organization': (organization, 160),
-        'phone': (phone, 40)
+        'phone': (phone, 40),
+        'organization_profile': (organization_profile, 300)
     }
     if any(len(value) > limit for value, limit in field_limits.values()):
         return error_response('Neko od polja prelazi dozvoljenu dužinu.', 400)
 
-    collaboration_labels = {
+    collaboration_type_labels = {
+        'business': 'Poslovno partnerstvo',
+        'media': 'Medijska saradnja',
+        'sponsorship': 'Sponzorstvo',
+        'marketing': 'Marketing i promocija',
+        'technology': 'Tehnološka saradnja',
+        'project': 'Projektna saradnja',
+        'event': 'Organizacija događaja',
+        'other': 'Drugo'
+    }
+    collaboration_area_labels = {
+        'education': 'Obrazovanje i mladi',
+        'community': 'Zajednica i civilno društvo',
+        'culture': 'Kultura i umjetnost',
+        'sports': 'Sport i rekreacija',
+        'humanitarian': 'Humanitarne i društvene akcije',
+        'environment': 'Ekologija i zaštita okoliša',
+        'technology': 'Tehnologija i inovacije',
+        'media': 'Mediji i komunikacije',
+        'other': 'Drugo'
+    }
+    legacy_area_labels = {
         'education': 'Edukacija i radionice',
         'community_event': 'Događaj i aktivnosti',
         'humanitarian': 'Humanitarna akcija',
         'sports': 'Sport i rekreacija',
         'other': 'Drugo'
     }
-    if topic == 'collaboration' and collaboration_kind not in collaboration_labels:
-        return error_response('Odaberite oblast saradnje.', 400)
+    if topic == 'collaboration':
+        if collaboration_type and collaboration_type not in collaboration_type_labels:
+            return error_response('Odaberite ispravnu vrstu saradnje.', 400)
+        legacy_area_requested = False
+        if not collaboration_type and collaboration_kind:
+            collaboration_type = 'project'
+        if not collaboration_type:
+            return error_response('Odaberite vrstu saradnje.', 400)
+        if collaboration_area not in collaboration_area_labels:
+            if collaboration_kind not in legacy_area_labels:
+                return error_response('Odaberite oblast saradnje.', 400)
+            collaboration_area = collaboration_kind
+            legacy_area_requested = True
     if activity_date:
         try:
             datetime.date.fromisoformat(activity_date)
@@ -1689,11 +1733,19 @@ def send_message():
     topic_label = 'Saradnja i partnerstvo' if topic == 'collaboration' else 'Opći upit'
     message_parts = [f'Vrsta upita: {topic_label}']
     if topic == 'collaboration':
-        message_parts.append(f'Oblast saradnje: {collaboration_labels[collaboration_kind]}')
+        message_parts.append(f'Vrsta saradnje: {collaboration_type_labels[collaboration_type]}')
+        area_label = (
+            legacy_area_labels.get(collaboration_area)
+            if legacy_area_requested
+            else collaboration_area_labels.get(collaboration_area) or legacy_area_labels.get(collaboration_area)
+        )
+        message_parts.append(f'Oblast saradnje: {area_label}')
     if organization:
         message_parts.append(f'Organizacija: {organization}')
     if phone:
         message_parts.append(f'Telefon: {phone}')
+    if organization_profile:
+        message_parts.append(f'Web stranica ili profil: {organization_profile}')
     if activity_date:
         message_parts.append(f'Predloženi datum: {activity_date}')
     message_parts.extend(('', 'Poruka:', message))
@@ -1705,6 +1757,7 @@ def send_message():
         'topic_label': topic_label,
         'organization': organization,
         'phone': phone,
+        'organization_profile': organization_profile,
         'created': datetime.datetime.now(datetime.timezone.utc).isoformat()
     }
 
