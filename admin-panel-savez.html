@@ -730,6 +730,7 @@
       .admin-tab.active { color:var(--text); background:rgba(46,94,47,.18); border-color:var(--gold-border); box-shadow:inset 0 -2px 0 var(--gold); }
       .admin-tabs > .logout-btn { margin-left:auto; align-self:center; }
       .admin-grid[hidden], .social-media-panel[hidden] { display:none !important; }
+      #eventsTabPanel[hidden] { display:none !important; }
       .social-media-panel { display:grid; grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr); gap:22px; }
       .social-post-form { display:grid; gap:16px; }
       .social-post-form select { width:100%; padding:.85rem .9rem; border:1px solid var(--soft-line); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; }
@@ -961,6 +962,7 @@
       <main id="admin-content" class="hidden">
         <div class="admin-tabs" role="tablist" aria-label="Administracija sadržaja">
           <button type="button" class="admin-tab active" id="news-tab" role="tab" aria-selected="true" aria-controls="news-tab-panel">Vijesti</button>
+          <button type="button" class="admin-tab" id="events-tab" role="tab" aria-selected="false" aria-controls="events-tab-panel">Aktivnosti</button>
           <button type="button" class="admin-tab" id="social-tab" role="tab" aria-selected="false" aria-controls="social-tab-panel">Mreže / Social Media</button>
           <button type="button" class="theme-toggle" id="themeToggle" aria-label="Promijeni temu">☀️ Svijetla tema</button>
           <button id="logoutButton" type="button" class="logout-btn">Odjavi se</button>
@@ -1204,7 +1206,10 @@
             </div>
           </section>
 
-          <section id="eventsAdminPanel" class="panel admin-wide-panel" aria-labelledby="eventsAdminTitle" hidden>
+        </div>
+
+        <section id="events-tab-panel" role="tabpanel" aria-labelledby="events-tab" hidden>
+          <section id="eventsAdminPanel" class="panel admin-wide-panel" aria-labelledby="eventsAdminTitle">
             <div class="panel-header">
               <div>
                 <div class="panel-label">JAVNI KALENDAR</div>
@@ -1253,7 +1258,7 @@
               <p class="contact-inbox-empty">Otvori kalendar aktivnosti da učitaš događaje.</p>
             </div>
           </section>
-        </div>
+        </section>
 
         <section class="social-media-panel" id="social-tab-panel" role="tabpanel" aria-labelledby="social-tab" hidden>
           <section class="panel">
@@ -1423,8 +1428,10 @@
       const closeDeleteButton = document.getElementById('closeDeleteButton');
       const cancelDeleteButton = document.getElementById('cancelDeleteButton');
       const newsTabButton = document.getElementById('news-tab');
+      const eventsTabButton = document.getElementById('events-tab');
       const socialTabButton = document.getElementById('social-tab');
       const newsTabPanel = document.getElementById('news-tab-panel');
+      const eventsTabPanel = document.getElementById('events-tab-panel');
       const socialTabPanel = document.getElementById('social-tab-panel');
       const socialPostForm = document.getElementById('socialPostForm');
       const socialPostStatus = document.getElementById('socialPostStatus');
@@ -1940,13 +1947,18 @@
 
       function setAdminTab(tabName) {
         const showSocial = tabName === 'social';
-        newsTabPanel.hidden = showSocial;
+        const showEvents = tabName === 'events';
+        newsTabPanel.hidden = showSocial || showEvents;
         socialTabPanel.hidden = !showSocial;
-        newsTabButton.classList.toggle('active', !showSocial);
+        eventsTabPanel.hidden = !showEvents;
+        newsTabButton.classList.toggle('active', tabName === 'news');
+        eventsTabButton.classList.toggle('active', showEvents);
         socialTabButton.classList.toggle('active', showSocial);
-        newsTabButton.setAttribute('aria-selected', String(!showSocial));
+        newsTabButton.setAttribute('aria-selected', String(tabName === 'news'));
+        eventsTabButton.setAttribute('aria-selected', String(showEvents));
         socialTabButton.setAttribute('aria-selected', String(showSocial));
         if (showSocial) fetchSocialPosts();
+        if (showEvents) loadAdminEvents();
       }
 
       function renderSocialPosts() {
@@ -3175,6 +3187,7 @@
 
       previewButton.addEventListener('click', openPreviewModal);
       newsTabButton.addEventListener('click', () => setAdminTab('news'));
+      eventsTabButton.addEventListener('click', () => setAdminTab('events'));
       socialTabButton.addEventListener('click', () => setAdminTab('social'));
       document.getElementById('exportCsvButton').addEventListener('click', exportNewsCsv);
       document.getElementById('printReportButton').addEventListener('click', printNewsReport);
@@ -3210,7 +3223,8 @@
       document.getElementById('contactInboxToggle').addEventListener('click', () => {
         const shouldOpen = inboxPanel.hidden;
         inboxPanel.hidden = !shouldOpen;
-        eventsAdminPanel.hidden = true;
+        if (shouldOpen) setAdminTab('news');
+        if (!shouldOpen) setAdminTab('news');
         if (shouldOpen) loadContactInbox();
       });
       document.getElementById('refreshContactInbox').addEventListener('click', loadContactInbox);
@@ -3218,10 +3232,8 @@
       inboxStatusFilter.addEventListener('change', renderContactInbox);
       inboxTagFilter.addEventListener('change', renderContactInbox);
       document.getElementById('eventsAdminToggle').addEventListener('click', () => {
-        const shouldOpen = eventsAdminPanel.hidden;
-        eventsAdminPanel.hidden = !shouldOpen;
         inboxPanel.hidden = true;
-        if (shouldOpen) loadAdminEvents();
+        setAdminTab('events');
       });
       adminEventForm.addEventListener('submit', saveAdminEvent);
       document.getElementById('resetAdminEvent').addEventListener('click', () => {

@@ -10,6 +10,7 @@ import re
 import secrets
 import sqlite3
 import time
+import threading
 from contextlib import closing
 from flask import Flask, request, jsonify, redirect, send_from_directory, url_for, session
 from flask_mail import Mail, Message
@@ -229,11 +230,18 @@ def load_events_local():
     return events
 
 
+EVENTS_LOCK = threading.RLock()
+
+
 def save_events_local(events):
-    EVENTS_FILE.write_text(
-        json.dumps(events, indent=2, ensure_ascii=False),
-        encoding='utf-8'
-    )
+    EVENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    temp_file = EVENTS_FILE.with_suffix('.tmp')
+    with EVENTS_LOCK:
+        temp_file.write_text(
+            json.dumps(events, indent=2, ensure_ascii=False),
+            encoding='utf-8'
+        )
+        temp_file.replace(EVENTS_FILE)
 
 
 def load_news_local():
@@ -1955,7 +1963,8 @@ def normalize_event_payload(data):
 @app.route('/api/events', methods=['GET'])
 def public_events():
     try:
-        events = load_events_local()
+        with EVENTS_LOCK:
+            events = load_events_local()
         published = [event for event in events if event.get('status') == 'published']
         published.sort(key=lambda event: (event.get('date', ''), event.get('time', '')))
         return jsonify({'ok': True, 'events': published}), 200
@@ -1969,26 +1978,27 @@ def admin_events():
     if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
     try:
-        events = load_events_local()
-        if request.method == 'GET':
-            return jsonify({'ok': True, 'events': sorted(
-                events,
-                key=lambda event: (event.get('date', ''), event.get('time', ''))
-            )}), 200
+        with EVENTS_LOCK:
+            events = load_events_local()
+            if request.method == 'GET':
+                return jsonify({'ok': True, 'events': sorted(
+                    events,
+                    key=lambda event: (event.get('date', ''), event.get('time', ''))
+                )}), 200
 
-        payload, error = normalize_event_payload(request.get_json(silent=True))
-        if error:
-            return jsonify({'ok': False, 'error': error}), 400
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        event = {
-            'id': str(uuid.uuid4()),
-            **payload,
-            'created_at': now,
-            'updated_at': now
-        }
-        events.append(event)
-        save_events_local(events)
-        return jsonify({'ok': True, 'event': event}), 201
+            payload, error = normalize_event_payload(request.get_json(silent=True))
+            if error:
+                return jsonify({'ok': False, 'error': error}), 400
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            event = {
+                'id': str(uuid.uuid4()),
+                **payload,
+                'created_at': now,
+                'updated_at': now
+            }
+            events.append(event)
+            save_events_local(events)
+            return jsonify({'ok': True, 'event': event}), 201
     except Exception:
         app.logger.exception('Admin events could not be loaded or saved')
         return jsonify({'ok': False, 'error': 'Događaj nije sačuvan.'}), 503
@@ -1999,29 +2009,30 @@ def update_admin_event(event_id):
     if not is_admin_api_authenticated():
         return jsonify({'ok': False, 'error': 'Neautorizovan pristup.'}), 401
     try:
-        events = load_events_local()
-        event_index = next(
-            (index for index, event in enumerate(events) if event.get('id') == event_id),
-            None
-        )
-        if event_index is None:
-            return jsonify({'ok': False, 'error': 'Događaj nije pronađen.'}), 404
-        if request.method == 'DELETE':
-            events.pop(event_index)
-            save_events_local(events)
-            return jsonify({'ok': True}), 200
+        with EVENTS_LOCK:
+            events = load_events_local()
+            event_index = next(
+                (index for index, event in enumerate(events) if event.get('id') == event_id),
+                None
+            )
+            if event_index is None:
+                return jsonify({'ok': False, 'error': 'Događaj nije pronađen.'}), 404
+            if request.method == 'DELETE':
+                events.pop(event_index)
+                save_events_local(events)
+                return jsonify({'ok': True}), 200
 
-        payload, error = normalize_event_payload(request.get_json(silent=True))
-        if error:
-            return jsonify({'ok': False, 'error': error}), 400
-        existing = events[event_index]
-        events[event_index] = {
-            **existing,
-            **payload,
-            'updated_at': datetime.datetime.now(datetime.timezone.utc).isoformat()
-        }
-        save_events_local(events)
-        return jsonify({'ok': True, 'event': events[event_index]}), 200
+            payload, error = normalize_event_payload(request.get_json(silent=True))
+            if error:
+                return jsonify({'ok': False, 'error': error}), 400
+            existing = events[event_index]
+            events[event_index] = {
+                **existing,
+                **payload,
+                'updated_at': datetime.datetime.now(datetime.timezone.utc).isoformat()
+            }
+            save_events_local(events)
+            return jsonify({'ok': True, 'event': events[event_index]}), 200
     except Exception:
         app.logger.exception('Admin event could not be changed')
         return jsonify({'ok': False, 'error': 'Događaj nije sačuvan.'}), 503

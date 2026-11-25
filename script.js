@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function(){
   initPublicCalendar();
   initLocalSave();
   initContactCopyButtons();
-  initAdminSecretAccess();
   initHeroEffects();
   initNewsManager();
   progressiveEnhancements();
@@ -1329,22 +1328,6 @@ function initHeroEffects(){
 
   // subtle particle background via canvas
   setupCanvasParticles();
-}
-
-document.addEventListener('keydown', function(event){
-  if(event.ctrlKey && event.shiftKey && event.key && event.key.toLowerCase() === 'a'){
-    window.open('/admin-clanstvo.html', '_blank');
-    showToast('Admin panel se otvara u novom tabu.');
-  }
-});
-
-function initAdminSecretAccess(){
-  const adminLink = q('.admin-secret-link');
-  if(!adminLink) return;
-  adminLink.addEventListener('click', function(event){
-    event.preventDefault();
-    window.open('/admin-clanstvo.html', '_blank');
-  });
 }
 
 /* Subtle falling particles, clipped to the hero */
