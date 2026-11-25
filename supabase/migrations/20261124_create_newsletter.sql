@@ -1,3 +1,5 @@
+create extension if not exists pgcrypto with schema extensions;
+
 create table if not exists public.newsletter_subscribers (
   id uuid primary key default gen_random_uuid(),
   full_name text not null check (char_length(btrim(full_name)) between 2 and 120),
